@@ -14,7 +14,6 @@ import RiderApprovalsTable from '../../Components/admin_and_user_management/ride
 import LiveTripsTable from '../../Components/admin_and_user_management/ride_monitoring/LiveTripsTable'
 import SOSAlertsTable from '../../Components/admin_and_user_management/sos_and_safety/SOSAlertsTable'
 import SafetyAlertsPage from '../../Components/admin_and_user_management/sos_and_safety/SafetyAlertsPage'
-import PassengerDashboardPage from '../../Components/ride_and_sharing_system/pages/PassengerDashboardPage'
 import RideRequestsPage from '../../Components/admin_and_user_management/ride_monitoring/RideRequestsPage'
 import ActiveRidersPage from '../../Components/admin_and_user_management/ride_monitoring/ActiveRidersPage'
 

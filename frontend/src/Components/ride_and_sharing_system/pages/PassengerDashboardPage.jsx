@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import CreateRideRequestForm from '../rides/CreateRideRequestForm'
-import NearbyRidersList from '../rides/NearbyRidersList'
-import RideHistoryTable from '../rides/RideHistoryTable'
+import CreateRideRequestForm from '../passenger/CreateRideRequestForm'
+import NearbyRidersList from '../passenger/NearbyRidersList'
+import RideHistoryTable from '../passenger/RideHistoryTable'
 
 function PassengerDashboardPage() {
   const [pickup, setPickup] = useState(null)
