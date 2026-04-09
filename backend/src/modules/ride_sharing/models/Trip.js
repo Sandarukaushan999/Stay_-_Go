@@ -16,6 +16,7 @@ const TripSchema = new mongoose.Schema(
 
     origin: { type: PointSchema, required: true },
     destination: { type: PointSchema, required: true },
+    seatCount: { type: Number, default: 1 },
 
     expectedDurationSeconds: { type: Number, default: null },
     bufferMinutes: { type: Number, default: 10 },

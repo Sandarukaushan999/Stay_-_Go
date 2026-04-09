@@ -4,26 +4,56 @@ import { hashPassword, verifyPassword } from '../../common/utils/password.js'
 import { signAccessToken } from '../../common/utils/jwt.js'
 import { env } from '../../config/env.js'
 
-export async function register({ fullName, email, password, role }) {
-  const normalizedRole = role ?? 'student'
-  if (!env.PUBLIC_REGISTER) {
+export async function register(payload) {
+  const normalizedRole = payload.role ?? 'student'
+
+  if (env.PUBLIC_REGISTER) {
+    if (normalizedRole === 'super_admin') throw new ApiError(403, 'Super admin registration is disabled.')
+    if (!env.PUBLIC_REGISTER_ROLES.includes(normalizedRole)) {
+      throw new ApiError(403, 'This role cannot be registered publicly.')
+    }
+  } else {
+    // When PUBLIC_REGISTER is disabled: allow only admin bootstrapping
     const allowed = normalizedRole === 'admin' || normalizedRole === 'super_admin'
-    if (!allowed) throw new ApiError(403, 'Only admins can self-register. Students are created in Admin → User Management.')
+    if (!allowed) {
+      throw new ApiError(403, 'Registration is disabled. Contact admin.')
+    }
   }
 
-  const existing = await User.findOne({ email }).lean()
+  const existing = await User.findOne({ email: payload.email }).lean()
   if (existing) throw new ApiError(409, 'Email already registered')
 
-  const passwordHash = await hashPassword(password)
-  const isDriverSignup = role === 'rider'
+  if (normalizedRole === 'student') {
+    if (!payload.campusId) throw new ApiError(400, 'campusId is required for students')
+  }
+
+  const passwordHash = await hashPassword(payload.password)
+  const wantsRider = normalizedRole === 'student' && Boolean(payload.hasVehicle)
+  const vehicleType = payload.vehicleType ?? null
+  const autoSeat =
+    vehicleType === 'bike' ? 1 : vehicleType === 'car' ? 3 : vehicleType === 'van' ? 7 : 0
+
   const user = await User.create({
-    fullName,
-    email,
+    fullName: payload.fullName,
+    email: payload.email,
     passwordHash,
-    role: isDriverSignup ? 'student' : normalizedRole,
+    role: normalizedRole,
+
+    phone: payload.phone ?? null,
+    studentId: payload.studentId ?? null,
+    campusId: payload.campusId ?? null,
+    emergencyContact: payload.emergencyContact ?? null,
+
+    hasVehicle: wantsRider,
+    vehicleType: wantsRider ? vehicleType : null,
+    vehicleNumber: wantsRider ? payload.vehicleNumber ?? null : null,
+    seatCount: wantsRider ? autoSeat : 0,
+    residenceLocation: normalizedRole === 'student' && !wantsRider ? payload.residenceLocation ?? null : null,
+    vehicleOriginLocation: wantsRider ? payload.vehicleOriginLocation ?? null : null,
+
     isVerified: true,
-    riderVerificationStatus: isDriverSignup ? 'pending' : 'none',
-    riderAppliedAt: isDriverSignup ? new Date() : null,
+    riderVerificationStatus: wantsRider ? 'pending' : 'none',
+    riderAppliedAt: wantsRider ? new Date() : null,
   })
 
   const token = signAccessToken({ sub: user._id.toString(), role: user.role })

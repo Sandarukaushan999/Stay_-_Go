@@ -68,7 +68,7 @@ export default function AppRouter() {
         </Route>
 
         <Route element={<RoleRoute allow={['student', 'rider', 'technician']} />}>
-          <Route path="/student/dashboard" element={<PassengerDashboardPage />} />
+          <Route path="/student/dashboard" element={<RidesGatewayPage />} />
         </Route>
       </Route>
 

@@ -4,6 +4,8 @@ import { mapsApi } from '../services/mapsApi'
 import MapPicker from '../../shared/maps/MapPicker'
 import { useAuthStore } from '../../../app/store/authStore'
 
+const SLIIT = { lat: 6.9147, lng: 79.9720 }
+
 export default function CreateRideRequestForm({ onPickupChange }) {
   const user = useAuthStore((s) => s.user)
 
@@ -12,7 +14,7 @@ export default function CreateRideRequestForm({ onPickupChange }) {
     seatCount: 1,
     femaleOnly: false,
     origin: user?.residenceLocation ?? { lat: 6.9271, lng: 79.8612 },
-    destination: { lat: 6.9271, lng: 79.8612 },
+    destination: SLIIT,
   })
   const [route, setRoute] = useState(null)
   const [message, setMessage] = useState(null)
@@ -58,8 +60,8 @@ export default function CreateRideRequestForm({ onPickupChange }) {
         </div>
 
         <div>
-          <div className="text-sm text-slate-300 mb-2">Destination (University)</div>
-          <MapPicker value={form.destination} onChange={(v) => setForm((p) => ({ ...p, destination: v }))} height={260} />
+          <div className="text-sm text-slate-300 mb-2">Destination (University: SLIIT)</div>
+          <MapPicker value={SLIIT} readonly height={260} />
         </div>
       </div>
 

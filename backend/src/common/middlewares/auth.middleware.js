@@ -32,6 +32,9 @@ export async function requireAuth(req, res, next) {
       role: user.role,
       email: user.email,
       fullName: user.fullName,
+      campusId: user.campusId ?? null,
+      hasVehicle: Boolean(user.hasVehicle),
+      riderVerificationStatus: user.riderVerificationStatus ?? 'none',
     }
 
     next()

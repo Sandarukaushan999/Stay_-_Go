@@ -3,6 +3,7 @@ import Footer from '../Components/landing/footer'
 import Header from '../Components/landing/header'
 import { useAuthStore } from '../app/store/authStore'
 import axios from 'axios'
+import MapPicker from '../Components/shared/maps/MapPicker'
 
 const authContent = {
   login: {
@@ -17,9 +18,9 @@ const authContent = {
   },
   register: {
     eyebrow: 'Verified onboarding',
-    title: 'Create your Admin account to manage Stay & Go.',
+    title: 'Create your student account (Passenger / Rider-candidate).',
     copy:
-      'Students, riders, and technicians are created from the Admin dashboard. This page is for Admin bootstrapping only.',
+      'All users are students. If you own a vehicle, enable Rider-candidate and fill vehicle details. Admin approval is required before you can provide rides.',
     primaryLabel: 'Register',
     secondaryText: 'Already have an account?',
     secondaryAction: 'login',
@@ -51,7 +52,16 @@ export default function AuthPage({
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [role] = useState('admin')
+  const [phone, setPhone] = useState('')
+  const [studentId, setStudentId] = useState('')
+  const [campusId, setCampusId] = useState('')
+  const [emergencyContact, setEmergencyContact] = useState('')
+  const [accountType, setAccountType] = useState('student') // student | technician | admin
+  const [hasVehicle, setHasVehicle] = useState(false)
+  const [vehicleType, setVehicleType] = useState('bike')
+  const [vehicleNumber, setVehicleNumber] = useState('')
+  const [residenceLocation, setResidenceLocation] = useState(null)
+  const [vehicleOriginLocation, setVehicleOriginLocation] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -68,25 +78,36 @@ export default function AuthPage({
     setError(null)
     setLoading(true)
     try {
+      let authedUser = null
       if (mode === 'login') {
-        await login({ email, password })
+        const result = await login({ email, password })
+        authedUser = result?.user ?? null
       } else {
         const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api'
-        const mappedRole = role
+        const isStudent = accountType === 'student'
         const { data } = await axios.post(`${base}/auth/register`, {
           fullName,
           email,
           password,
-          role: mappedRole,
+          role: accountType,
+          phone: isStudent ? phone : undefined,
+          studentId: isStudent ? studentId : undefined,
+          campusId: isStudent ? campusId : undefined,
+          emergencyContact: isStudent ? emergencyContact : undefined,
+          hasVehicle: isStudent ? hasVehicle : false,
+          vehicleType: isStudent && hasVehicle ? vehicleType : undefined,
+          vehicleNumber: isStudent && hasVehicle ? vehicleNumber : undefined,
+          residenceLocation: isStudent && !hasVehicle ? residenceLocation : undefined,
+          vehicleOriginLocation: isStudent && hasVehicle ? vehicleOriginLocation : undefined,
         })
         setToken(data.token)
-        await hydrateMe()
+        authedUser = await hydrateMe()
       }
-      const roleAfter = user?.role
+      const roleAfter = authedUser?.role ?? user?.role
       if (roleAfter === 'admin' || roleAfter === 'super_admin') {
         window.location.href = '/admin'
       } else if (roleAfter === 'student' || roleAfter === 'rider' || roleAfter === 'technician') {
-        window.location.href = '/student/dashboard'
+        window.location.href = '/rides'
       } else {
         afterAuthRedirect?.()
       }
@@ -188,15 +209,124 @@ export default function AuthPage({
             </label>
 
             {mode === 'register' ? (
-              <label className="grid gap-1 text-sm">
-                <span className="text-slate-300">Role</span>
-                <input
-                  className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-300"
-                  value="admin"
-                  disabled
-                  readOnly
-                />
-              </label>
+              <>
+                <label className="grid gap-1 text-sm">
+                  <span className="text-slate-300">Account type</span>
+                  <select
+                    className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                    value={accountType}
+                    onChange={(e) => {
+                      const next = e.target.value
+                      setAccountType(next)
+                      if (next !== 'student') setHasVehicle(false)
+                    }}
+                  >
+                    <option value="student">Student</option>
+                    <option value="technician">Technician / Staff</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </label>
+
+                <label className="grid gap-1 text-sm">
+                  <span className="text-slate-300">Phone</span>
+                  <input
+                    className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+94..."
+                  />
+                </label>
+
+                {accountType === 'student' ? (
+                  <>
+                    <label className="grid gap-1 text-sm">
+                      <span className="text-slate-300">Student ID</span>
+                      <input
+                        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                        value={studentId}
+                        onChange={(e) => setStudentId(e.target.value)}
+                      />
+                    </label>
+
+                    <label className="grid gap-1 text-sm">
+                      <span className="text-slate-300">University / Campus ID</span>
+                      <input
+                        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                        value={campusId}
+                        onChange={(e) => setCampusId(e.target.value)}
+                        placeholder="e.g. uoc-main"
+                        required
+                      />
+                    </label>
+
+                    <label className="grid gap-1 text-sm">
+                      <span className="text-slate-300">Emergency contact</span>
+                      <input
+                        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                        value={emergencyContact}
+                        onChange={(e) => setEmergencyContact(e.target.value)}
+                      />
+                    </label>
+                  </>
+                ) : null}
+
+                {accountType === 'student' ? (
+                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
+                    <label className="flex items-center gap-2 text-sm text-slate-200">
+                      <input
+                        type="checkbox"
+                        checked={hasVehicle}
+                        onChange={(e) => setHasVehicle(e.target.checked)}
+                      />
+                      I own a vehicle (Rider-candidate)
+                    </label>
+                    <p className="mt-2 text-xs text-slate-400">
+                      You will remain a student until admin approves you as a rider.
+                    </p>
+
+                    {hasVehicle ? (
+                      <div className="mt-4 grid gap-3">
+                        <label className="grid gap-1 text-sm">
+                          <span className="text-slate-300">Vehicle type</span>
+                          <select
+                            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                            value={vehicleType}
+                            onChange={(e) => setVehicleType(e.target.value)}
+                          >
+                            <option value="bike">Bike (1 passenger)</option>
+                            <option value="car">Car (3 passengers)</option>
+                            <option value="van">Van (7 passengers)</option>
+                          </select>
+                        </label>
+
+                        <label className="grid gap-1 text-sm">
+                          <span className="text-slate-300">Vehicle number</span>
+                          <input
+                            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                            value={vehicleNumber}
+                            onChange={(e) => setVehicleNumber(e.target.value)}
+                            required
+                          />
+                        </label>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {accountType === 'student' && !hasVehicle ? (
+                  <div>
+                    <div className="text-sm text-slate-300 mb-2">Your residence location (pickup default)</div>
+                    <MapPicker value={residenceLocation} onChange={setResidenceLocation} height={240} />
+                  </div>
+                ) : null}
+
+                {accountType === 'student' && hasVehicle ? (
+                  <div>
+                    <div className="text-sm text-slate-300 mb-2">Vehicle origin / start location</div>
+                    <MapPicker value={vehicleOriginLocation} onChange={setVehicleOriginLocation} height={240} />
+                  </div>
+                ) : null}
+              </>
             ) : null}
 
             {error ? (

@@ -21,6 +21,10 @@ export const env = {
   JWT_SECRET: required('JWT_SECRET'),
   JWT_TTL: process.env.JWT_TTL ?? '7d',
   PUBLIC_REGISTER: process.env.PUBLIC_REGISTER === 'true',
+  PUBLIC_REGISTER_ROLES: (process.env.PUBLIC_REGISTER_ROLES ?? 'student')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean),
   UPLOAD_DIR: process.env.UPLOAD_DIR ?? 'uploads',
   OSRM_BASE_URL: process.env.OSRM_BASE_URL ?? 'https://router.project-osrm.org',
   NOMINATIM_BASE_URL:

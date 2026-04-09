@@ -20,6 +20,7 @@ function Item({ to, children, end }) {
 
 export default function Sidebar() {
   const user = useAuthStore((s) => s.user)
+  const isAdmin = user?.role === 'admin' || user?.role === 'super_admin'
 
   return (
     <aside className="w-72 shrink-0 border-r border-slate-800 bg-slate-950 p-4">
@@ -36,12 +37,14 @@ export default function Sidebar() {
           Home
         </Item>
 
-        <div className="px-2 pt-4 text-[11px] uppercase tracking-wide text-slate-500">
-          Admin
-        </div>
-        <Item to="/admin">Admin Dashboard</Item>
-        <Item to="/admin/users">User Management</Item>
-        <Item to="/admin/ride-monitoring">Ride Monitoring</Item>
+        {isAdmin ? (
+          <>
+            <div className="px-2 pt-4 text-[11px] uppercase tracking-wide text-slate-500">Admin</div>
+            <Item to="/admin">Admin Dashboard</Item>
+            <Item to="/admin/users">User Management</Item>
+            <Item to="/admin/ride-monitoring">Ride Monitoring</Item>
+          </>
+        ) : null}
       </div>
     </aside>
   )

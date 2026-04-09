@@ -10,12 +10,18 @@ export default function RidesGatewayPage() {
   // If user is somehow missing (race), let ProtectedRoute handle it, but keep safe.
   if (!user) return <Navigate to="/auth/login" replace />
 
-  // Rider role gets rider UI. Everyone else is passenger UI.
-  const isRider = user.role === 'rider'
+  // Only students can use ride system; admin should use admin dashboard.
+  if (user.role === 'admin' || user.role === 'super_admin') return <Navigate to="/admin" replace />
+
+  // Rider UI should show for:
+  // - approved riders (role=rider)
+  // - rider-candidates (hasVehicle=true) so they can see the rider workspace
+  //   (accept/online controls can be disabled until approved).
+  const isRiderUI = user.role === 'rider' || user.hasVehicle
 
   return (
     <MainLayout>
-      {isRider ? <RiderDashboardPage /> : <PassengerDashboardPage />}
+      {isRiderUI ? <RiderDashboardPage /> : <PassengerDashboardPage />}
     </MainLayout>
   )
 }

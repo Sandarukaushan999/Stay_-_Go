@@ -1,8 +1,9 @@
-import { MapContainer, Marker, TileLayer, useMapEvents } from 'react-leaflet'
+import { MapContainer, Marker, Polyline, TileLayer, useMapEvents } from 'react-leaflet'
 
-function ClickHandler({ value, onChange }) {
+function ClickHandler({ value, onChange, readonly }) {
   useMapEvents({
     click(e) {
+      if (readonly) return
       onChange?.({ lat: e.latlng.lat, lng: e.latlng.lng })
     },
   })
@@ -13,6 +14,8 @@ function ClickHandler({ value, onChange }) {
 export default function MapPicker({
   value,
   onChange,
+  readonly = false,
+  polyline = null,
   height = 320,
   center = { lat: 6.9271, lng: 79.8612 },
   zoom = 13,
@@ -30,7 +33,8 @@ export default function MapPicker({
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <ClickHandler value={value} onChange={onChange} />
+        {Array.isArray(polyline) && polyline.length ? <Polyline positions={polyline} /> : null}
+        <ClickHandler value={value} onChange={onChange} readonly={readonly} />
       </MapContainer>
     </div>
   )

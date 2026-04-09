@@ -75,9 +75,28 @@ export async function nearbyRiders({ campusId, pickup }) {
 }
 
 export async function acceptRide({ rideRequestId, riderId }) {
+  const rider = await User.findById(riderId).lean()
+  if (!rider) throw new ApiError(404, 'Rider not found')
+  if (rider.role !== 'rider') throw new ApiError(403, 'Rider not approved')
+  if (rider.isBlocked) throw new ApiError(403, 'Rider blocked')
+  if (rider.availability !== 'online') throw new ApiError(409, 'Rider is offline')
+
   const rr = await RideRequest.findById(rideRequestId)
   if (!rr) throw new ApiError(404, 'Ride request not found')
   if (rr.status !== 'requested') throw new ApiError(409, 'Ride request not available')
+
+  // Seat enforcement: rider can carry (seatCount - 1) passengers.
+  const capacityPassengers = Math.max(0, Number(rider.seatCount ?? 0) - 1)
+  const activeTrips = await Trip.find({
+    riderId,
+    status: { $in: ['to_pickup', 'to_university', 'overdue'] },
+  }).lean()
+  const used = activeTrips.reduce((sum, t) => sum + Number(t.seatCount ?? 1), 0)
+  const remaining = capacityPassengers - used
+  const need = Number(rr.seatCount ?? 1)
+  if (need > remaining) {
+    throw new ApiError(409, `Not enough remaining seats (${remaining} left)`)
+  }
 
   rr.status = 'accepted'
   rr.riderId = riderId
@@ -92,6 +111,7 @@ export async function acceptRide({ rideRequestId, riderId }) {
     passengerId: rr.passengerId,
     origin: rr.origin,
     destination: rr.destination,
+    seatCount: rr.seatCount ?? 1,
     expectedDurationSeconds: null,
     bufferMinutes: 10,
     bufferedDeadlineAt: new Date(now.getTime() + 20 * 60 * 1000),

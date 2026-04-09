@@ -3,9 +3,16 @@ import * as rideService from '../services/ride.service.js'
 import { getIo } from '../../../config/socket.js'
 
 export const requestRide = asyncHandler(async (req, res) => {
+  if (!req.user.campusId) {
+    return res.status(400).json({ success: false, message: 'campusId missing on your profile' })
+  }
   const rr = await rideService.requestRide({
     passengerId: req.user.id,
-    ...req.body,
+    campusId: req.user.campusId,
+    origin: req.body.origin,
+    destination: req.body.destination,
+    seatCount: req.body.seatCount,
+    femaleOnly: req.body.femaleOnly,
   })
   getIo().to('admin').emit('ride:request', { rideRequest: rr })
   res.status(201).json({ success: true, data: rr })
@@ -13,7 +20,8 @@ export const requestRide = asyncHandler(async (req, res) => {
 
 export const nearbyRiders = asyncHandler(async (req, res) => {
   const pickup = req.query?.lat && req.query?.lng ? { lat: Number(req.query.lat), lng: Number(req.query.lng) } : null
-  const items = await rideService.nearbyRiders({ campusId: req.query?.campusId, pickup })
+  const campusId = req.user.campusId ?? req.query?.campusId
+  const items = await rideService.nearbyRiders({ campusId, pickup })
   res.json({ success: true, data: items })
 })
 
