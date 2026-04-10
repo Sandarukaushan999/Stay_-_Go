@@ -4,7 +4,7 @@
 import { useState } from 'react'
 import TicketCard from './TicketCard'
 
-function TechnicianTasks({ tickets = [], onViewTicket, onStart, onResolve }) {
+function TechnicianTasks({ tickets = [], onSelectTicket, onStart, onResolve }) {
   const [resolveTicketId, setResolveTicketId] = useState(null)
   const [resolutionNote, setResolutionNote] = useState('')
 
@@ -51,7 +51,7 @@ function TechnicianTasks({ tickets = [], onViewTicket, onStart, onResolve }) {
           <div className="space-y-3">
             {groupTickets.map((ticket) => (
               <div key={ticket._id} className="space-y-2">
-                <TicketCard ticket={ticket} onClick={() => onViewTicket(ticket._id)} />
+                <TicketCard ticket={ticket} onClick={() => onSelectTicket(ticket)} />
 
                 {/* Action buttons */}
                 {type === 'new' && (

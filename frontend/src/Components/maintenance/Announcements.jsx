@@ -31,7 +31,7 @@ function AnnouncementPriorityBadge({ priority }) {
 // Empty form values
 const emptyForm = { title: '', content: '', priority: 'normal' }
 
-function Announcements({ announcements = [], currentRole, onCreate, onUpdate, onDelete, onToggle }) {
+function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDelete, onToggle }) {
   // Form state for creating
   const [showCreate, setShowCreate] = useState(false)
   const [createForm, setCreateForm] = useState({ ...emptyForm })
@@ -43,7 +43,7 @@ function Announcements({ announcements = [], currentRole, onCreate, onUpdate, on
   // Delete confirmation state
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
-  const isAdmin = currentRole === 'admin'
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin'
 
   // Validation helpers
   function isCreateValid() {
@@ -264,7 +264,7 @@ function Announcements({ announcements = [], currentRole, onCreate, onUpdate, on
                       <p className="mt-2 text-sm leading-relaxed text-slate-300">{item.content}</p>
                       <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
                         <span>{formatDate(item.createdAt)}</span>
-                        {item.postedBy && <span>By {item.postedBy}</span>}
+                        {item.createdBy && <span>By {typeof item.createdBy === 'object' ? item.createdBy.fullName : item.createdBy}</span>}
                       </div>
                     </div>
 
@@ -355,7 +355,7 @@ function Announcements({ announcements = [], currentRole, onCreate, onUpdate, on
             <p className="mt-2 text-sm leading-relaxed text-slate-300">{item.content}</p>
             <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
               <span>{formatDate(item.createdAt)}</span>
-              {item.postedBy && <span>Posted by {item.postedBy}</span>}
+              {item.createdBy && <span>Posted by {typeof item.createdBy === 'object' ? item.createdBy.fullName : item.createdBy}</span>}
             </div>
           </article>
         )

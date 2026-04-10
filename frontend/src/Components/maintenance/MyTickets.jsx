@@ -18,7 +18,7 @@ const statusList = [
 // Priority weights for sorting (higher number = more urgent)
 const priorityWeight = { emergency: 4, high: 3, medium: 2, low: 1 }
 
-function MyTickets({ tickets = [], onViewTicket }) {
+function MyTickets({ tickets = [], onSelectTicket }) {
   // Filter state shared with TicketFilters component
   const [filters, setFilters] = useState({
     status: '',
@@ -121,7 +121,7 @@ function MyTickets({ tickets = [], onViewTicket }) {
             <TicketCard
               key={ticket.ticketId || ticket._id}
               ticket={ticket}
-              onClick={() => onViewTicket(ticket)}
+              onClick={() => onSelectTicket(ticket)}
             />
           ))}
         </div>

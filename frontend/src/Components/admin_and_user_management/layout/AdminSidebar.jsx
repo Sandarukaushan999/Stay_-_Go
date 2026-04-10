@@ -54,13 +54,7 @@ export default function AdminSidebar() {
         <Item to="/admin/match-analytics">Match Analytics</Item>
 
         <Section title="Maintenance Workspace" />
-        <Item to="/admin/maintenance-dashboard">Maintenance Dashboard</Item>
-        <Item to="/admin/maintenance-new">New Requests</Item>
-        <Item to="/admin/maintenance-pending">Pending Tickets</Item>
-        <Item to="/admin/maintenance-assigned">Assigned Tickets</Item>
-        <Item to="/admin/maintenance-critical">Critical Issues</Item>
-        <Item to="/admin/maintenance-completed">Completed Tickets</Item>
-        <Item to="/admin/technician-performance">Technician Performance</Item>
+        <Item to="/maintenance">Maintenance Dashboard</Item>
 
         <Section title="Communication" />
         <Item to="/admin/notifications">Notifications</Item>
