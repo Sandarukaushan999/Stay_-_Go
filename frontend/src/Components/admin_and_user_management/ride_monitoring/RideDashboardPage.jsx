@@ -16,8 +16,8 @@ const statusTone = {
   resolved: 'border-emerald-700/60 bg-emerald-900/30 text-emerald-200',
 }
 
-const barPaletteRide = ['#60a5fa', '#818cf8', '#22d3ee', '#f97316']
-const barPaletteSos = ['#10b981', '#f59e0b', '#f97316', '#ef4444']
+const barPaletteRide = ['#876DFF', '#BAF91A', '#E2FF99', '#FFFFFF']
+const barPaletteSos = ['#E2FF99', '#BAF91A', '#876DFF', '#FFFFFF']
 
 function buildUtcDayKeys(days) {
   const now = new Date()
@@ -294,7 +294,7 @@ function TrendLineChart({ data }) {
           y1={points.topPad}
           x2={points.leftPad}
           y2={points.height - points.bottomPad}
-          stroke="#334155"
+          stroke="#E2FF99"
           strokeWidth="1"
         />
         <line
@@ -302,12 +302,12 @@ function TrendLineChart({ data }) {
           y1={points.height - points.bottomPad}
           x2={points.width - points.rightPad}
           y2={points.height - points.bottomPad}
-          stroke="#334155"
+          stroke="#E2FF99"
           strokeWidth="1"
         />
 
-        <polyline fill="none" stroke="#38bdf8" strokeWidth="3" points={points.requestPoints} />
-        <polyline fill="none" stroke="#34d399" strokeWidth="3" points={points.completedPoints} />
+        <polyline fill="none" stroke="#876DFF" strokeWidth="3" points={points.requestPoints} />
+        <polyline fill="none" stroke="#BAF91A" strokeWidth="3" points={points.completedPoints} />
 
         {data.map((item, idx) => {
           const stepX =
@@ -316,13 +316,13 @@ function TrendLineChart({ data }) {
               : (points.width - points.leftPad - points.rightPad) / 2
           const x = points.leftPad + idx * stepX
           return (
-            <text key={item.day} x={x} y={points.height - 8} textAnchor="middle" fill="#94a3b8" fontSize="11">
+            <text key={item.day} x={x} y={points.height - 8} textAnchor="middle" fill="#E2FF99" fontSize="11">
               {item.label}
             </text>
           )
         })}
 
-        <text x="8" y={points.topPad + 8} fill="#94a3b8" fontSize="10">
+        <text x="8" y={points.topPad + 8} fill="#E2FF99" fontSize="10">
           {points.maxValue}
         </text>
       </svg>

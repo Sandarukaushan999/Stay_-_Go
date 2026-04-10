@@ -6,7 +6,7 @@ import { api } from '../../../lib/apiClient'
 import { useSocketStore } from '../../../app/store/socketStore'
 
 const ACTIVE_TRIP_STATUSES = new Set(['to_pickup', 'to_university', 'overdue', 'in_progress'])
-const ROUTE_COLORS = ['#38bdf8', '#a78bfa', '#f59e0b', '#10b981', '#ef4444', '#14b8a6', '#f97316', '#22c55e']
+const ROUTE_COLORS = ['#876DFF', '#BAF91A', '#E2FF99', '#FFFFFF', '#101312', '#876DFF', '#BAF91A', '#E2FF99']
 
 function isActiveStatus(status) {
   return ACTIVE_TRIP_STATUSES.has(status)
@@ -358,7 +358,7 @@ export default function LiveTripsTable() {
                 {trip.originTuple && trip.currentTuple ? (
                   <Polyline
                     positions={[trip.originTuple, trip.currentTuple]}
-                    pathOptions={{ color: '#22c55e', weight: 4, opacity: 0.95 }}
+                    pathOptions={{ color: '#876DFF', weight: 4, opacity: 0.95 }}
                   />
                 ) : null}
 
@@ -366,7 +366,7 @@ export default function LiveTripsTable() {
                   <CircleMarker
                     center={trip.originTuple}
                     radius={4}
-                    pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.95 }}
+                    pathOptions={{ color: '#BAF91A', fillColor: '#BAF91A', fillOpacity: 0.95 }}
                   >
                     <Tooltip direction="top">Pickup</Tooltip>
                   </CircleMarker>
@@ -376,7 +376,7 @@ export default function LiveTripsTable() {
                   <CircleMarker
                     center={trip.destinationTuple}
                     radius={4}
-                    pathOptions={{ color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 0.95 }}
+                    pathOptions={{ color: '#876DFF', fillColor: '#876DFF', fillOpacity: 0.95 }}
                   >
                     <Tooltip direction="top">Destination</Tooltip>
                   </CircleMarker>
@@ -386,7 +386,7 @@ export default function LiveTripsTable() {
                   <CircleMarker
                     center={trip.currentTuple}
                     radius={8}
-                    pathOptions={{ color: '#0f172a', fillColor: '#38bdf8', fillOpacity: 1, weight: 2 }}
+                    pathOptions={{ color: '#101312', fillColor: '#E2FF99', fillOpacity: 1, weight: 2 }}
                   >
                     <Tooltip direction="top">{`Trip ${trip.shortId}`}</Tooltip>
                     <Popup>

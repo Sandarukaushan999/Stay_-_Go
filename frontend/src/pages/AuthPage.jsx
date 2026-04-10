@@ -107,7 +107,7 @@ export default function AuthPage({
       if (roleAfter === 'admin' || roleAfter === 'super_admin') {
         window.location.href = '/admin'
       } else if (roleAfter === 'student' || roleAfter === 'rider' || roleAfter === 'technician') {
-        window.location.href = '/rides'
+        window.location.href = '/rides/workspace'
       } else {
         afterAuthRedirect?.()
       }
@@ -370,4 +370,3 @@ export default function AuthPage({
     </div>
   )
 }
-

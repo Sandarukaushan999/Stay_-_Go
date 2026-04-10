@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import api from '../../../lib/axios'
 import { mapsApi } from '../services/mapsApi'
 import MapPicker from '../../shared/maps/MapPicker'
@@ -7,6 +7,8 @@ import { useAuthStore } from '../../../app/store/authStore'
 import PassengerSafetyCountdown from './PassengerSafetyCountdown'
 
 const SLIIT = { lat: 6.9147, lng: 79.9720 }
+const PICKUP_ROUTE_COLOR = '#876DFF'
+const CAMPUS_ROUTE_COLOR = '#BAF91A'
 
 function toLatLngLine(coords) {
   if (!Array.isArray(coords)) return null
@@ -20,79 +22,89 @@ export default function PassengerLiveTripMap() {
   const [legToCampus, setLegToCampus] = useState(null)
   const [etaToPickup, setEtaToPickup] = useState(null)
   const [etaToCampus, setEtaToCampus] = useState(null)
-  const [requestPickup, setRequestPickup] = useState(null)
+  const [requestPickup, setRequestPickup] = useState(() =>
+    user?.residenceLocation?.lat && user?.residenceLocation?.lng ? user.residenceLocation : null
+  )
   const [requestSeatCount, setRequestSeatCount] = useState(1)
   const [requestFemaleOnly, setRequestFemaleOnly] = useState(false)
   const [requestPreview, setRequestPreview] = useState(null)
   const [requestMessage, setRequestMessage] = useState(null)
+
+  const fallbackPickup =
+    user?.residenceLocation?.lat && user?.residenceLocation?.lng
+      ? user.residenceLocation
+      : { lat: 6.9271, lng: 79.8612 }
 
   async function load() {
     try {
       const res = await api.get('/ride-sharing/trips/my-active')
       setTrip(res.data.data || null)
     } catch {
-      // If auth expires or backend temporarily restarts, don't crash the UI.
+      // If auth expires or backend temporarily restarts, do not crash the UI.
       setTrip(null)
     }
   }
 
   useEffect(() => {
-    load()
-    const t = setInterval(load, 4000)
-    return () => clearInterval(t)
+    const initial = setTimeout(() => {
+      load().catch(() => {})
+    }, 0)
+    const t = setInterval(() => {
+      load().catch(() => {})
+    }, 4000)
+    return () => {
+      clearTimeout(initial)
+      clearInterval(t)
+    }
   }, [])
 
-  useEffect(() => {
-    if (user?.residenceLocation?.lat && user?.residenceLocation?.lng) {
-      setRequestPickup(user.residenceLocation)
-    } else {
-      setRequestPickup({ lat: 6.9271, lng: 79.8612 })
-    }
-  }, [user?.residenceLocation?.lat, user?.residenceLocation?.lng])
-
-  const pickup = useMemo(() => trip?.origin ?? null, [trip?._id])
-  const riderLoc = useMemo(() => trip?.currentLocation ?? null, [trip?.currentLocation?.lat, trip?.currentLocation?.lng])
+  const pickup = trip?.origin ?? null
+  const riderLoc = trip?.currentLocation ?? null
   const status = trip?.status
 
   useEffect(() => {
     async function build() {
+      const activeTrip = trip
+      const pickupPoint = activeTrip?.origin ?? null
+      const riderPoint = activeTrip?.currentLocation ?? null
+      const tripStatus = activeTrip?.status
       setLegToPickup(null)
       setLegToCampus(null)
       setEtaToPickup(null)
       setEtaToCampus(null)
-      if (!trip || !pickup?.lat || !pickup?.lng) return
+      if (!activeTrip || !pickupPoint?.lat || !pickupPoint?.lng) return
 
-      // Red: rider -> passenger pickup (while coming / overdue)
-      if (riderLoc?.lat && riderLoc?.lng && (status === 'to_pickup' || status === 'overdue')) {
-        const r1 = await mapsApi.routePreview({ origin: riderLoc, destination: pickup })
+      if (riderPoint?.lat && riderPoint?.lng && (tripStatus === 'to_pickup' || tripStatus === 'overdue')) {
+        const r1 = await mapsApi.routePreview({ origin: riderPoint, destination: pickupPoint })
         const coords1 = r1.data.data?.geometry?.coordinates
         setLegToPickup(toLatLngLine(coords1))
         setEtaToPickup(r1.data.data?.expectedDurationSeconds ?? null)
       }
 
-      // Blue: pickup -> SLIIT (always show for active trip planning)
-      if (status === 'to_pickup' || status === 'to_university' || status === 'overdue') {
-        const r2 = await mapsApi.routePreview({ origin: pickup, destination: SLIIT })
+      if (tripStatus === 'to_pickup' || tripStatus === 'to_university' || tripStatus === 'overdue') {
+        const r2 = await mapsApi.routePreview({ origin: pickupPoint, destination: SLIIT })
         const coords2 = r2.data.data?.geometry?.coordinates
         setLegToCampus(toLatLngLine(coords2))
         setEtaToCampus(r2.data.data?.expectedDurationSeconds ?? null)
       }
     }
     build().catch(() => {})
-  }, [trip?._id, pickup?.lat, pickup?.lng, riderLoc?.lat, riderLoc?.lng, status])
+  }, [trip])
 
   async function previewRequestRoute() {
-    if (!requestPickup) return
+    const pickupPoint = requestPickup ?? fallbackPickup
+    if (!pickupPoint) return
     setRequestPreview(null)
-    const res = await mapsApi.routePreview({ origin: requestPickup, destination: SLIIT })
+    const res = await mapsApi.routePreview({ origin: pickupPoint, destination: SLIIT })
     setRequestPreview(res.data.data ?? null)
   }
 
   async function submitRequest() {
-    if (!requestPickup) return
+    const pickupPoint = requestPickup ?? fallbackPickup
+    if (!pickupPoint) return
     setRequestMessage(null)
     const payload = {
-      origin: requestPickup,
+      origin: pickupPoint,
       destination: SLIIT,
       seatCount: Number(requestSeatCount ?? 1),
       femaleOnly: Boolean(requestFemaleOnly),
@@ -103,11 +115,11 @@ export default function PassengerLiveTripMap() {
   }
 
   const polylines = [
-    legToPickup ? { positions: legToPickup, color: '#ef4444', weight: 6, opacity: 0.95 } : null, // red
-    legToCampus ? { positions: legToCampus, color: '#3b82f6', weight: 6, opacity: 0.95 } : null, // blue
+    legToPickup ? { positions: legToPickup, color: PICKUP_ROUTE_COLOR, weight: 6, opacity: 0.95 } : null,
+    legToCampus ? { positions: legToCampus, color: CAMPUS_ROUTE_COLOR, weight: 6, opacity: 0.95 } : null,
   ].filter(Boolean)
 
-  // Pickup uses `value` on MapPicker (passenger icon); avoid duplicating that marker here.
+  // Pickup uses `value` in MapPicker (passenger icon), so keep markers list clean.
   const markers = [
     trip && riderLoc?.lat && riderLoc?.lng ? { ...riderLoc, label: 'Rider', iconKind: 'rider' } : null,
     { ...SLIIT, label: 'SLIIT', iconKind: 'uni' },
@@ -120,15 +132,15 @@ export default function PassengerLiveTripMap() {
           <div className="text-lg font-semibold">Live Trip</div>
           {trip ? (
             <div className="mt-1 text-xs text-slate-400">
-              Status: {trip.status} • Trip ID <span className="font-mono">{String(trip._id)}</span>
+              Status: {trip.status} - Trip ID <span className="font-mono">{String(trip._id)}</span>
             </div>
           ) : (
             <div className="mt-1 text-xs text-slate-400">No active trip yet. Use Ride Request below.</div>
           )}
           {trip?.riderId ? (
             <div className="mt-2 text-xs text-slate-300">
-              Rider: <span className="font-medium">{trip.riderId.fullName ?? '—'}</span> •{' '}
-              <span className="font-mono">{trip.riderId.phone ?? '—'}</span> • {trip.riderId.vehicleType ?? 'vehicle'}{' '}
+              Rider: <span className="font-medium">{trip.riderId.fullName ?? '--'}</span> -{' '}
+              <span className="font-mono">{trip.riderId.phone ?? '--'}</span> - {trip.riderId.vehicleType ?? 'vehicle'}{' '}
               {trip.riderId.vehicleNumber ? `(${trip.riderId.vehicleNumber})` : ''}
             </div>
           ) : null}
@@ -146,20 +158,20 @@ export default function PassengerLiveTripMap() {
       <div className="mt-3 text-xs text-slate-400">
         {status === 'to_pickup' ? (
           <div>
-            Rider → your pickup route (red){' '}
-            {typeof etaToPickup === 'number' ? <span>• ETA {Math.max(1, Math.round(etaToPickup / 60))} min</span> : null}
+            Rider to your pickup route (violet){' '}
+            {typeof etaToPickup === 'number' ? <span>- ETA {Math.max(1, Math.round(etaToPickup / 60))} min</span> : null}
           </div>
         ) : null}
         {status === 'to_university' ? (
           <div>
-            Pickup → SLIIT route (blue){' '}
-            {typeof etaToCampus === 'number' ? <span>• ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
+            Pickup to SLIIT route (lime){' '}
+            {typeof etaToCampus === 'number' ? <span>- ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
           </div>
         ) : null}
         {status === 'to_pickup' || status === 'overdue' ? (
           <div>
-            Pickup → SLIIT route (blue){' '}
-            {typeof etaToCampus === 'number' ? <span>• ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
+            Pickup to SLIIT route (lime){' '}
+            {typeof etaToCampus === 'number' ? <span>- ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
           </div>
         ) : null}
       </div>
@@ -176,7 +188,7 @@ export default function PassengerLiveTripMap() {
 
       <div className="mt-3">
         <MapPicker
-          value={(pickup?.lat && pickup?.lng ? pickup : requestPickup) ?? null}
+          value={(pickup?.lat && pickup?.lng ? pickup : requestPickup ?? fallbackPickup) ?? null}
           onChange={(v) => setRequestPickup(v)}
           readonly={Boolean(trip)}
           polylines={polylines}
@@ -217,7 +229,7 @@ export default function PassengerLiveTripMap() {
             type="button"
             onClick={previewRequestRoute}
             className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900 disabled:opacity-60"
-            disabled={!requestPickup}
+            disabled={!requestPickup && !fallbackPickup}
           >
             Preview Route
           </button>
@@ -225,7 +237,7 @@ export default function PassengerLiveTripMap() {
             type="button"
             onClick={submitRequest}
             className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-60"
-            disabled={!requestPickup}
+            disabled={!requestPickup && !fallbackPickup}
           >
             Request Ride
           </button>
@@ -233,7 +245,7 @@ export default function PassengerLiveTripMap() {
 
         {requestPreview ? (
           <div className="mt-2 text-sm text-slate-300">
-            Distance {(requestPreview.distanceMeters / 1000).toFixed(2)} km • ETA{' '}
+            Distance {(requestPreview.distanceMeters / 1000).toFixed(2)} km - ETA{' '}
             {Math.max(1, Math.round((requestPreview.expectedDurationSeconds ?? 0) / 60))} min
           </div>
         ) : null}
@@ -242,4 +254,3 @@ export default function PassengerLiveTripMap() {
     </section>
   )
 }
-

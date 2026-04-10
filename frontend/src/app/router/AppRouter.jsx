@@ -7,6 +7,7 @@ import UnauthorizedPage from '../../pages/UnauthorizedPage'
 import NotFoundPage from '../../pages/NotFoundPage'
 import HomePage from '../../pages/HomePage'
 import RidesGatewayPage from '../../pages/RidesGatewayPage'
+import RideShowcasePage from '../../pages/RideShowcasePage'
 
 import AdminDashboard from '../../Components/admin_and_user_management/dashboard/AdminDashboard'
 import UserList from '../../Components/admin_and_user_management/users/UserList'
@@ -52,9 +53,10 @@ export default function AppRouter() {
         }
       />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
+      <Route path="/rides" element={<RideShowcasePage />} />
 
       <Route element={<ProtectedRoute />}>
-        <Route path="/rides" element={<RidesGatewayPage />} />
+        <Route path="/rides/workspace" element={<RidesGatewayPage />} />
         <Route path="/maintenance" element={<MaintenanceDashboard />} />
 
         <Route element={<RoleRoute allow={['admin', 'super_admin']} />}>

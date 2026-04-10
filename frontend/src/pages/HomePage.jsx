@@ -520,7 +520,7 @@ export default function HomePage() {
   const headerNavItems = [
     { label: 'Home', onClick: () => navigate('/') },
     { label: 'Roommates', onClick: () => document.getElementById('roommates')?.scrollIntoView({ behavior: 'smooth' }) },
-    { label: 'Rides', onClick: () => document.getElementById('rides')?.scrollIntoView({ behavior: 'smooth' }) },
+    { label: 'Rides', onClick: () => navigate('/rides') },
     { label: 'Maintenance', onClick: () => document.getElementById('maintenance')?.scrollIntoView({ behavior: 'smooth' }) },
     { label: 'Dashboard', onClick: () => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }) },
   ]
@@ -528,11 +528,10 @@ export default function HomePage() {
   return (
     <Home
       headerNavItems={headerNavItems}
-      onNavigateToRide={() => navigate('/rides')}
+      onNavigateToRide={() => navigate('/rides/workspace')}
       onNavigateToAdminDashboard={() => navigate('/admin')}
       onNavigateToAuth={(mode) => navigate(`/auth/${mode}`)}
       onNavigateToPage={(page) => navigate(`/${page}`)}
     />
   )
 }
-

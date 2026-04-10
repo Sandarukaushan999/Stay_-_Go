@@ -2,6 +2,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --color-primary: #ffffff;
+  --color-secondary: #101312;
+  --color-third: #baf91a;
+  --color-gradient: #e2ff99;
+  --color-additional: #876dff;
+}
+
 html,
 body,
 #root {
@@ -9,5 +17,26 @@ body,
 }
 
 body {
-  @apply bg-slate-950 text-slate-100;
+  @apply bg-slate-50 text-slate-950;
+}
+
+@layer base {
+  ::selection {
+    background: color-mix(in srgb, var(--color-third) 65%, var(--color-primary) 35%);
+    color: var(--color-secondary);
+  }
+}
+
+@layer components {
+  .theme-card {
+    @apply rounded-2xl border border-slate-200 bg-white;
+  }
+
+  .theme-accent-btn {
+    @apply rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400;
+  }
+
+  .theme-outline-btn {
+    @apply rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100;
+  }
 }
