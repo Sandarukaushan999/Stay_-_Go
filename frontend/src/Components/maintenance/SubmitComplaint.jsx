@@ -16,19 +16,20 @@ const categoryOptions = [
 
 // Radio options for priority
 const priorityOptions = [
-  { value: 'low', label: 'Low', color: 'peer-checked:border-slate-400 peer-checked:bg-slate-800' },
-  { value: 'medium', label: 'Medium', color: 'peer-checked:border-blue-500 peer-checked:bg-blue-900/40' },
-  { value: 'high', label: 'High', color: 'peer-checked:border-orange-500 peer-checked:bg-orange-900/40' },
-  { value: 'emergency', label: 'Emergency', color: 'peer-checked:border-red-500 peer-checked:bg-red-900/40' },
+  { value: 'low', label: 'Low', color: 'peer-checked:border-[#101312] peer-checked:bg-[#101312]/5' },
+  { value: 'medium', label: 'Medium', color: 'peer-checked:border-[#876DFF] peer-checked:bg-[#876DFF]/10' },
+  { value: 'high', label: 'High', color: 'peer-checked:border-[#BAF91A] peer-checked:bg-[#BAF91A]/20' },
+  { value: 'emergency', label: 'Emergency', color: 'peer-checked:border-[#876DFF] peer-checked:bg-[#876DFF]/15' },
 ]
 
 // Hostel blocks A through F
 const hostelBlocks = ['A', 'B', 'C', 'D', 'E', 'F']
 
 // Shared Tailwind classes for inputs
-const inputClasses = 'w-full rounded-xl border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none transition focus:border-violet-500'
-const labelClasses = 'mb-1.5 block text-sm font-medium text-slate-300'
-const errorClasses = 'mt-1 text-xs text-red-400'
+// Using hardcoded colors because tailwind.config remaps slate/emerald to custom scales
+const inputClasses = 'w-full rounded-xl border border-[#101312]/15 bg-white px-4 py-2.5 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#101312]/40 focus:ring-1 focus:ring-[#101312]/10'
+const labelClasses = 'mb-1.5 block text-sm font-medium text-[#101312]'
+const errorClasses = 'mt-1 text-xs text-[#e53e3e]'
 
 // Max file constraints
 const MAX_FILES = 3
@@ -39,7 +40,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png']
 const initialFormState = {
   title: '',
   category: '',
-  priority: '',
+  priority: 'high',
   hostelBlock: '',
   roomNumber: '',
   description: '',
@@ -138,10 +139,7 @@ function SubmitComplaint({ onSubmit }) {
       newErrors.category = 'Please select a category.'
     }
 
-    // Priority: must be selected
-    if (!form.priority) {
-      newErrors.priority = 'Please select a priority level.'
-    }
+
 
     // Hostel block: must be selected
     if (!form.hostelBlock) {
@@ -208,19 +206,19 @@ function SubmitComplaint({ onSubmit }) {
   // ---- Success screen shown after submission ----
   if (submitted) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-8 text-center">
+      <div className="rounded-2xl border border-[#101312]/10 bg-white p-8 text-center">
         {/* Check icon */}
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-900/40 text-3xl text-emerald-400">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-600">
           ✓
         </div>
-        <h2 className="text-xl font-semibold text-slate-100">Ticket Submitted!</h2>
-        <p className="mt-2 text-sm text-slate-400">
+        <h2 className="text-xl font-semibold text-slate-950">Ticket Submitted!</h2>
+        <p className="mt-2 text-sm text-slate-600">
           Your maintenance request has been received. Track it using:
         </p>
-        <p className="mt-2 font-mono text-lg text-violet-400">{ticketId}</p>
+        <p className="mt-2 font-mono text-lg text-emerald-600">{ticketId}</p>
         <button
           type="button"
-          className="mt-6 rounded-xl bg-violet-600 px-6 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500"
+          className="mt-6 rounded-xl bg-[#BAF91A] px-6 py-2.5 text-sm font-medium text-[#101312] transition hover:bg-[#a9ea00]"
           onClick={() => setSubmitted(false)}
         >
           Submit Another Ticket
@@ -234,19 +232,19 @@ function SubmitComplaint({ onSubmit }) {
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-100">Submit Maintenance Request</h2>
-        <p className="mt-1 text-sm text-slate-400">Fill in the details below and we will get it sorted.</p>
+        <h2 className="text-lg font-semibold text-slate-950">Submit Maintenance Request</h2>
+        <p className="mt-1 text-sm text-slate-600">Fill in the details below and we will get it sorted.</p>
       </div>
 
       {/* General submission error */}
       {errors.submit && (
-        <div className="rounded-xl border border-red-800 bg-red-900/30 px-4 py-3 text-sm text-red-300">
+        <div className="rounded-xl border border-[#e53e3e]/30 bg-[#e53e3e]/5 px-4 py-3 text-sm text-[#e53e3e]">
           {errors.submit}
         </div>
       )}
 
       {/* Card wrapper */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 space-y-5">
+      <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 space-y-5 sm:p-6">
 
         {/* Title */}
         <div>
@@ -261,7 +259,7 @@ function SubmitComplaint({ onSubmit }) {
             onChange={(e) => handleChange('title', e.target.value)}
           />
           {errors.title && <p className={errorClasses}>{errors.title}</p>}
-          <p className="mt-1 text-xs text-slate-500">{form.title.length}/100</p>
+          <p className="mt-1 text-xs text-[#101312]/75">{form.title.length}/100</p>
         </div>
 
         {/* Category and Hostel Block row */}
@@ -315,29 +313,6 @@ function SubmitComplaint({ onSubmit }) {
           {errors.roomNumber && <p className={errorClasses}>{errors.roomNumber}</p>}
         </div>
 
-        {/* Priority */}
-        <div>
-          <span className={labelClasses}>Priority</span>
-          <div className="mt-1 flex flex-wrap gap-3">
-            {priorityOptions.map((opt) => (
-              <label key={opt.value} className="cursor-pointer">
-                <input
-                  type="radio"
-                  name="priority"
-                  value={opt.value}
-                  checked={form.priority === opt.value}
-                  onChange={(e) => handleChange('priority', e.target.value)}
-                  className="peer sr-only"
-                />
-                <span className={`inline-block rounded-xl border border-slate-700 px-4 py-2 text-sm text-slate-300 transition peer-checked:text-slate-100 ${opt.color}`}>
-                  {opt.label}
-                </span>
-              </label>
-            ))}
-          </div>
-          {errors.priority && <p className={errorClasses}>{errors.priority}</p>}
-        </div>
-
         {/* Description */}
         <div>
           <label htmlFor="description" className={labelClasses}>Description</label>
@@ -350,16 +325,16 @@ function SubmitComplaint({ onSubmit }) {
             onChange={(e) => handleChange('description', e.target.value)}
           />
           {errors.description && <p className={errorClasses}>{errors.description}</p>}
-          <p className="mt-1 text-xs text-slate-500">{form.description.length}/500</p>
+          <p className="mt-1 text-xs text-[#101312]/75">{form.description.length}/500</p>
         </div>
 
         {/* File Upload */}
         <div>
           <span className={labelClasses}>Attachments (optional)</span>
-          <p className="mb-2 text-xs text-slate-500">Max {MAX_FILES} files. JPG or PNG only, up to 5MB each.</p>
+          <p className="mb-2 text-xs text-[#101312]/75">Max {MAX_FILES} files. JPG or PNG only, up to 5MB each.</p>
 
           {/* Upload button area */}
-          <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-700 bg-slate-900/60 px-4 py-6 text-sm text-slate-400 transition hover:border-violet-500 hover:text-slate-300">
+          <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-[#101312]/15 bg-[#101312]/[0.02] px-4 py-8 text-sm text-[#101312]/80 transition hover:border-[#BAF91A] hover:bg-[#BAF91A]/5 hover:text-[#101312]">
             <span>Click to upload images</span>
             <input
               type="file"
@@ -376,12 +351,12 @@ function SubmitComplaint({ onSubmit }) {
           {previews.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-3">
               {previews.map((url, i) => (
-                <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-xl border border-slate-700">
+                <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-xl border border-[#101312]/10">
                   <img src={url} alt={`Preview ${i + 1}`} className="h-full w-full object-cover" />
                   {/* Remove button overlay */}
                   <button
                     type="button"
-                    className="absolute inset-0 flex items-center justify-center bg-slate-950/70 text-sm text-red-400 opacity-0 transition group-hover:opacity-100"
+                    className="absolute inset-0 flex items-center justify-center bg-white/70 text-sm text-violet-600 opacity-0 transition group-hover:opacity-100"
                     onClick={() => removeFile(i)}
                     aria-label={`Remove file ${i + 1}`}
                   >
@@ -399,7 +374,7 @@ function SubmitComplaint({ onSubmit }) {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-xl bg-violet-600 px-8 py-2.5 text-sm font-medium text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-xl bg-[#BAF91A] px-8 py-2.5 text-sm font-medium text-[#101312] transition hover:bg-[#a9ea00] disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isSubmitting ? 'Submitting...' : 'Submit Ticket'}
         </button>

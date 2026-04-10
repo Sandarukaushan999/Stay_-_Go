@@ -21,6 +21,11 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
   const [rating, setRating] = useState(0)
   const [feedback, setFeedback] = useState('')
   const [ratingSubmitted, setRatingSubmitted] = useState(false)
+  const [showResolveForm, setShowResolveForm] = useState(false)
+  const [resolutionNote, setResolutionNote] = useState('')
+
+  const isTechnician = userRole === 'technician'
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin'
 
   function handleSubmitRating() {
     if (rating === 0) return
@@ -28,7 +33,6 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
     setRatingSubmitted(true)
   }
 
-  // Format date to readable format
   function formatDate(dateString) {
     if (!dateString) return ''
     return new Date(dateString).toLocaleDateString('en-LK', {
@@ -41,61 +45,111 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
   const showRatingDone = userRole === 'student' && ticket.status === 'resolved' && ratingSubmitted
 
   return (
-    <div className="min-h-screen bg-slate-950 p-4 md:p-6">
+    <div>
       {/* Back button */}
       <button
         type="button"
         onClick={onBack}
-        className="mb-4 flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-violet-400"
+        className="mb-5 flex items-center gap-1.5 text-sm text-[#101312]/80 transition hover:text-[#101312]"
       >
         <span aria-hidden="true">&larr;</span> Back to tickets
       </button>
 
+      {/* Ticket header — inline */}
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="font-mono text-xs text-[#101312]/75">{ticket.ticketId}</p>
+          <h1 className="mt-1 text-2xl font-bold text-[#101312]">{ticket.title}</h1>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-sm text-[#101312]/75">
+              {categoryIcons[ticket.category] || '📋'} {categoryLabels[ticket.category] || ticket.category}
+            </span>
+            <span className="text-sm text-[#101312]/75">·</span>
+            <span className="text-sm text-[#101312]/75">Block {ticket.hostelBlock} · Room {ticket.roomNumber}</span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <PriorityBadge priority={ticket.priority} />
+          <StatusBadge status={ticket.status} />
+        </div>
+      </div>
+
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Left column - main content */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* Header card */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-            {/* Ticket ID */}
-            <p className="text-xs font-mono text-slate-500">{ticket.ticketId}</p>
-
-            {/* Title */}
-            <h1 className="mt-2 text-xl font-bold text-slate-100">{ticket.title}</h1>
-
-            {/* Category + badges */}
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-slate-400">
-                {categoryIcons[ticket.category] || '📋'} {categoryLabels[ticket.category] || ticket.category}
-              </span>
-              <PriorityBadge priority={ticket.priority} />
-              <StatusBadge status={ticket.status} />
-            </div>
-
-            {/* Location */}
-            {(ticket.hostelBlock || ticket.roomNumber) && (
-              <p className="mt-3 text-sm text-slate-400">
-                Block {ticket.hostelBlock} &middot; Room {ticket.roomNumber}
-              </p>
-            )}
-
-            {/* Created date */}
-            <p className="mt-2 text-xs text-slate-500">
+        {/* Left column */}
+        <div className="space-y-5 lg:col-span-2">
+          {/* Description */}
+          <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Description</h2>
+            <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#101312]/80">
+              {ticket.description || 'No description provided.'}
+            </p>
+            <p className="mt-4 text-xs text-[#101312]/80">
               Submitted {formatDate(ticket.createdAt)}
             </p>
           </div>
 
-          {/* Description */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-            <h2 className="text-sm font-semibold text-slate-300">Description</h2>
-            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-400">
-              {ticket.description || 'No description provided.'}
-            </p>
-          </div>
+          {/* Action Buttons — Technician: Start Work / Resolve */}
+          {isTechnician && ticket.status === 'assigned' && (
+            <div className="rounded-2xl border border-[#BAF91A]/40 bg-[#BAF91A]/5 p-5">
+              <p className="text-sm text-[#101312]/80">This ticket is assigned to you. Ready to begin?</p>
+              <button
+                type="button"
+                onClick={() => onStart(ticket._id)}
+                className="mt-3 rounded-xl bg-[#BAF91A] px-5 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00]"
+              >
+                Start Work
+              </button>
+            </div>
+          )}
+
+          {isTechnician && ticket.status === 'in_progress' && !showResolveForm && (
+            <div className="rounded-2xl border border-[#16a34a]/20 bg-[#16a34a]/5 p-5">
+              <p className="text-sm text-[#101312]/80">Working on this ticket. Mark it resolved when done.</p>
+              <button
+                type="button"
+                onClick={() => setShowResolveForm(true)}
+                className="mt-3 rounded-xl bg-[#16a34a] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#15803d]"
+              >
+                Mark Resolved
+              </button>
+            </div>
+          )}
+
+          {isTechnician && ticket.status === 'in_progress' && showResolveForm && (
+            <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Resolution Note</h2>
+              <textarea
+                className="mt-3 w-full rounded-xl border border-[#101312]/15 bg-white px-4 py-2.5 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#101312]/40"
+                placeholder="Describe how the issue was resolved (min 10 characters)"
+                rows={4}
+                value={resolutionNote}
+                onChange={(e) => setResolutionNote(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-[#101312]/75">{resolutionNote.trim().length}/10 min characters</p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  disabled={resolutionNote.trim().length < 10}
+                  onClick={() => { onResolve(ticket._id, resolutionNote.trim()); setShowResolveForm(false) }}
+                  className="rounded-xl bg-[#BAF91A] px-5 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Submit Resolution
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowResolveForm(false); setResolutionNote('') }}
+                  className="rounded-xl border border-[#101312]/15 px-4 py-2 text-sm text-[#101312]/80 transition hover:bg-[#101312]/5"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Attachments */}
           {ticket.attachments && ticket.attachments.length > 0 && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-              <h2 className="text-sm font-semibold text-slate-300">Attachments</h2>
+            <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Attachments</h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {ticket.attachments.map((attachment, index) => (
                   <a
@@ -103,7 +157,7 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
                     href={attachment.url || attachment}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group flex items-center gap-2 rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-xs text-slate-400 transition hover:border-violet-700 hover:text-violet-300"
+                    className="flex items-center gap-2 rounded-xl border border-[#101312]/10 px-3 py-2.5 text-xs text-[#101312]/75 transition hover:border-[#876DFF]/40 hover:text-[#876DFF]"
                   >
                     <span aria-hidden="true">📎</span>
                     <span className="truncate">{attachment.name || `Attachment ${index + 1}`}</span>
@@ -113,35 +167,30 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
             </div>
           )}
 
-          {/* Rating section - only for students on resolved tickets */}
+          {/* Rating section */}
           {canRate && (
-            <div className="rounded-2xl border border-violet-800/40 bg-slate-900/40 p-5">
-              <h2 className="text-sm font-semibold text-slate-300">Rate this resolution</h2>
-              <p className="mt-1 text-xs text-slate-500">
+            <div className="rounded-2xl border border-[#BAF91A]/40 bg-[#BAF91A]/5 p-5">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Rate this resolution</h2>
+              <p className="mt-1 text-sm text-[#101312]/75">
                 How satisfied are you with how this issue was resolved?
               </p>
-
               <div className="mt-3">
                 <RatingStars rating={rating} onRate={setRating} />
               </div>
-
               <textarea
-                className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-800/50 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 outline-none transition focus:border-violet-600"
+                className="mt-3 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#101312]/40"
                 placeholder="Optional feedback (max 200 characters)"
                 rows={3}
                 maxLength={200}
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
               />
-              <div className="mt-1 text-right text-xs text-slate-600">
-                {feedback.length}/200
-              </div>
-
+              <div className="mt-1 text-right text-xs text-[#101312]/80">{feedback.length}/200</div>
               <button
                 type="button"
                 onClick={handleSubmitRating}
                 disabled={rating === 0}
-                className="mt-2 rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-40"
+                className="mt-2 rounded-xl bg-[#BAF91A] px-5 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Submit Rating
               </button>
@@ -149,34 +198,34 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
           )}
 
           {showRatingDone && (
-            <div className="rounded-2xl border border-emerald-800/40 bg-slate-900/40 p-5">
-              <p className="text-sm text-emerald-300">Thank you for your feedback!</p>
+            <div className="rounded-2xl border border-[#16a34a]/20 bg-[#16a34a]/5 p-5">
+              <p className="text-sm font-medium text-[#16a34a]">Thank you for your feedback!</p>
             </div>
           )}
         </div>
 
         {/* Right sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-5">
           {/* Status timeline */}
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-            <h2 className="mb-4 text-sm font-semibold text-slate-300">Status Timeline</h2>
+          <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+            <h2 className="mb-4 text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Status Timeline</h2>
             <TicketTimeline statusHistory={ticket.statusHistory || []} />
           </div>
 
           {/* Technician info */}
-          {ticket.assignedTo && (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-              <h2 className="mb-3 text-sm font-semibold text-slate-300">Assigned Technician</h2>
+          {ticket.assignedTo && typeof ticket.assignedTo === 'object' && (
+            <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+              <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Assigned Technician</h2>
               <div className="flex items-center gap-3">
-                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-900/60 text-sm font-medium text-violet-200">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#876DFF]/10 text-sm font-bold text-[#876DFF]">
                   {(ticket.assignedTo.fullName || ticket.assignedTo.name || '?').charAt(0).toUpperCase()}
                 </span>
                 <div>
-                  <p className="text-sm font-medium text-slate-200">
+                  <p className="text-sm font-semibold text-[#101312]">
                     {ticket.assignedTo.fullName || ticket.assignedTo.name}
                   </p>
                   {ticket.assignedTo.email && (
-                    <p className="text-xs text-slate-500">{ticket.assignedTo.email}</p>
+                    <p className="text-xs text-[#101312]/80">{ticket.assignedTo.email}</p>
                   )}
                 </div>
               </div>
@@ -185,17 +234,28 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
 
           {/* Resolution note */}
           {(ticket.status === 'resolved' || ticket.status === 'closed') && ticket.resolutionNote && (
-            <div className="rounded-2xl border border-emerald-800/30 bg-slate-900/40 p-5">
-              <h2 className="mb-2 text-sm font-semibold text-emerald-300">Resolution Note</h2>
-              <p className="text-sm leading-relaxed text-slate-400">{ticket.resolutionNote}</p>
+            <div className="rounded-2xl border border-[#16a34a]/20 bg-[#16a34a]/5 p-5">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#16a34a]">Resolution Note</h2>
+              <p className="text-sm leading-relaxed text-[#101312]/80">{ticket.resolutionNote}</p>
             </div>
           )}
 
           {/* Rejection reason */}
           {ticket.status === 'rejected' && ticket.rejectionReason && (
-            <div className="rounded-2xl border border-red-800/30 bg-slate-900/40 p-5">
-              <h2 className="mb-2 text-sm font-semibold text-red-300">Rejection Reason</h2>
-              <p className="text-sm leading-relaxed text-slate-400">{ticket.rejectionReason}</p>
+            <div className="rounded-2xl border border-[#e53e3e]/20 bg-[#e53e3e]/5 p-5">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#e53e3e]">Rejection Reason</h2>
+              <p className="text-sm leading-relaxed text-[#101312]/80">{ticket.rejectionReason}</p>
+            </div>
+          )}
+
+          {/* Rating display (for closed tickets) */}
+          {ticket.status === 'closed' && ticket.rating && (
+            <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+              <h2 className="mb-2 text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Student Rating</h2>
+              <RatingStars rating={ticket.rating} readOnly />
+              {ticket.ratingFeedback && (
+                <p className="mt-2 text-sm text-[#101312]/75">"{ticket.ratingFeedback}"</p>
+              )}
             </div>
           )}
         </div>

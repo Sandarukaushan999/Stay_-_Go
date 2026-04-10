@@ -1,5 +1,4 @@
-// TicketTimeline component - shows the history of a ticket as a vertical timeline
-// Each step shows: status change, who did it, when, and any notes
+// TicketTimeline component - vertical status history timeline
 
 const statusLabels = {
   submitted: 'Ticket Submitted',
@@ -11,7 +10,6 @@ const statusLabels = {
 }
 
 function TicketTimeline({ statusHistory = [] }) {
-  // Format date to readable format
   function formatDate(dateString) {
     if (!dateString) return ''
     return new Date(dateString).toLocaleDateString('en-LK', {
@@ -21,11 +19,7 @@ function TicketTimeline({ statusHistory = [] }) {
   }
 
   if (statusHistory.length === 0) {
-    return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-        <p className="text-sm text-slate-500">No status history available yet.</p>
-      </div>
-    )
+    return <p className="text-sm text-[#101312]/75">No status history available yet.</p>
   }
 
   return (
@@ -34,25 +28,25 @@ function TicketTimeline({ statusHistory = [] }) {
         const isLast = index === statusHistory.length - 1
         return (
           <div key={index} className="flex gap-3">
-            {/* Timeline marker - dot + line */}
+            {/* Dot + line */}
             <div className="flex flex-col items-center">
-              <span className={`mt-1 h-3 w-3 rounded-full ${isLast ? 'bg-violet-500' : 'bg-slate-600'}`} />
-              {!isLast && <span className="w-px flex-1 bg-slate-700" />}
+              <span className={`mt-1.5 h-2.5 w-2.5 rounded-full ${isLast ? 'bg-[#BAF91A]' : 'bg-[#101312]/20'}`} />
+              {!isLast && <span className="w-px flex-1 bg-[#101312]/10" />}
             </div>
 
             {/* Content */}
-            <div className={`pb-4 ${isLast ? '' : ''}`}>
-              <p className={`text-sm font-medium ${isLast ? 'text-violet-300' : 'text-slate-200'}`}>
+            <div className="pb-5">
+              <p className={`text-sm font-medium ${isLast ? 'text-[#101312]' : 'text-[#101312]/80'}`}>
                 {statusLabels[entry.status] || entry.status}
               </p>
-              <p className="mt-0.5 text-xs text-slate-500">{formatDate(entry.changedAt)}</p>
+              <p className="mt-0.5 text-xs text-[#101312]/75">{formatDate(entry.changedAt)}</p>
               {entry.changedBy && (
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#101312]/75">
                   by {typeof entry.changedBy === 'object' ? (entry.changedBy.fullName || entry.changedBy.name) : 'System'}
                 </p>
               )}
               {entry.note && (
-                <p className="mt-1 text-xs text-slate-400">{entry.note}</p>
+                <p className="mt-1 text-xs text-[#101312]/80">{entry.note}</p>
               )}
             </div>
           </div>

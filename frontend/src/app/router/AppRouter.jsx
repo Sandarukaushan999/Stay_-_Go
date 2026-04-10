@@ -19,6 +19,8 @@ import RideRequestsPage from '../../Components/admin_and_user_management/ride_mo
 import ActiveRidersPage from '../../Components/admin_and_user_management/ride_monitoring/ActiveRidersPage'
 import RideDashboardPage from '../../Components/admin_and_user_management/ride_monitoring/RideDashboardPage'
 import MaintenanceDashboard from '../../Components/maintenance/MaintenanceDashboard'
+import MainLayout from '../../Components/shared/layout/MainLayout'
+import AdminLayout from '../../Components/admin_and_user_management/layout/AdminLayout'
 
 export default function AppRouter() {
   return (
@@ -57,10 +59,11 @@ export default function AppRouter() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/rides/workspace" element={<RidesGatewayPage />} />
-        <Route path="/maintenance" element={<MaintenanceDashboard />} />
+        <Route path="/maintenance" element={<MainLayout showFooter={false}><MaintenanceDashboard /></MainLayout>} />
 
         <Route element={<RoleRoute allow={['admin', 'super_admin']} />}>
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/maintenance" element={<AdminLayout><MaintenanceDashboard /></AdminLayout>} />
           <Route path="/admin/users" element={<UserList />} />
           <Route path="/admin/rider-approvals" element={<RiderApprovalsTable />} />
           <Route path="/admin/live-trips" element={<LiveTripsTable />} />
