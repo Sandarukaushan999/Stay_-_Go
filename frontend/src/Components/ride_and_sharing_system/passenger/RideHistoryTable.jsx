@@ -11,12 +11,17 @@ function formatDate(value) {
 export default function RideHistoryTable() {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   async function load() {
     setLoading(true)
+    setError(null)
     try {
       const response = await rideApi.myRequests()
       setRows(response.data.data || [])
+    } catch (err) {
+      setRows([])
+      setError(err?.response?.data?.message ?? 'Could not load ride history.')
     } finally {
       setLoading(false)
     }
@@ -27,8 +32,13 @@ export default function RideHistoryTable() {
   }, [])
 
   async function cancelRequest(id) {
-    await rideApi.cancelRide(id)
-    await load()
+    setError(null)
+    try {
+      await rideApi.cancelRide(id)
+      await load()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not cancel this request.')
+    }
   }
 
   return (
@@ -48,6 +58,7 @@ export default function RideHistoryTable() {
       </div>
 
       {loading ? <div className="mt-3 text-sm text-[#101312]/65">Loading...</div> : null}
+      {error ? <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
 
       {rows.length ? (
         <div className="mt-4 grid gap-3">

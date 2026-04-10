@@ -29,6 +29,7 @@ export default function PassengerLiveTripMap() {
   const [requestFemaleOnly, setRequestFemaleOnly] = useState(false)
   const [requestPreview, setRequestPreview] = useState(null)
   const [requestMessage, setRequestMessage] = useState(null)
+  const [requestError, setRequestError] = useState(null)
 
   const fallbackPickup =
     user?.residenceLocation?.lat && user?.residenceLocation?.lng
@@ -95,23 +96,33 @@ export default function PassengerLiveTripMap() {
     const pickupPoint = requestPickup ?? fallbackPickup
     if (!pickupPoint) return
     setRequestPreview(null)
-    const res = await mapsApi.routePreview({ origin: pickupPoint, destination: SLIIT })
-    setRequestPreview(res.data.data ?? null)
+    setRequestError(null)
+    try {
+      const res = await mapsApi.routePreview({ origin: pickupPoint, destination: SLIIT })
+      setRequestPreview(res.data.data ?? null)
+    } catch (err) {
+      setRequestError(err?.response?.data?.message ?? 'Could not preview route right now.')
+    }
   }
 
   async function submitRequest() {
     const pickupPoint = requestPickup ?? fallbackPickup
     if (!pickupPoint) return
     setRequestMessage(null)
+    setRequestError(null)
     const payload = {
       origin: pickupPoint,
       destination: SLIIT,
       seatCount: Number(requestSeatCount ?? 1),
       femaleOnly: Boolean(requestFemaleOnly),
     }
-    const res = await rideApi.requestRide(payload)
-    setRequestMessage(`Ride request created: ${res.data.data._id}`)
-    await load()
+    try {
+      const res = await rideApi.requestRide(payload)
+      setRequestMessage(`Ride request created: ${res.data.data._id}`)
+      await load()
+    } catch (err) {
+      setRequestError(err?.response?.data?.message ?? 'Could not create ride request.')
+    }
   }
 
   const polylines = [
@@ -270,6 +281,9 @@ export default function PassengerLiveTripMap() {
         ) : null}
         {requestMessage ? (
           <div className="mt-2 rounded-lg border border-[#101312]/10 bg-white p-2.5 text-sm text-[#101312]/75">{requestMessage}</div>
+        ) : null}
+        {requestError ? (
+          <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-sm text-rose-700">{requestError}</div>
         ) : null}
       </div>
     </section>

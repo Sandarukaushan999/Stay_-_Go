@@ -100,7 +100,7 @@ rideSharingRouter.get(
 rideSharingRouter.get(
   '/rides/open-requests',
   requireAuth,
-  requireRole(ROLES.RIDER),
+  requireRole(ROLES.RIDER, ROLES.STUDENT),
   riderController.openRequests
 )
 

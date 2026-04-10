@@ -2,6 +2,12 @@ import { Server } from 'socket.io'
 import { env } from './env.js'
 
 let ioRef = null
+const noopIo = {
+  to() {
+    return this
+  },
+  emit() {},
+}
 
 export function createSocketServer(httpServer) {
   const io = new Server(httpServer, {
@@ -24,7 +30,5 @@ export function createSocketServer(httpServer) {
 }
 
 export function getIo() {
-  if (!ioRef) throw new Error('Socket.IO not initialized')
-  return ioRef
+  return ioRef ?? noopIo
 }
-

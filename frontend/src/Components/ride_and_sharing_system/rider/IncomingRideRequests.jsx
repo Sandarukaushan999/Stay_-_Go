@@ -23,6 +23,7 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
   const [etaSeconds, setEtaSeconds] = useState(null)
   const [availability, setAvailabilityValue] = useState(user?.availability ?? 'offline')
   const [availabilityLoading, setAvailabilityLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     setAvailabilityValue(user?.availability ?? 'offline')
@@ -30,9 +31,13 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
 
   async function load() {
     setLoading(true)
+    setError(null)
     try {
       const res = await api.get('/ride-sharing/rides/open-requests')
       setItems(res.data.data || [])
+    } catch (err) {
+      setItems([])
+      setError(err?.response?.data?.message ?? 'Could not load open requests.')
     } finally {
       setLoading(false)
     }
@@ -44,20 +49,26 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
 
   async function accept(id) {
     if (user?.role !== 'rider') return
-    const res = await rideApi.acceptRide(id)
-    const payload = res?.data?.data
-    if (payload?.rideRequest) {
-      setActive(payload.rideRequest)
-      await selectRequest(payload.rideRequest)
+    setError(null)
+    try {
+      const res = await rideApi.acceptRide(id)
+      const payload = res?.data?.data
+      if (payload?.rideRequest) {
+        setActive(payload.rideRequest)
+        await selectRequest(payload.rideRequest)
+      }
+      await load()
+      onWorkspaceRefresh?.()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not accept this request.')
     }
-    await load()
-    onWorkspaceRefresh?.()
   }
 
   async function selectRequest(r) {
     setSelected(r)
     setRouteLine(null)
     setEtaSeconds(null)
+    setError(null)
     try {
       const origin = user?.currentLocation ?? user?.vehicleOriginLocation
       if (!origin || !r?.origin) return
@@ -66,18 +77,21 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
       if (Array.isArray(coords)) setRouteLine(coords.map(([lng, lat]) => [lat, lng]))
       const dur = res.data.data?.expectedDurationSeconds
       if (typeof dur === 'number') setEtaSeconds(dur)
-    } catch {
-      // Keep UI stable on route preview failure.
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not preview this route.')
     }
   }
 
   async function setAvailability(next) {
     if (user?.role !== 'rider') return
     setAvailabilityLoading(true)
+    setError(null)
     try {
       await api.put('/ride-sharing/profile/me/availability', { availability: next })
       setAvailabilityValue(next)
       onWorkspaceRefresh?.()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not update availability.')
     } finally {
       setAvailabilityLoading(false)
     }
@@ -143,6 +157,7 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
       </div>
 
       {loading ? <div className="mt-3 text-sm text-[#101312]/65">Loading...</div> : null}
+      {error ? <div className="mt-3 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
 
       {active?.origin ? (
         <div className="mt-4 rounded-2xl border border-[#BAF91A]/45 bg-[#E2FF99] p-4">

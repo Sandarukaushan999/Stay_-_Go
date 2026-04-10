@@ -41,14 +41,17 @@ export default function RiderDashboardPage() {
   const [dash, setDash] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tripActionId, setTripActionId] = useState(null)
+  const [error, setError] = useState(null)
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const res = await rideApi.riderDashboard()
       setDash(res.data.data ?? null)
-    } catch {
+    } catch (err) {
       setDash(null)
+      setError(err?.response?.data?.message ?? 'Could not load rider dashboard data.')
     } finally {
       setLoading(false)
     }
@@ -62,9 +65,12 @@ export default function RiderDashboardPage() {
     if (!tripId || user?.role !== 'rider') return
     const id = String(tripId)
     setTripActionId(id)
+    setError(null)
     try {
       await rideApi.confirmPickup(id)
       await loadDashboard()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not confirm pickup for this trip.')
     } finally {
       setTripActionId(null)
     }
@@ -74,9 +80,12 @@ export default function RiderDashboardPage() {
     if (!tripId) return
     const id = String(tripId)
     setTripActionId(id)
+    setError(null)
     try {
       await rideApi.finishTrip(id)
       await loadDashboard()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not finish this trip.')
     } finally {
       setTripActionId(null)
     }
@@ -121,6 +130,8 @@ export default function RiderDashboardPage() {
           ) : null}
         </div>
       </div>
+
+      {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
 
       {loading ? (
         <div className="rounded-3xl border border-[#101312]/15 bg-white p-5 text-sm text-[#101312]/65">Loading rider data...</div>
