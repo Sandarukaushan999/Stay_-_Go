@@ -26,18 +26,27 @@ export default function ActiveRidersPage() {
 
   return (
     <AdminLayout>
-      <div>
-        <h1 className="text-2xl font-semibold">Active Riders</h1>
-        <p className="mt-2 text-slate-400">Currently online riders (same campus filtering will be added).</p>
+      <div className="rounded-3xl border border-[#101312]/15 bg-white p-5 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold text-[#101312]">Active Riders</h1>
+            <p className="mt-2 text-[#101312]/70">Currently online riders (same campus filtering will be added).</p>
+          </div>
+          <button
+            type="button"
+            onClick={load}
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+          >
+            Refresh
+          </button>
+        </div>
 
-        {error ? (
-          <div className="mt-4 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-red-200">{error}</div>
-        ) : null}
+        {error ? <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">{error}</div> : null}
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950">
-              <tr className="text-slate-300">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-[#101312]/12 bg-white">
+          <table className="min-w-[920px] w-full text-left text-sm">
+            <thead className="bg-[#101312]">
+              <tr className="text-white">
                 <th className="p-3">Name</th>
                 <th className="p-3">Campus</th>
                 <th className="p-3">Vehicle</th>
@@ -47,34 +56,34 @@ export default function ActiveRidersPage() {
                 <th className="p-3">Location</th>
               </tr>
             </thead>
-            <tbody className="bg-slate-900/30">
+            <tbody className="bg-white">
               {loading ? (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={7}>
+                  <td className="p-3 text-[#101312]/65" colSpan={7}>
                     Loading...
                   </td>
                 </tr>
               ) : items.length ? (
                 items.map((r) => (
-                  <tr key={r.id} className="border-t border-slate-800">
-                    <td className="p-3 text-slate-100">{r.fullName}</td>
-                    <td className="p-3 text-slate-300">{r.campusId ?? '—'}</td>
-                    <td className="p-3 text-slate-300">
-                      {r.vehicleType ?? '—'} {r.vehicleNumber ? `(${r.vehicleNumber})` : ''}
+                  <tr key={r.id} className="border-t border-[#101312]/10">
+                    <td className="p-3 text-[#101312]">{r.fullName}</td>
+                    <td className="p-3 text-[#101312]/82">{r.campusId ?? '-'}</td>
+                    <td className="p-3 text-[#101312]/82">
+                      {r.vehicleType ?? '-'} {r.vehicleNumber ? `(${r.vehicleNumber})` : ''}
                     </td>
-                    <td className="p-3 text-slate-300">{r.seatCount ?? '—'}</td>
-                    <td className="p-3 text-slate-300">{r.rating ?? '—'}</td>
-                    <td className="p-3 text-slate-300">{r.complaintCount ?? 0}</td>
-                    <td className="p-3 text-slate-300">
+                    <td className="p-3 text-[#101312]/82">{r.seatCount ?? '-'}</td>
+                    <td className="p-3 text-[#101312]/82">{r.rating ?? '-'}</td>
+                    <td className="p-3 text-[#101312]/82">{r.complaintCount ?? 0}</td>
+                    <td className="p-3 text-[#101312]/82">
                       {r.currentLocation
                         ? `${Number(r.currentLocation.lat).toFixed(5)}, ${Number(r.currentLocation.lng).toFixed(5)}`
-                        : '—'}
+                        : '-'}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={7}>
+                  <td className="p-3 text-[#101312]/65" colSpan={7}>
                     No riders online
                   </td>
                 </tr>
@@ -86,4 +95,3 @@ export default function ActiveRidersPage() {
     </AdminLayout>
   )
 }
-

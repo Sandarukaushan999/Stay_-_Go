@@ -9,11 +9,11 @@ export default function AdminTopNavbar() {
   const [q, setQ] = useState('')
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-300 bg-slate-50/95 px-4 py-3 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-20 border-b border-[#101312]/15 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-[180px]">
-          <div className="text-sm font-semibold text-slate-900">Stay &amp; Go Admin</div>
-          <div className="text-[11px] text-slate-600">Unified control center</div>
+          <div className="text-sm font-semibold text-[#101312]">STAY &amp; GO Admin</div>
+          <div className="text-[11px] text-[#101312]/65">Unified control center</div>
         </div>
 
         <div className="flex-1 min-w-[220px] max-w-xl">
@@ -21,30 +21,30 @@ export default function AdminTopNavbar() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search users, trips, or alerts..."
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm text-[#101312] outline-none focus:ring-2 focus:ring-[#876DFF]"
           />
         </div>
 
         <div className="flex items-center gap-2">
           <button
-            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 transition hover:bg-emerald-100"
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-1.5 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
             type="button"
             onClick={() => navigate('/admin/sos-alerts')}
           >
             SOS Alerts
           </button>
           <button
-            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-800 transition hover:bg-emerald-100"
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-1.5 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
             type="button"
           >
             Notifications
           </button>
-          <div className="hidden rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-700 lg:block">
+          <div className="hidden rounded-xl border border-[#101312]/20 bg-white px-3 py-1.5 text-sm text-[#101312]/80 xl:block">
             {user?.fullName ?? 'Admin'}
           </div>
           <button
             onClick={logout}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 transition hover:bg-emerald-100"
+            className="rounded-xl bg-[#BAF91A] px-3 py-1.5 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00]"
             type="button"
           >
             Logout

@@ -1,5 +1,5 @@
-import { useAuthStore } from '../../../app/store/authStore'
 import { useEffect, useState } from 'react'
+import { useAuthStore } from '../../../app/store/authStore'
 import { api } from '../../../lib/apiClient'
 import AdminLayout from '../layout/AdminLayout'
 
@@ -27,17 +27,13 @@ export default function AdminDashboard() {
 
   return (
     <AdminLayout>
-      <div>
-        <h1 className="text-2xl font-semibold">Dashboard Home</h1>
-        <p className="mt-2 text-slate-400">
-          Signed in as <span className="text-slate-200">{user?.email}</span>
+      <div className="rounded-3xl border border-[#101312]/15 bg-white p-5 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-6">
+        <h1 className="text-2xl font-semibold text-[#101312]">Dashboard Home</h1>
+        <p className="mt-2 text-[#101312]/70">
+          Signed in as <span className="font-semibold text-[#101312]">{user?.email}</span>
         </p>
 
-        {error ? (
-          <div className="mt-6 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-red-200">
-            {error}
-          </div>
-        ) : null}
+        {error ? <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">{error}</div> : null}
 
         <div className="mt-6 grid gap-4 md:grid-cols-4">
           <StatCard label="Total Users" value={counts?.totalUsers} />
@@ -56,10 +52,9 @@ export default function AdminDashboard() {
 
 function StatCard({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <div className="text-sm text-slate-400">{label}</div>
-      <div className="mt-2 text-2xl font-semibold">{value ?? '—'}</div>
+    <div className="rounded-2xl border border-[#101312]/12 bg-gradient-to-br from-[#f9fce9] to-white p-4 shadow-[0_6px_20px_rgba(16,19,18,0.05)]">
+      <div className="text-sm text-[#101312]/68">{label}</div>
+      <div className="mt-2 text-2xl font-semibold text-[#101312]">{value ?? '—'}</div>
     </div>
   )
 }
-

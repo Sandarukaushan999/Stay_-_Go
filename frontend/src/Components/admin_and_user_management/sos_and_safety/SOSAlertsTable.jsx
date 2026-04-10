@@ -43,20 +43,28 @@ export default function SOSAlertsTable() {
   }, [socket, connect, status])
 
   async function acknowledge(id) {
-    await api.patch(`/admin/sos/${id}/acknowledge`)
-    await load(status)
+    try {
+      await api.patch(`/admin/sos/${id}/acknowledge`)
+      await load(status)
+    } catch {
+      setError('Failed to acknowledge SOS alert')
+    }
   }
 
   async function resolve(id) {
-    await api.patch(`/admin/sos/${id}/resolve`)
-    await load(status)
+    try {
+      await api.patch(`/admin/sos/${id}/resolve`)
+      await load(status)
+    } catch {
+      setError('Failed to resolve SOS alert')
+    }
   }
 
   return (
     <AdminLayout>
-      <div>
-        <h1 className="text-2xl font-semibold">SOS Alerts</h1>
-        <p className="mt-2 text-slate-400">Incoming SOS alerts stream here in real-time.</p>
+      <div className="rounded-3xl border border-[#101312]/15 bg-white p-5 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-6">
+        <h1 className="text-2xl font-semibold text-[#101312]">SOS Alerts</h1>
+        <p className="mt-2 text-[#101312]/70">Incoming SOS alerts stream here in real-time.</p>
 
         <div className="mt-6 flex flex-wrap gap-2">
           {['pending', 'acknowledged', 'resolved'].map((s) => (
@@ -66,8 +74,8 @@ export default function SOSAlertsTable() {
               onClick={() => setStatus(s)}
               className={
                 status === s
-                  ? 'rounded-xl bg-violet-600 px-3 py-2 text-sm font-medium text-white'
-                  : 'rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900'
+                  ? 'rounded-xl bg-[#BAF91A] px-3 py-2 text-sm font-semibold text-[#101312]'
+                  : 'rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]'
               }
             >
               {s}
@@ -76,22 +84,18 @@ export default function SOSAlertsTable() {
           <button
             type="button"
             onClick={() => load(status)}
-            className="rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900"
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
           >
             Refresh
           </button>
         </div>
 
-        {error ? (
-          <div className="mt-4 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-red-200">
-            {error}
-          </div>
-        ) : null}
+        {error ? <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">{error}</div> : null}
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950">
-              <tr className="text-slate-300">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-[#101312]/12 bg-white">
+          <table className="min-w-[920px] w-full text-left text-sm">
+            <thead className="bg-[#101312]">
+              <tr className="text-white">
                 <th className="p-3">Time</th>
                 <th className="p-3">Severity</th>
                 <th className="p-3">Trip</th>
@@ -101,51 +105,51 @@ export default function SOSAlertsTable() {
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-slate-900/30">
+            <tbody className="bg-white">
               {loading ? (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={7}>
+                  <td className="p-3 text-[#101312]/65" colSpan={7}>
                     Loading...
                   </td>
                 </tr>
               ) : items.length ? (
                 items.map((a) => (
-                  <tr key={a._id ?? a.id} className="border-t border-slate-800">
-                    <td className="p-3 text-slate-300">
-                      {a.createdAt ? new Date(a.createdAt).toLocaleString() : '—'}
+                  <tr key={a._id ?? a.id} className="border-t border-[#101312]/10">
+                    <td className="p-3 text-[#101312]/82">{a.createdAt ? new Date(a.createdAt).toLocaleString() : '-'}</td>
+                    <td className="p-3 text-[#101312]/82">{a.severity}</td>
+                    <td className="p-3 font-mono text-xs text-[#101312]/82">{String(a.tripId).slice(-10)}</td>
+                    <td className="p-3 text-[#101312]/88">{a.message || '-'}</td>
+                    <td className="p-3 text-[#101312]/82">
+                      {a.location ? `${a.location.lat.toFixed(5)}, ${a.location.lng.toFixed(5)}` : '-'}
                     </td>
-                    <td className="p-3 text-slate-300">{a.severity}</td>
-                    <td className="p-3 text-slate-300 font-mono text-xs">{String(a.tripId).slice(-10)}</td>
-                    <td className="p-3 text-slate-200">{a.message || '—'}</td>
-                    <td className="p-3 text-slate-300">
-                      {a.location ? `${a.location.lat.toFixed(5)}, ${a.location.lng.toFixed(5)}` : '—'}
-                    </td>
-                    <td className="p-3 text-slate-300">{a.status}</td>
-                    <td className="p-3 flex gap-2">
-                      {a.status === 'pending' ? (
-                        <button
-                          type="button"
-                          onClick={() => acknowledge(a._id ?? a.id)}
-                          className="rounded-xl border border-slate-800 px-3 py-1.5 hover:bg-slate-900"
-                        >
-                          Acknowledge
-                        </button>
-                      ) : null}
-                      {a.status !== 'resolved' ? (
-                        <button
-                          type="button"
-                          onClick={() => resolve(a._id ?? a.id)}
-                          className="rounded-xl bg-emerald-600 px-3 py-1.5 text-white hover:bg-emerald-500"
-                        >
-                          Resolve
-                        </button>
-                      ) : null}
+                    <td className="p-3 text-[#101312]/82">{a.status}</td>
+                    <td className="p-3">
+                      <div className="flex gap-2">
+                        {a.status === 'pending' ? (
+                          <button
+                            type="button"
+                            onClick={() => acknowledge(a._id ?? a.id)}
+                            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+                          >
+                            Acknowledge
+                          </button>
+                        ) : null}
+                        {a.status !== 'resolved' ? (
+                          <button
+                            type="button"
+                            onClick={() => resolve(a._id ?? a.id)}
+                            className="rounded-xl bg-[#BAF91A] px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#a9ea00]"
+                          >
+                            Resolve
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={7}>
+                  <td className="p-3 text-[#101312]/65" colSpan={7}>
                     No alerts
                   </td>
                 </tr>
@@ -157,4 +161,3 @@ export default function SOSAlertsTable() {
     </AdminLayout>
   )
 }
-

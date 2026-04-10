@@ -46,9 +46,9 @@ export default function RideRequestsPage() {
 
   return (
     <AdminLayout>
-      <div>
-        <h1 className="text-2xl font-semibold">Ride Requests</h1>
-        <p className="mt-2 text-slate-400">Monitor requested/accepted/completed/cancelled rides.</p>
+      <div className="rounded-3xl border border-[#101312]/15 bg-white p-5 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-6">
+        <h1 className="text-2xl font-semibold text-[#101312]">Ride Requests</h1>
+        <p className="mt-2 text-[#101312]/70">Monitor requested/accepted/completed/cancelled rides.</p>
 
         <div className="mt-6 flex flex-wrap gap-2">
           {[
@@ -64,8 +64,8 @@ export default function RideRequestsPage() {
               onClick={() => setStatus(x.value)}
               className={
                 status === x.value
-                  ? 'rounded-xl bg-violet-600 px-3 py-2 text-sm font-medium text-white'
-                  : 'rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900'
+                  ? 'rounded-xl bg-[#BAF91A] px-3 py-2 text-sm font-semibold text-[#101312]'
+                  : 'rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]'
               }
             >
               {x.label}
@@ -74,20 +74,18 @@ export default function RideRequestsPage() {
           <button
             type="button"
             onClick={() => load(status)}
-            className="rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900"
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
           >
             Refresh
           </button>
         </div>
 
-        {error ? (
-          <div className="mt-4 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-red-200">{error}</div>
-        ) : null}
+        {error ? <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-700">{error}</div> : null}
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950">
-              <tr className="text-slate-300">
+        <div className="mt-6 overflow-x-auto rounded-2xl border border-[#101312]/12 bg-white">
+          <table className="min-w-[860px] w-full text-left text-sm">
+            <thead className="bg-[#101312]">
+              <tr className="text-white">
                 <th className="p-3">Request</th>
                 <th className="p-3">Campus</th>
                 <th className="p-3">Passenger</th>
@@ -98,41 +96,37 @@ export default function RideRequestsPage() {
                 <th className="p-3">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-slate-900/30">
+            <tbody className="bg-white">
               {loading ? (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={8}>
+                  <td className="p-3 text-[#101312]/65" colSpan={8}>
                     Loading...
                   </td>
                 </tr>
               ) : items.length ? (
                 items.map((r) => (
-                  <tr key={r._id} className="border-t border-slate-800">
-                    <td className="p-3 font-mono text-xs text-slate-200">{String(r._id).slice(-10)}</td>
-                    <td className="p-3 text-slate-300">{r.campusId ?? '—'}</td>
-                    <td className="p-3 font-mono text-xs text-slate-300">{String(r.passengerId).slice(-10)}</td>
-                    <td className="p-3 font-mono text-xs text-slate-300">
-                      {r.riderId ? String(r.riderId).slice(-10) : '—'}
-                    </td>
-                    <td className="p-3 text-slate-300">{r.seatCount}</td>
-                    <td className="p-3 text-slate-300">{r.status}</td>
-                    <td className="p-3 text-slate-300">
-                      {r.requestedAt ? new Date(r.requestedAt).toLocaleString() : '—'}
-                    </td>
+                  <tr key={r._id} className="border-t border-[#101312]/10">
+                    <td className="p-3 font-mono text-xs text-[#101312]">{String(r._id).slice(-10)}</td>
+                    <td className="p-3 text-[#101312]/82">{r.campusId ?? '-'}</td>
+                    <td className="p-3 font-mono text-xs text-[#101312]/82">{String(r.passengerId).slice(-10)}</td>
+                    <td className="p-3 font-mono text-xs text-[#101312]/82">{r.riderId ? String(r.riderId).slice(-10) : '-'}</td>
+                    <td className="p-3 text-[#101312]/82">{r.seatCount}</td>
+                    <td className="p-3 text-[#101312]/82">{r.status}</td>
+                    <td className="p-3 text-[#101312]/82">{r.requestedAt ? new Date(r.requestedAt).toLocaleString() : '-'}</td>
                     <td className="p-3">
                       <div className="flex gap-2">
                         <button
                           type="button"
                           onClick={() => cancelRequest(r._id)}
                           disabled={r.status === 'cancelled' || r.status === 'completed'}
-                          className="rounded-lg border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/20 disabled:opacity-40"
+                          className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-700 transition hover:bg-amber-100 disabled:opacity-40"
                         >
                           Cancel
                         </button>
                         <button
                           type="button"
                           onClick={() => deleteRequest(r._id)}
-                          className="rounded-lg border border-rose-700 px-2 py-1 text-xs text-rose-300 hover:bg-rose-900/20"
+                          className="rounded-lg border border-rose-300 bg-rose-50 px-2 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
                           Delete
                         </button>
@@ -142,7 +136,7 @@ export default function RideRequestsPage() {
                 ))
               ) : (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={8}>
+                  <td className="p-3 text-[#101312]/65" colSpan={8}>
                     No results
                   </td>
                 </tr>
@@ -154,4 +148,3 @@ export default function RideRequestsPage() {
     </AdminLayout>
   )
 }
-
