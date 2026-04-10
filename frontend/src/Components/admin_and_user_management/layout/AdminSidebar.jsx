@@ -46,10 +46,6 @@ export default function AdminSidebar() {
         <Item to="/admin/ride-requests">Ride Requests</Item>
         <Item to="/admin/active-riders">Active Riders</Item>
         <Item to="/admin/sos-alerts">SOS Alerts</Item>
-        <Item to="/admin/safety-alerts">Safety Alerts</Item>
-        <Item to="/admin/incidents">Incidents & Crashes</Item>
-        <Item to="/admin/route-monitoring">Route Monitoring</Item>
-        <Item to="/admin/ride-analytics">Ride Analytics</Item>
 
         <Section title="Roommate Workspace" />
         <Item to="/admin/roommate-dashboard">Roommate Dashboard</Item>
@@ -85,4 +81,3 @@ function Section({ title }) {
     <div className="px-2 pt-4 text-[11px] uppercase tracking-wide text-slate-500">{title}</div>
   )
 }
-

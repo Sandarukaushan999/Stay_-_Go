@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 
@@ -16,6 +16,7 @@ import SOSAlertsTable from '../../Components/admin_and_user_management/sos_and_s
 import SafetyAlertsPage from '../../Components/admin_and_user_management/sos_and_safety/SafetyAlertsPage'
 import RideRequestsPage from '../../Components/admin_and_user_management/ride_monitoring/RideRequestsPage'
 import ActiveRidersPage from '../../Components/admin_and_user_management/ride_monitoring/ActiveRidersPage'
+import RideDashboardPage from '../../Components/admin_and_user_management/ride_monitoring/RideDashboardPage'
 
 export default function AppRouter() {
   return (
@@ -59,7 +60,7 @@ export default function AppRouter() {
           <Route path="/admin/users" element={<UserList />} />
           <Route path="/admin/rider-approvals" element={<RiderApprovalsTable />} />
           <Route path="/admin/live-trips" element={<LiveTripsTable />} />
-          <Route path="/admin/ride-dashboard" element={<Navigate to="/admin/ride-requests" replace />} />
+          <Route path="/admin/ride-dashboard" element={<RideDashboardPage />} />
           <Route path="/admin/ride-requests" element={<RideRequestsPage />} />
           <Route path="/admin/active-riders" element={<ActiveRidersPage />} />
           <Route path="/admin/sos-alerts" element={<SOSAlertsTable />} />
@@ -76,4 +77,3 @@ export default function AppRouter() {
     </Routes>
   )
 }
-

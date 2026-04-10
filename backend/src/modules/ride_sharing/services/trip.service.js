@@ -2,6 +2,8 @@ import { ApiError } from '../../../common/utils/ApiError.js'
 import { Trip } from '../models/Trip.js'
 import mongoose from 'mongoose'
 
+const ACTIVE_TRIP_STATUSES = ['to_pickup', 'to_university', 'overdue', 'in_progress']
+
 export async function createDemoTrip({ riderId, passengerId, origin, destination, expectedDurationSeconds }) {
   if (!mongoose.isValidObjectId(riderId) || !mongoose.isValidObjectId(passengerId)) {
     throw new ApiError(400, 'Invalid riderId/passengerId')
@@ -23,7 +25,7 @@ export async function createDemoTrip({ riderId, passengerId, origin, destination
     bufferedDeadlineAt,
     currentLocation: origin,
     lastMovementAt: now,
-    status: 'in_progress',
+    status: 'to_pickup',
     startedAt: now,
   })
 
@@ -42,7 +44,9 @@ export async function updateLocation({ tripId, lat, lng }) {
 }
 
 export async function listActiveTrips() {
-  const items = await Trip.find({ status: 'in_progress' })
+  const items = await Trip.find({ status: { $in: ACTIVE_TRIP_STATUSES } })
+    .populate('riderId', 'fullName phone vehicleType vehicleNumber')
+    .populate('passengerId', 'fullName phone studentId')
     .sort({ startedAt: -1 })
     .limit(200)
     .lean()
@@ -51,10 +55,12 @@ export async function listActiveTrips() {
 
 export async function listOverdueTrips() {
   const now = new Date()
-  const items = await Trip.find({ status: 'in_progress', bufferedDeadlineAt: { $lt: now } })
+  const items = await Trip.find({
+    status: { $in: ['to_pickup', 'to_university', 'in_progress'] },
+    bufferedDeadlineAt: { $lt: now },
+  })
     .sort({ bufferedDeadlineAt: 1 })
     .limit(200)
     .lean()
   return items
 }
-
