@@ -1,5 +1,6 @@
 import { asyncHandler } from '../../../common/utils/asyncHandler.js'
 import { Trip } from '../models/Trip.js'
+import { RideRequest } from '../models/RideRequest.js'
 import { ApiError } from '../../../common/utils/ApiError.js'
 import { getIo } from '../../../config/socket.js'
 
@@ -31,6 +32,18 @@ export const finishTrip = asyncHandler(async (req, res) => {
   trip.status = 'completed'
   trip.completedAt = new Date()
   await trip.save()
+
+  if (trip.rideRequestId) {
+    await RideRequest.updateOne(
+      { _id: trip.rideRequestId },
+      {
+        $set: {
+          status: 'completed',
+          completedAt: trip.completedAt,
+        },
+      }
+    )
+  }
 
   getIo().to('admin').emit('trip:status', { tripId: trip._id.toString(), status: trip.status, trip: trip.toObject() })
   getIo().to(`trip:${trip._id.toString()}`).emit('trip:status', {

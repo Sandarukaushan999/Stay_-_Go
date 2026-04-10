@@ -26,9 +26,15 @@ const RideRequestSchema = new mongoose.Schema(
     acceptedAt: { type: Date, default: null },
     cancelledAt: { type: Date, default: null },
     completedAt: { type: Date, default: null },
+
+    feedback: {
+      rating: { type: Number, default: null, min: 1, max: 5 },
+      complaint: { type: Boolean, default: false },
+      complaintText: { type: String, default: '' },
+      submittedAt: { type: Date, default: null },
+    },
   },
   { timestamps: true }
 )
 
 export const RideRequest = mongoose.model('RideRequest', RideRequestSchema)
-

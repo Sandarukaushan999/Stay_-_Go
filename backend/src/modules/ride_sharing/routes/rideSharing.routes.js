@@ -90,6 +90,20 @@ rideSharingRouter.get(
   rideController.myRequests
 )
 
+rideSharingRouter.post(
+  '/rides/:id/feedback',
+  requireAuth,
+  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN),
+  validateBody(
+    z.object({
+      rating: z.number().min(1).max(5),
+      complaint: z.boolean().optional(),
+      complaintText: z.string().max(500).optional(),
+    })
+  ),
+  rideController.submitFeedback
+)
+
 rideSharingRouter.get(
   '/rider/dashboard',
   requireAuth,
