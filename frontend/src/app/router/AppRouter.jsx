@@ -16,6 +16,7 @@ import SOSAlertsTable from '../../Components/admin_and_user_management/sos_and_s
 import SafetyAlertsPage from '../../Components/admin_and_user_management/sos_and_safety/SafetyAlertsPage'
 import RideRequestsPage from '../../Components/admin_and_user_management/ride_monitoring/RideRequestsPage'
 import ActiveRidersPage from '../../Components/admin_and_user_management/ride_monitoring/ActiveRidersPage'
+import MaintenanceDashboard from '../../Components/maintenance/MaintenanceDashboard'
 
 export default function AppRouter() {
   return (
@@ -53,6 +54,7 @@ export default function AppRouter() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/rides" element={<RidesGatewayPage />} />
+        <Route path="/maintenance" element={<MaintenanceDashboard />} />
 
         <Route element={<RoleRoute allow={['admin', 'super_admin']} />}>
           <Route path="/admin" element={<AdminDashboard />} />

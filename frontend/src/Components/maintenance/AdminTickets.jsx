@@ -1,0 +1,321 @@
+// AdminTickets component - admin ticket management view
+// Table of all tickets with filtering, pagination, assign/reject modals
+
+import { useState, useMemo } from 'react'
+import StatusBadge from './StatusBadge'
+import PriorityBadge from './PriorityBadge'
+import TicketFilters from './TicketFilters'
+
+const TICKETS_PER_PAGE = 15
+
+const statusList = ['submitted', 'assigned', 'in_progress', 'resolved', 'closed', 'rejected']
+
+const categoryLabels = {
+  plumbing: 'Plumbing', electrical: 'Electrical', furniture: 'Furniture',
+  cleaning: 'Cleaning', network: 'Network', other: 'Other',
+}
+
+function formatDate(dateString) {
+  if (!dateString) return ''
+  return new Date(dateString).toLocaleDateString('en-LK', {
+    day: 'numeric', month: 'short', year: 'numeric',
+  })
+}
+
+function AdminTickets({ tickets = [], technicians = [], onViewTicket, onAssign, onReject }) {
+  // Filter state
+  const [filters, setFilters] = useState({ status: '', priority: '', category: '', search: '' })
+  const [sortBy, setSortBy] = useState('newest')
+  const [page, setPage] = useState(1)
+
+  // Assign modal state
+  const [assignModal, setAssignModal] = useState({ open: false, ticketId: null })
+  const [selectedTechId, setSelectedTechId] = useState('')
+
+  // Reject modal state
+  const [rejectModal, setRejectModal] = useState({ open: false, ticketId: null })
+  const [rejectReason, setRejectReason] = useState('')
+
+  // Count tickets by status
+  const statusCounts = useMemo(() => {
+    const counts = {}
+    statusList.forEach((s) => { counts[s] = 0 })
+    tickets.forEach((t) => {
+      if (counts[t.status] !== undefined) counts[t.status]++
+    })
+    return counts
+  }, [tickets])
+
+  // Apply filters
+  const filtered = useMemo(() => {
+    let result = [...tickets]
+
+    if (filters.status) result = result.filter((t) => t.status === filters.status)
+    if (filters.priority) result = result.filter((t) => t.priority === filters.priority)
+    if (filters.category) result = result.filter((t) => t.category === filters.category)
+    if (filters.search) {
+      const q = filters.search.toLowerCase()
+      result = result.filter((t) =>
+        (t.ticketId && t.ticketId.toLowerCase().includes(q)) ||
+        (t.title && t.title.toLowerCase().includes(q)) ||
+        (t.submittedBy && t.submittedBy.toLowerCase().includes(q))
+      )
+    }
+
+    // Sort
+    if (sortBy === 'newest') result.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    else if (sortBy === 'oldest') result.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+    else if (sortBy === 'priority') {
+      const order = { emergency: 0, high: 1, medium: 2, low: 3 }
+      result.sort((a, b) => (order[a.priority] ?? 4) - (order[b.priority] ?? 4))
+    }
+
+    return result
+  }, [tickets, filters, sortBy])
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / TICKETS_PER_PAGE))
+  const currentPage = Math.min(page, totalPages)
+  const paged = filtered.slice((currentPage - 1) * TICKETS_PER_PAGE, currentPage * TICKETS_PER_PAGE)
+
+  // Reset page when filters change
+  function handleFilterChange(newFilters) {
+    setFilters(newFilters)
+    setPage(1)
+  }
+
+  // Assign handlers
+  function openAssignModal(e, ticketId) {
+    e.stopPropagation()
+    setAssignModal({ open: true, ticketId })
+    setSelectedTechId('')
+  }
+
+  function confirmAssign() {
+    if (selectedTechId && assignModal.ticketId) {
+      onAssign(assignModal.ticketId, selectedTechId)
+    }
+    setAssignModal({ open: false, ticketId: null })
+    setSelectedTechId('')
+  }
+
+  // Reject handlers
+  function openRejectModal(e, ticketId) {
+    e.stopPropagation()
+    setRejectModal({ open: true, ticketId })
+    setRejectReason('')
+  }
+
+  function confirmReject() {
+    if (rejectReason.length >= 10 && rejectModal.ticketId) {
+      onReject(rejectModal.ticketId, rejectReason)
+    }
+    setRejectModal({ open: false, ticketId: null })
+    setRejectReason('')
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Status count badges */}
+      <div className="flex flex-wrap gap-2">
+        {statusList.map((status) => (
+          <button
+            key={status}
+            type="button"
+            className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
+              filters.status === status
+                ? 'border-violet-500 bg-violet-900/40 text-violet-200'
+                : 'border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700'
+            }`}
+            onClick={() => handleFilterChange({ ...filters, status: filters.status === status ? '' : status })}
+          >
+            {status.replace('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())} ({statusCounts[status]})
+          </button>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <TicketFilters
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        showSearch={true}
+        showCategory={true}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        resultCount={filtered.length}
+        totalCount={tickets.length}
+      />
+
+      {/* Table */}
+      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/40">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-slate-800 text-xs text-slate-500">
+              <th className="px-4 py-3 font-medium">Ticket ID</th>
+              <th className="px-4 py-3 font-medium">Title</th>
+              <th className="px-4 py-3 font-medium">Category</th>
+              <th className="px-4 py-3 font-medium">Priority</th>
+              <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium">Submitted By</th>
+              <th className="px-4 py-3 font-medium">Date</th>
+              <th className="px-4 py-3 font-medium">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paged.length === 0 && (
+              <tr>
+                <td colSpan={8} className="px-4 py-8 text-center text-sm text-slate-500">
+                  No tickets found.
+                </td>
+              </tr>
+            )}
+            {paged.map((ticket) => (
+              <tr
+                key={ticket.ticketId || ticket._id}
+                className="cursor-pointer border-b border-slate-800/60 transition hover:bg-slate-800/40"
+                onClick={() => onViewTicket(ticket)}
+              >
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-400">{ticket.ticketId}</td>
+                <td className="max-w-[200px] truncate px-4 py-3 text-slate-200">{ticket.title}</td>
+                <td className="px-4 py-3 text-xs text-slate-400">{categoryLabels[ticket.category] || ticket.category}</td>
+                <td className="px-4 py-3"><PriorityBadge priority={ticket.priority} /></td>
+                <td className="px-4 py-3"><StatusBadge status={ticket.status} /></td>
+                <td className="px-4 py-3 text-xs text-slate-400">{ticket.submittedBy}</td>
+                <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">{formatDate(ticket.createdAt)}</td>
+                <td className="px-4 py-3">
+                  {ticket.status === 'submitted' && (
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        className="rounded-lg bg-violet-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-violet-500"
+                        onClick={(e) => openAssignModal(e, ticket.ticketId)}
+                      >
+                        Assign
+                      </button>
+                      <button
+                        type="button"
+                        className="rounded-lg bg-red-900/60 px-2.5 py-1 text-xs font-medium text-red-200 transition hover:bg-red-800/60"
+                        onClick={(e) => openRejectModal(e, ticket.ticketId)}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+          <button
+            type="button"
+            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent"
+            disabled={currentPage <= 1}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            Previous
+          </button>
+          <span className="text-xs text-slate-500">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            type="button"
+            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent"
+            disabled={currentPage >= totalPages}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+          >
+            Next
+          </button>
+        </div>
+      )}
+
+      {/* Assign Modal */}
+      {assignModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setAssignModal({ open: false, ticketId: null })}>
+          <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-slate-100">Assign Technician</h3>
+            <p className="mt-1 text-xs text-slate-500">Select a technician for ticket {assignModal.ticketId}</p>
+
+            <select
+              className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500"
+              value={selectedTechId}
+              onChange={(e) => setSelectedTechId(e.target.value)}
+              aria-label="Select technician"
+            >
+              <option value="">Choose technician...</option>
+              {technicians.map((tech) => (
+                <option key={tech._id || tech.id} value={tech._id || tech.id}>
+                  {tech.name || tech.fullName || `${tech.firstName} ${tech.lastName}`}
+                </option>
+              ))}
+            </select>
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800"
+                onClick={() => setAssignModal({ open: false, ticketId: null })}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-violet-600 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-violet-500 disabled:opacity-40"
+                disabled={!selectedTechId}
+                onClick={confirmAssign}
+              >
+                Confirm Assign
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {rejectModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setRejectModal({ open: false, ticketId: null })}>
+          <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-slate-100">Reject Ticket</h3>
+            <p className="mt-1 text-xs text-slate-500">Provide a reason for rejecting ticket {rejectModal.ticketId}</p>
+
+            <textarea
+              className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500"
+              rows={4}
+              placeholder="Reason for rejection (min 10 characters)..."
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              aria-label="Rejection reason"
+            />
+            {rejectReason.length > 0 && rejectReason.length < 10 && (
+              <p className="mt-1 text-xs text-red-400">{10 - rejectReason.length} more characters required</p>
+            )}
+
+            <div className="mt-5 flex justify-end gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800"
+                onClick={() => setRejectModal({ open: false, ticketId: null })}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="rounded-lg bg-red-600 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-40"
+                disabled={rejectReason.length < 10}
+                onClick={confirmReject}
+              >
+                Confirm Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default AdminTickets
