@@ -98,8 +98,8 @@ export default function AuthPage({
           hasVehicle: isStudent ? hasVehicle : false,
           vehicleType: isStudent && hasVehicle ? vehicleType : undefined,
           vehicleNumber: isStudent && hasVehicle ? vehicleNumber : undefined,
-          residenceLocation: isStudent && !hasVehicle ? residenceLocation : undefined,
-          vehicleOriginLocation: isStudent && hasVehicle ? vehicleOriginLocation : undefined,
+          residenceLocation: isStudent && !hasVehicle && residenceLocation ? residenceLocation : undefined,
+          vehicleOriginLocation: isStudent && hasVehicle && vehicleOriginLocation ? vehicleOriginLocation : undefined,
         })
         setToken(data.token)
         authedUser = await hydrateMe()
@@ -120,7 +120,7 @@ export default function AuthPage({
       if (status === 409) setError(message ?? 'Email already registered. Try logging in.')
       else if (status === 401) setError(message ?? 'Invalid email or password.')
       else if (status === 403) setError(message ?? 'Account blocked or not allowed.')
-      else setError('Authentication failed. Check credentials and server.')
+      else setError(message ?? 'Authentication failed. Check credentials and server.')
     } finally {
       setLoading(false)
     }

@@ -45,9 +45,32 @@ const UserSchema = new mongoose.Schema(
       index: true,
     },
     riderAppliedAt: { type: Date, default: null },
+    lastLogin: { type: Date, default: null },
+
+    systemSettings: {
+      theme: { type: String, default: 'dark', enum: ['dark', 'light'] },
+      language: { type: String, default: 'English' },
+      emailNotifications: { type: Boolean, default: true },
+      smsNotifications: { type: Boolean, default: false },
+      sosAlerts: { type: Boolean, default: true },
+      systemUpdates: { type: Boolean, default: true },
+      twoFactorEnabled: { type: Boolean, default: false },
+    },
+
+    is2FAEnabled: { type: Boolean, default: false },
+    otp: { type: String, default: null },
+    otpExpires: { type: Date, default: null },
   },
   { timestamps: true }
 )
+
+UserSchema.virtual('name').get(function () {
+  return this.fullName
+})
+
+UserSchema.virtual('contactNumber').get(function () {
+  return this.phone
+})
 
 export const User = mongoose.model('User', UserSchema)
 

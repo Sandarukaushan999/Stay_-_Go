@@ -40,3 +40,13 @@ body {
     @apply rounded-xl border border-[#101312]/20 bg-white px-4 py-2 text-sm text-[#101312] transition hover:bg-[#E2FF99];
   }
 }
+
+/* Print styles — only show report content */
+@media print {
+  body * { visibility: hidden; }
+  [data-print-show], [data-print-show] * { visibility: visible; }
+  [data-print-show] { position: absolute; left: 0; top: 0; width: 100%; }
+  [data-print-hide="true"] { display: none !important; }
+  body, html { background: white !important; }
+  * { box-shadow: none !important; }
+}

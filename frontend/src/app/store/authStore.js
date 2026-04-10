@@ -22,9 +22,28 @@ export const useAuthStore = create((set, get) => ({
   login: async ({ email, password }) => {
     set({ status: 'loading', error: null })
     const { data } = await api.post('/auth/login', { email, password })
+
+    if (data.twoFactorRequired) {
+      set({ status: 'guest' }) // user needs to input OTP, not yet authed
+      return data // { twoFactorRequired: true, userId }
+    }
+
     setStoredToken(data.token)
     set({ token: data.token, user: data.user, status: 'authed' })
     return data
+  },
+
+  verifyOtp: async (userId, otp) => {
+    set({ status: 'loading', error: null })
+    try {
+      const { data } = await api.post('/auth/verify-otp', { userId, otp })
+      setStoredToken(data.token)
+      set({ token: data.token, user: data.user, status: 'authed' })
+      return data
+    } catch (err) {
+      set({ status: 'guest', error: 'Invalid or expired OTP' })
+      throw err
+    }
   },
 
   hydrateMe: async () => {
@@ -48,4 +67,3 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 }))
-

@@ -38,6 +38,7 @@ export default function TopNavbar() {
         <nav className="hidden items-center gap-1 md:flex">
           <HeaderLink label="Home" onClick={() => navigate('/')} />
           <HeaderLink label="Rides" onClick={() => navigate('/rides')} />
+          <HeaderLink label="Roommate" onClick={() => navigate('/roommate/dashboard')} />
           <HeaderLink label="Workspace" onClick={() => navigate('/rides/workspace')} />
           <HeaderLink label="Maintenance" onClick={() => navigate('/maintenance')} />
           {(user?.role === 'admin' || user?.role === 'super_admin') && (
@@ -46,9 +47,27 @@ export default function TopNavbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="hidden rounded-lg border border-[#101312]/20 bg-white px-2.5 py-2 text-xs text-[#101312]/70 sm:block">
-            {user?.fullName ?? 'Guest'}
-          </div>
+          {user ? (
+            <button
+              type="button"
+              onClick={() => {
+                let path = '/'
+                if (user.role === 'admin' || user.role === 'super_admin') path = '/admin'
+                else if (user.role === 'student') path = '/student/dashboard'
+                else if (user.role === 'rider') path = '/rider/dashboard'
+                else if (user.role === 'technician') path = '/technician/dashboard'
+                navigate(path)
+              }}
+              className="hidden rounded-lg border border-[#101312]/20 bg-white px-2.5 py-2 text-xs text-[#101312]/70 sm:block hover:bg-[#E2FF99] hover:text-[#101312] transition cursor-pointer text-left"
+            >
+              <span className="font-medium text-[#101312]">{user.fullName}</span>{' '}
+              <span className="capitalize">({user.role.replace('_', ' ')})</span>
+            </button>
+          ) : (
+            <div className="hidden rounded-lg border border-[#101312]/20 bg-white px-2.5 py-2 text-xs text-[#101312]/70 sm:block">
+              Guest
+            </div>
+          )}
           <button
             type="button"
             onClick={logout}
