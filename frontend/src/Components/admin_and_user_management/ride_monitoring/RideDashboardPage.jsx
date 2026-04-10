@@ -4,16 +4,16 @@ import { api } from '../../../lib/apiClient'
 import { useSocketStore } from '../../../app/store/socketStore'
 
 const severityTone = {
-  low: 'border-emerald-700/60 bg-emerald-900/30 text-emerald-200',
-  medium: 'border-amber-700/60 bg-amber-900/30 text-amber-200',
-  high: 'border-orange-700/60 bg-orange-900/30 text-orange-200',
-  critical: 'border-red-700/60 bg-red-900/30 text-red-200',
+  low: 'border-emerald-300 bg-emerald-100 text-emerald-900',
+  medium: 'border-amber-300 bg-amber-100 text-amber-900',
+  high: 'border-orange-300 bg-orange-100 text-orange-900',
+  critical: 'border-violet-300 bg-violet-100 text-violet-900',
 }
 
 const statusTone = {
-  pending: 'border-red-700/60 bg-red-900/30 text-red-200',
-  acknowledged: 'border-amber-700/60 bg-amber-900/30 text-amber-200',
-  resolved: 'border-emerald-700/60 bg-emerald-900/30 text-emerald-200',
+  pending: 'border-violet-300 bg-violet-100 text-violet-900',
+  acknowledged: 'border-amber-300 bg-amber-100 text-amber-900',
+  resolved: 'border-emerald-300 bg-emerald-100 text-emerald-900',
 }
 
 const barPaletteRide = ['#876DFF', '#BAF91A', '#E2FF99', '#FFFFFF']
@@ -221,20 +221,20 @@ function buildDashboardFromLegacy({ rideRequests, activeRiders, activeTrips, sos
 function KpiCard({ label, value, hint, accent = 'slate' }) {
   const accentClass =
     accent === 'red'
-      ? 'from-red-600/20 to-red-900/5 border-red-800/50'
+      ? 'border-violet-300 bg-violet-50'
       : accent === 'emerald'
-        ? 'from-emerald-600/20 to-emerald-900/5 border-emerald-800/50'
+        ? 'border-emerald-300 bg-emerald-50'
         : accent === 'blue'
-          ? 'from-blue-600/20 to-blue-900/5 border-blue-800/50'
+          ? 'border-slate-300 bg-slate-50'
           : accent === 'amber'
-            ? 'from-amber-600/20 to-amber-900/5 border-amber-800/50'
-            : 'from-slate-700/20 to-slate-900/5 border-slate-800'
+            ? 'border-amber-300 bg-amber-50'
+            : 'border-slate-300 bg-white'
 
   return (
-    <div className={`rounded-2xl border bg-gradient-to-br p-4 ${accentClass}`}>
-      <div className="text-xs uppercase tracking-wide text-slate-300">{label}</div>
-      <div className="mt-3 text-3xl font-semibold text-white">{value}</div>
-      <div className="mt-2 text-xs text-slate-400">{hint}</div>
+    <div className={`rounded-2xl border p-4 shadow-sm ${accentClass}`}>
+      <div className="text-xs uppercase tracking-wide text-slate-600">{label}</div>
+      <div className="mt-3 text-3xl font-semibold text-slate-950">{value}</div>
+      <div className="mt-2 text-xs text-slate-700">{hint}</div>
     </div>
   )
 }
@@ -266,23 +266,23 @@ function TrendLineChart({ data }) {
   }, [data])
 
   if (!data.length) {
-    return <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-sm text-slate-400">No trend data yet.</div>
+    return <div className="rounded-2xl border border-slate-300 bg-white p-5 text-sm text-slate-600">No trend data yet.</div>
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+    <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-white">Ride Trend (Last 7 Days)</h3>
-          <p className="text-sm text-slate-400">Requests vs completed rides</p>
+          <h3 className="text-lg font-semibold text-slate-900">Ride Trend (Last 7 Days)</h3>
+          <p className="text-sm text-slate-600">Requests vs completed rides</p>
         </div>
         <div className="flex gap-3 text-xs">
-          <div className="flex items-center gap-2 text-slate-300">
-            <span className="h-2.5 w-2.5 rounded-full bg-sky-400" />
+          <div className="flex items-center gap-2 text-slate-700">
+            <span className="h-2.5 w-2.5 rounded-full bg-violet-500" />
             Requests
           </div>
-          <div className="flex items-center gap-2 text-slate-300">
-            <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-2 text-slate-700">
+            <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
             Completed
           </div>
         </div>
@@ -294,7 +294,7 @@ function TrendLineChart({ data }) {
           y1={points.topPad}
           x2={points.leftPad}
           y2={points.height - points.bottomPad}
-          stroke="#E2FF99"
+          stroke="#D1EAA3"
           strokeWidth="1"
         />
         <line
@@ -302,7 +302,7 @@ function TrendLineChart({ data }) {
           y1={points.height - points.bottomPad}
           x2={points.width - points.rightPad}
           y2={points.height - points.bottomPad}
-          stroke="#E2FF99"
+          stroke="#D1EAA3"
           strokeWidth="1"
         />
 
@@ -316,13 +316,13 @@ function TrendLineChart({ data }) {
               : (points.width - points.leftPad - points.rightPad) / 2
           const x = points.leftPad + idx * stepX
           return (
-            <text key={item.day} x={x} y={points.height - 8} textAnchor="middle" fill="#E2FF99" fontSize="11">
+            <text key={item.day} x={x} y={points.height - 8} textAnchor="middle" fill="#55604C" fontSize="11">
               {item.label}
             </text>
           )
         })}
 
-        <text x="8" y={points.topPad + 8} fill="#E2FF99" fontSize="10">
+        <text x="8" y={points.topPad + 8} fill="#55604C" fontSize="10">
           {points.maxValue}
         </text>
       </svg>
@@ -333,12 +333,12 @@ function TrendLineChart({ data }) {
 function VerticalBarChart({ title, subtitle, data, palette }) {
   const maxValue = Math.max(1, ...data.map((item) => item.count ?? 0))
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-      <h3 className="text-lg font-semibold text-white">{title}</h3>
-      <p className="text-sm text-slate-400">{subtitle}</p>
+    <div className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+      <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+      <p className="text-sm text-slate-600">{subtitle}</p>
 
       {!data.length ? (
-        <div className="mt-6 text-sm text-slate-400">No data yet.</div>
+        <div className="mt-6 text-sm text-slate-600">No data yet.</div>
       ) : (
         <div className="mt-6">
           <div className="flex h-48 items-end gap-3">
@@ -346,14 +346,14 @@ function VerticalBarChart({ title, subtitle, data, palette }) {
               const pct = Math.max(6, Math.round(((item.count ?? 0) / maxValue) * 100))
               return (
                 <div key={item.key} className="flex flex-1 flex-col items-center">
-                  <div className="mb-2 text-xs font-medium text-slate-300">{item.count ?? 0}</div>
-                  <div className="relative flex h-36 w-full items-end rounded-xl bg-slate-800/50 p-1">
+                  <div className="mb-2 text-xs font-medium text-slate-700">{item.count ?? 0}</div>
+                  <div className="relative flex h-36 w-full items-end rounded-xl bg-slate-100 p-1">
                     <div
                       className="w-full rounded-lg"
                       style={{ height: `${pct}%`, backgroundColor: palette[idx % palette.length] }}
                     />
                   </div>
-                  <div className="mt-2 text-center text-xs text-slate-400">{item.label}</div>
+                  <div className="mt-2 text-center text-xs text-slate-600">{item.label}</div>
                 </div>
               )
             })}
@@ -519,19 +519,19 @@ export default function RideDashboardPage() {
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold">Ride Dashboard</h1>
-            <p className="mt-2 text-slate-400">Real-time monitoring for ride analytics, SOS alerts, and rider/passenger safety details.</p>
+            <h1 className="text-2xl font-semibold text-slate-950">Ride Dashboard</h1>
+            <p className="mt-2 text-slate-700">Real-time monitoring for ride analytics, SOS alerts, and rider/passenger safety details.</p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="text-right text-xs text-slate-400">
+            <div className="text-right text-xs text-slate-600">
               <div>Last updated</div>
-              <div className="text-slate-200">{lastUpdated ? lastUpdated.toLocaleTimeString() : '-'}</div>
+              <div className="text-slate-900">{lastUpdated ? lastUpdated.toLocaleTimeString() : '-'}</div>
             </div>
             <button
               type="button"
               onClick={() => load({ silent: false })}
-              className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
             >
               Refresh now
             </button>
@@ -539,11 +539,11 @@ export default function RideDashboardPage() {
         </div>
 
         {error ? (
-          <div className="rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-red-200">{error}</div>
+          <div className="rounded-2xl border border-violet-300 bg-violet-50 p-4 text-violet-900">{error}</div>
         ) : null}
 
         {loading && !data ? (
-          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-slate-400">Loading dashboard...</div>
+          <div className="rounded-2xl border border-slate-300 bg-white p-5 text-slate-700">Loading dashboard...</div>
         ) : (
           <>
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -565,16 +565,16 @@ export default function RideDashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40">
-              <div className="border-b border-slate-800 p-4">
-                <h2 className="text-lg font-semibold">Real-Time SOS Alerts</h2>
-                <p className="text-sm text-slate-400">Rider and passenger details are shown for immediate response coordination.</p>
+            <div className="rounded-2xl border border-slate-300 bg-white shadow-sm">
+              <div className="border-b border-slate-200 p-4">
+                <h2 className="text-lg font-semibold text-slate-950">Real-Time SOS Alerts</h2>
+                <p className="text-sm text-slate-700">Rider and passenger details are shown for immediate response coordination.</p>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1100px] text-left text-sm">
-                  <thead className="bg-slate-950">
-                    <tr className="text-slate-300">
+                  <thead className="bg-slate-100">
+                    <tr className="text-slate-700">
                       <th className="p-3">Time</th>
                       <th className="p-3">Severity</th>
                       <th className="p-3">Status</th>
@@ -586,18 +586,18 @@ export default function RideDashboardPage() {
                       <th className="p-3">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-slate-900/30">
+                  <tbody className="bg-white">
                     {recentSos.length ? (
                       recentSos.map((alert) => {
                         const ackKey = `acknowledge:${alert.id}`
                         const resolveKey = `resolve:${alert.id}`
                         return (
-                          <tr key={alert.id} className="border-t border-slate-800 align-top">
-                            <td className="p-3 text-slate-300">{formatDateTime(alert.createdAt)}</td>
+                          <tr key={alert.id} className="border-t border-slate-200 align-top">
+                            <td className="p-3 text-slate-700">{formatDateTime(alert.createdAt)}</td>
                             <td className="p-3">
                               <span
                                 className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${
-                                  severityTone[alert.severity] ?? 'border-slate-700 bg-slate-800 text-slate-200'
+                                  severityTone[alert.severity] ?? 'border-slate-300 bg-slate-100 text-slate-800'
                                 }`}
                               >
                                 {alert.severity ?? 'unknown'}
@@ -606,28 +606,28 @@ export default function RideDashboardPage() {
                             <td className="p-3">
                               <span
                                 className={`inline-flex rounded-full border px-2 py-1 text-xs font-medium ${
-                                  statusTone[alert.status] ?? 'border-slate-700 bg-slate-800 text-slate-200'
+                                  statusTone[alert.status] ?? 'border-slate-300 bg-slate-100 text-slate-800'
                                 }`}
                               >
                                 {alert.status ?? 'unknown'}
                               </span>
                             </td>
-                            <td className="p-3 text-slate-200">
+                            <td className="p-3 text-slate-800">
                               <div className="font-medium">{alert.rider?.fullName ?? shortId(alert.rider?.id)}</div>
-                              <div className="text-xs text-slate-400">{alert.rider?.phone ?? '-'}</div>
+                              <div className="text-xs text-slate-600">{alert.rider?.phone ?? '-'}</div>
                               <div className="text-xs text-slate-500">{alert.rider?.email ?? '-'}</div>
                             </td>
-                            <td className="p-3 text-slate-200">
+                            <td className="p-3 text-slate-800">
                               <div className="font-medium">{alert.passenger?.fullName ?? shortId(alert.passenger?.id)}</div>
-                              <div className="text-xs text-slate-400">{alert.passenger?.phone ?? '-'}</div>
+                              <div className="text-xs text-slate-600">{alert.passenger?.phone ?? '-'}</div>
                               <div className="text-xs text-slate-500">{alert.passenger?.studentId ?? '-'}</div>
                             </td>
-                            <td className="p-3 text-slate-300">
+                            <td className="p-3 text-slate-700">
                               <div className="font-mono text-xs">{shortId(alert.trip?.id)}</div>
                               <div className="text-xs">{alert.trip?.status ?? '-'}</div>
                             </td>
-                            <td className="p-3 text-slate-200">{alert.message || '-'}</td>
-                            <td className="p-3 text-slate-300">{formatLocation(alert.location ?? alert.trip?.currentLocation)}</td>
+                            <td className="p-3 text-slate-800">{alert.message || '-'}</td>
+                            <td className="p-3 text-slate-700">{formatLocation(alert.location ?? alert.trip?.currentLocation)}</td>
                             <td className="p-3">
                               <div className="flex gap-2">
                                 {alert.status === 'pending' ? (
@@ -635,7 +635,7 @@ export default function RideDashboardPage() {
                                     type="button"
                                     onClick={() => actOnAlert(alert.id, 'acknowledge')}
                                     disabled={actionLoadingKey === ackKey}
-                                    className="rounded-lg border border-amber-700 px-2 py-1 text-xs text-amber-200 hover:bg-amber-900/20 disabled:opacity-50"
+                                    className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-900 transition hover:bg-amber-100 disabled:opacity-50"
                                   >
                                     {actionLoadingKey === ackKey ? 'Working...' : 'Acknowledge'}
                                   </button>
@@ -646,7 +646,7 @@ export default function RideDashboardPage() {
                                     type="button"
                                     onClick={() => actOnAlert(alert.id, 'resolve')}
                                     disabled={actionLoadingKey === resolveKey}
-                                    className="rounded-lg border border-emerald-700 px-2 py-1 text-xs text-emerald-200 hover:bg-emerald-900/20 disabled:opacity-50"
+                                    className="rounded-lg border border-emerald-300 bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-100 disabled:opacity-50"
                                   >
                                     {actionLoadingKey === resolveKey ? 'Working...' : 'Resolve'}
                                   </button>
@@ -658,7 +658,7 @@ export default function RideDashboardPage() {
                       })
                     ) : (
                       <tr>
-                        <td className="p-4 text-slate-400" colSpan={9}>
+                        <td className="p-4 text-slate-600" colSpan={9}>
                           No SOS alerts found.
                         </td>
                       </tr>
@@ -668,67 +668,67 @@ export default function RideDashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-              <h2 className="text-lg font-semibold">Safety Watchlist</h2>
-              <p className="text-sm text-slate-400">Trips flagged for suspicious stop, no updates, or overdue status.</p>
+            <div className="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm">
+              <h2 className="text-lg font-semibold text-slate-950">Safety Watchlist</h2>
+              <p className="text-sm text-slate-700">Trips flagged for suspicious stop, no updates, or overdue status.</p>
 
               {safetyWatchlist.length ? (
                 <div className="mt-4 grid gap-3 lg:grid-cols-2">
                   {safetyWatchlist.map((trip) => (
-                    <div key={trip.id} className="rounded-xl border border-slate-800 bg-slate-950/50 p-4">
+                    <div key={trip.id} className="rounded-xl border border-slate-300 bg-slate-50 p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <div className="text-xs text-slate-400">Trip</div>
-                          <div className="font-mono text-sm text-slate-200">{shortId(trip.id)}</div>
+                          <div className="text-xs text-slate-600">Trip</div>
+                          <div className="font-mono text-sm text-slate-900">{shortId(trip.id)}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs text-slate-400">Status</div>
-                          <div className="text-sm font-medium text-slate-200">{trip.status ?? '-'}</div>
+                          <div className="text-xs text-slate-600">Status</div>
+                          <div className="text-sm font-medium text-slate-900">{trip.status ?? '-'}</div>
                         </div>
                       </div>
 
                       <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
-                        <div className="rounded-lg border border-slate-800 p-2">
-                          <div className="text-slate-400">Rider</div>
-                          <div className="text-slate-200">{trip.rider?.fullName ?? '-'}</div>
+                        <div className="rounded-lg border border-slate-300 bg-white p-2">
+                          <div className="text-slate-600">Rider</div>
+                          <div className="text-slate-900">{trip.rider?.fullName ?? '-'}</div>
                           <div className="text-slate-500">{trip.rider?.phone ?? '-'}</div>
                         </div>
-                        <div className="rounded-lg border border-slate-800 p-2">
-                          <div className="text-slate-400">Passenger</div>
-                          <div className="text-slate-200">{trip.passenger?.fullName ?? '-'}</div>
+                        <div className="rounded-lg border border-slate-300 bg-white p-2">
+                          <div className="text-slate-600">Passenger</div>
+                          <div className="text-slate-900">{trip.passenger?.fullName ?? '-'}</div>
                           <div className="text-slate-500">{trip.passenger?.phone ?? '-'}</div>
                         </div>
                       </div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         {trip.suspiciousStopFlag ? (
-                          <span className="rounded-full border border-amber-700/60 bg-amber-900/30 px-2 py-1 text-xs text-amber-200">
+                          <span className="rounded-full border border-amber-300 bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-900">
                             Suspicious Stop
                           </span>
                         ) : null}
                         {trip.noUpdateFlag ? (
-                          <span className="rounded-full border border-orange-700/60 bg-orange-900/30 px-2 py-1 text-xs text-orange-200">
+                          <span className="rounded-full border border-orange-300 bg-orange-100 px-2 py-1 text-xs font-semibold text-orange-900">
                             No Location Updates
                           </span>
                         ) : null}
                         {trip.status === 'overdue' ? (
-                          <span className="rounded-full border border-red-700/60 bg-red-900/30 px-2 py-1 text-xs text-red-200">
+                          <span className="rounded-full border border-violet-300 bg-violet-100 px-2 py-1 text-xs font-semibold text-violet-900">
                             Overdue
                           </span>
                         ) : null}
                       </div>
 
-                      <div className="mt-3 text-xs text-slate-400">
-                        Last movement: <span className="text-slate-300">{formatDateTime(trip.lastMovementAt)}</span>
+                      <div className="mt-3 text-xs text-slate-600">
+                        Last movement: <span className="text-slate-800">{formatDateTime(trip.lastMovementAt)}</span>
                       </div>
-                      <div className="mt-1 text-xs text-slate-400">
-                        Last location: <span className="text-slate-300">{formatLocation(trip.currentLocation)}</span>
+                      <div className="mt-1 text-xs text-slate-600">
+                        Last location: <span className="text-slate-800">{formatLocation(trip.currentLocation)}</span>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4 text-sm text-slate-400">
+                <div className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4 text-sm text-slate-600">
                   No flagged trips right now.
                 </div>
               )}

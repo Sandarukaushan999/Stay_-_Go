@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const base =
-  'block rounded-xl px-3 py-2 text-sm transition border border-transparent hover:bg-slate-900 hover:border-slate-800'
+  'block rounded-xl border border-transparent px-3 py-2 text-sm transition hover:border-slate-300 hover:bg-emerald-100'
 
 function Item({ to, children, end }) {
   return (
@@ -9,7 +9,7 @@ function Item({ to, children, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `${base} ${isActive ? 'bg-slate-900 border-slate-800 text-white' : 'text-slate-300'}`
+        `${base} ${isActive ? 'border-slate-300 bg-white text-slate-950' : 'text-slate-700'}`
       }
     >
       {children}
@@ -19,10 +19,10 @@ function Item({ to, children, end }) {
 
 export default function AdminSidebar() {
   return (
-    <aside className="w-72 shrink-0 border-r border-slate-800 bg-slate-950 p-4">
+    <aside className="w-72 shrink-0 border-r border-slate-300 bg-white/90 p-4 backdrop-blur">
       <div className="mb-4">
-        <div className="text-lg font-semibold">Stay & Go</div>
-        <div className="text-xs text-slate-400">Admin Control Center</div>
+        <div className="text-lg font-semibold text-slate-950">Stay & Go</div>
+        <div className="text-xs text-slate-600">Admin Control Center</div>
       </div>
 
       <div className="space-y-1">

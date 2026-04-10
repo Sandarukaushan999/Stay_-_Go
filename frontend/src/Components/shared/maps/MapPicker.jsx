@@ -52,7 +52,7 @@ export default function MapPicker({
 }) {
   const c = value ?? center
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800">
+    <div className="overflow-hidden rounded-2xl border border-slate-300">
       <MapContainer
         center={[c.lat, c.lng]}
         zoom={zoom}

@@ -126,19 +126,19 @@ export default function PassengerLiveTripMap() {
   ].filter(Boolean)
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+    <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="text-lg font-semibold">Live Trip</div>
+          <div className="text-lg font-semibold text-slate-950">Live Trip</div>
           {trip ? (
-            <div className="mt-1 text-xs text-slate-400">
+            <div className="mt-1 text-xs text-slate-600">
               Status: {trip.status} - Trip ID <span className="font-mono">{String(trip._id)}</span>
             </div>
           ) : (
-            <div className="mt-1 text-xs text-slate-400">No active trip yet. Use Ride Request below.</div>
+            <div className="mt-1 text-xs text-slate-600">No active trip yet. Use Ride Request below.</div>
           )}
           {trip?.riderId ? (
-            <div className="mt-2 text-xs text-slate-300">
+            <div className="mt-2 text-xs text-slate-700">
               Rider: <span className="font-medium">{trip.riderId.fullName ?? '--'}</span> -{' '}
               <span className="font-mono">{trip.riderId.phone ?? '--'}</span> - {trip.riderId.vehicleType ?? 'vehicle'}{' '}
               {trip.riderId.vehicleNumber ? `(${trip.riderId.vehicleNumber})` : ''}
@@ -149,13 +149,13 @@ export default function PassengerLiveTripMap() {
         <button
           type="button"
           onClick={load}
-          className="rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900"
+          className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
         >
           Refresh
         </button>
       </div>
 
-      <div className="mt-3 text-xs text-slate-400">
+      <div className="mt-3 text-xs text-slate-600">
         {status === 'to_pickup' ? (
           <div>
             Rider to your pickup route (violet){' '}
@@ -198,23 +198,23 @@ export default function PassengerLiveTripMap() {
         />
       </div>
 
-      <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-3">
-        <div className="text-sm font-semibold text-slate-200">Ride Request</div>
-        <div className="mt-1 text-xs text-slate-400">Single map mode: select pickup on the map above, destination is SLIIT.</div>
+      <div className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4">
+        <div className="text-sm font-semibold text-slate-900">Ride Request</div>
+        <div className="mt-1 text-xs text-slate-600">Single map mode: select pickup on the map above, destination is SLIIT.</div>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="grid gap-1 text-sm">
-            <span className="text-slate-300">Seats</span>
+            <span className="text-slate-700">Seats</span>
             <input
               type="number"
               min="1"
               max="4"
               value={requestSeatCount}
               onChange={(e) => setRequestSeatCount(Number(e.target.value))}
-              className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
             />
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-200 sm:mt-6">
+          <label className="flex items-center gap-2 text-sm text-slate-800 sm:mt-6">
             <input
               type="checkbox"
               checked={requestFemaleOnly}
@@ -228,7 +228,7 @@ export default function PassengerLiveTripMap() {
           <button
             type="button"
             onClick={previewRequestRoute}
-            className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900 disabled:opacity-60"
+            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100 disabled:opacity-60"
             disabled={!requestPickup && !fallbackPickup}
           >
             Preview Route
@@ -236,7 +236,7 @@ export default function PassengerLiveTripMap() {
           <button
             type="button"
             onClick={submitRequest}
-            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-60"
+            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
             disabled={!requestPickup && !fallbackPickup}
           >
             Request Ride
@@ -244,12 +244,12 @@ export default function PassengerLiveTripMap() {
         </div>
 
         {requestPreview ? (
-          <div className="mt-2 text-sm text-slate-300">
+          <div className="mt-2 text-sm text-slate-700">
             Distance {(requestPreview.distanceMeters / 1000).toFixed(2)} km - ETA{' '}
             {Math.max(1, Math.round((requestPreview.expectedDurationSeconds ?? 0) / 60))} min
           </div>
         ) : null}
-        {requestMessage ? <div className="mt-2 text-sm text-slate-400">{requestMessage}</div> : null}
+        {requestMessage ? <div className="mt-2 text-sm text-slate-700">{requestMessage}</div> : null}
       </div>
     </section>
   )

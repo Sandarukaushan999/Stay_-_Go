@@ -5,6 +5,10 @@ import { rideApi } from '../services/rideApi'
 import MapPicker from '../../shared/maps/MapPicker'
 import { mapsApi } from '../services/mapsApi'
 
+function DashChip({ children }) {
+  return <span className="rounded-full border border-slate-300 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700">{children}</span>
+}
+
 export default function IncomingRideRequests({ onWorkspaceRefresh }) {
   const user = useAuthStore((s) => s.user)
   const [items, setItems] = useState([])
@@ -51,7 +55,6 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
     setRouteLine(null)
     setEtaSeconds(null)
     try {
-      // Use rider current location if present; otherwise vehicle origin/start.
       const origin = user?.currentLocation ?? user?.vehicleOriginLocation
       if (!origin || !r?.origin) return
       const res = await mapsApi.routePreview({ origin, destination: r.origin })
@@ -62,7 +65,7 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
       const dur = res.data.data?.expectedDurationSeconds
       if (typeof dur === 'number') setEtaSeconds(dur)
     } catch {
-      // ignore
+      // Keep UI stable on route preview failure.
     }
   }
 
@@ -79,17 +82,18 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <div className="mb-4 rounded-xl border border-slate-800 bg-slate-950 p-3">
-        <div className="flex items-center justify-between gap-3">
+    <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-slate-300 bg-slate-50 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-sm font-semibold text-slate-200">Availability</div>
-            <div className="text-xs text-slate-400">
+            <div className="text-sm font-semibold text-slate-900">Availability</div>
+            <div className="text-xs text-slate-600">
               {user?.role === 'rider'
-                ? 'Set online to receive requests.'
+                ? 'Set online to receive new campus requests.'
                 : `Waiting for admin approval (${user?.riderVerificationStatus ?? 'pending'}).`}
             </div>
           </div>
+
           <div className="flex gap-2">
             <button
               type="button"
@@ -97,8 +101,8 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
               onClick={() => setAvailability('offline')}
               className={
                 availability === 'offline'
-                  ? 'rounded-xl bg-slate-100 px-3 py-2 text-sm font-medium text-slate-900'
-                  : 'rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900'
+                  ? 'rounded-xl bg-slate-900 px-3 py-2 text-sm font-semibold text-white'
+                  : 'rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100'
               }
             >
               Offline
@@ -109,8 +113,8 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
               onClick={() => setAvailability('online')}
               className={
                 availability === 'online'
-                  ? 'rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white'
-                  : 'rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900'
+                  ? 'rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950'
+                  : 'rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100'
               }
             >
               Online
@@ -119,10 +123,10 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-3">
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <div className="text-lg font-semibold">Ride Requests</div>
-          <div className="text-sm text-slate-400">Open requests from your campus.</div>
+          <h3 className="text-lg font-semibold text-slate-950">Incoming Ride Requests</h3>
+          <p className="text-sm text-slate-600">Open requests from your campus with route preview and passenger detail.</p>
         </div>
         <button
           type="button"
@@ -130,31 +134,31 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
             await load()
             onWorkspaceRefresh?.()
           }}
-          className="rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900"
+          className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
         >
           Refresh
         </button>
       </div>
 
-      {loading ? <div className="mt-3 text-sm text-slate-400">Loading...</div> : null}
+      {loading ? <div className="mt-3 text-sm text-slate-600">Loading...</div> : null}
 
       {active?.origin ? (
-        <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-3">
-          <div className="text-sm font-semibold text-slate-200">Current pickup</div>
-          <div className="mt-1 text-xs text-slate-400">
-            Job ID <span className="font-mono">{String(active._id)}</span> • Seats: {active.seatCount ?? 1}
+        <div className="mt-4 rounded-xl border border-slate-300 bg-emerald-50 p-4">
+          <div className="text-sm font-semibold text-slate-900">Current Pickup</div>
+          <div className="mt-1 text-xs text-slate-700">
+            Job ID <span className="font-mono">{String(active._id)}</span> - Seats: {active.seatCount ?? 1}
           </div>
           {active?.passengerId ? (
-            <div className="mt-2 text-xs text-slate-300">
+            <div className="mt-2 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700">
               <div>
-                Passenger: <span className="font-medium">{active.passengerId.fullName ?? '—'}</span>
+                Passenger: <span className="font-semibold">{active.passengerId.fullName ?? '-'}</span>
               </div>
-              <div>
-                Mobile: <span className="font-mono">{active.passengerId.phone ?? '—'}</span> • Student ID:{' '}
-                <span className="font-mono">{active.passengerId.studentId ?? '—'}</span>
+              <div className="mt-1">
+                Mobile: <span className="font-mono">{active.passengerId.phone ?? '-'}</span> - Student ID:{' '}
+                <span className="font-mono">{active.passengerId.studentId ?? '-'}</span>
               </div>
-              <div>
-                Emergency: <span className="font-mono">{active.passengerId.emergencyContact ?? '—'}</span>
+              <div className="mt-1">
+                Emergency: <span className="font-mono">{active.passengerId.emergencyContact ?? '-'}</span>
               </div>
             </div>
           ) : null}
@@ -163,17 +167,17 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
 
       {selected?.origin ? (
         <div className="mt-4">
-          <div className="mb-2 flex items-center justify-between gap-3 text-sm text-slate-300">
+          <div className="mb-2 flex items-center justify-between gap-3 text-sm text-slate-700">
             <div>Fastest route to passenger pickup</div>
             {typeof etaSeconds === 'number' ? (
-              <div className="text-xs text-slate-400">ETA: {Math.max(1, Math.round(etaSeconds / 60))} min</div>
+              <div className="text-xs text-slate-600">ETA: {Math.max(1, Math.round(etaSeconds / 60))} min</div>
             ) : null}
           </div>
           <MapPicker
             value={selected.origin}
             readonly
             polyline={routeLine}
-            height={240}
+            height={250}
             valueIconKind="pickup"
             markers={
               user?.currentLocation?.lat && user?.currentLocation?.lng
@@ -187,18 +191,18 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
       ) : null}
 
       {items.length ? (
-        <div className="mt-3 grid gap-2">
+        <div className="mt-4 grid gap-3">
           {items.map((r) => (
-            <div key={r._id} className="rounded-xl border border-slate-800 bg-slate-950 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm text-slate-200">
+            <article key={r._id} className="rounded-xl border border-slate-300 bg-slate-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="text-sm text-slate-900">
                   Job ID <span className="font-mono text-xs">{String(r._id)}</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => selectRequest(r)}
-                    className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900"
+                    className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
                   >
                     View route
                   </button>
@@ -206,38 +210,39 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
                     type="button"
                     onClick={() => accept(r._id)}
                     disabled={user?.role !== 'rider' || r.canAccept === false}
-                    className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-60"
+                    className="rounded-xl bg-emerald-500 px-3 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
                   >
                     Accept
                   </button>
                 </div>
               </div>
-              <div className="mt-1 text-xs text-slate-400">
-                Seats needed: {r.seatCount} • Remaining seats: {r.remainingSeats ?? '—'} • Female only:{' '}
-                {r.femaleOnly ? 'yes' : 'no'}
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                <DashChip>Seats: {r.seatCount}</DashChip>
+                <DashChip>Remaining: {r.remainingSeats ?? '-'}</DashChip>
+                <DashChip>Female only: {r.femaleOnly ? 'yes' : 'no'}</DashChip>
               </div>
 
               {r.passengerId ? (
-                <div className="mt-2 text-xs text-slate-300">
+                <div className="mt-3 rounded-lg border border-slate-200 bg-white p-3 text-xs text-slate-700">
                   <div>
-                    Passenger: <span className="font-medium">{r.passengerId.fullName ?? '—'}</span>
+                    Passenger: <span className="font-semibold">{r.passengerId.fullName ?? '-'}</span>
                   </div>
-                  <div>
-                    Mobile: <span className="font-mono">{r.passengerId.phone ?? '—'}</span> • Student ID:{' '}
-                    <span className="font-mono">{r.passengerId.studentId ?? '—'}</span>
+                  <div className="mt-1">
+                    Mobile: <span className="font-mono">{r.passengerId.phone ?? '-'}</span> - Student ID:{' '}
+                    <span className="font-mono">{r.passengerId.studentId ?? '-'}</span>
                   </div>
-                  <div>
-                    Emergency: <span className="font-mono">{r.passengerId.emergencyContact ?? '—'}</span>
+                  <div className="mt-1">
+                    Emergency: <span className="font-mono">{r.passengerId.emergencyContact ?? '-'}</span>
                   </div>
                 </div>
               ) : null}
-            </div>
+            </article>
           ))}
         </div>
       ) : (
-        <div className="mt-3 text-sm text-slate-400">No open requests.</div>
+        <div className="mt-4 text-sm text-slate-600">No open requests.</div>
       )}
-    </div>
+    </section>
   )
 }
-
