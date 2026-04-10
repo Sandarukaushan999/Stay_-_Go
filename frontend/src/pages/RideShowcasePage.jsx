@@ -1,12 +1,12 @@
-import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import heroImage from '../assets/hero.png'
+import rightHeroImage from '../Components/ride_and_sharing_system/assets/chuttersnap-gts_Eh4g1lk-unsplash.jpg'
 import missionImage from '../Components/ride_and_sharing_system/assets/make the campus fairer.png'
 import serviceOneImage from '../Components/ride_and_sharing_system/assets/Our Ride Services1.png'
 import serviceTwoImage from '../Components/ride_and_sharing_system/assets/Our Ride Services2.png'
 import serviceThreeImage from '../Components/ride_and_sharing_system/assets/Our Ride Services3.png'
 import safetyImage from '../Components/ride_and_sharing_system/assets/Your safety is our priority.png'
+import SystemFooter from '../Components/shared/layout/SystemFooter'
 
 const serviceCards = [
   {
@@ -92,83 +92,17 @@ function SectionPill({ children }) {
   )
 }
 
-function NavLinkButton({ children, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="rounded-md px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-emerald-100 hover:text-slate-950"
-    >
-      {children}
-    </button>
-  )
-}
-
 export default function RideShowcasePage() {
   const navigate = useNavigate()
-
-  const scrollToSection = useCallback((id) => {
-    const element = document.getElementById(id)
-    if (!element) return
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [])
 
   return (
     <div
       className="min-h-screen bg-emerald-300 text-slate-950"
       style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}
     >
-      <main className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
-        <section className="mb-8 flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-slate-700">Welcome to</p>
-            <h1 className="mt-1 text-5xl font-semibold leading-tight">Ride Sharing Portal</h1>
-          </div>
-          <button
-            type="button"
-            onClick={() => scrollToSection('ride-home')}
-            className="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-500 text-2xl font-semibold leading-none transition hover:bg-emerald-400"
-            aria-label="Scroll to main content"
-          >
-            v
-          </button>
-        </section>
-
+      <main className="mx-auto max-w-6xl px-4 py-10 sm:py-12">
         <section id="ride-home" className="overflow-hidden rounded-2xl border border-emerald-400/70 bg-emerald-200 shadow-sm">
-          <header className="border-b border-emerald-400/60 bg-white px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <button type="button" onClick={() => navigate('/')} className="inline-flex items-center gap-2">
-                <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold">iD</span>
-                <span className="text-sm font-semibold">STAY &amp; GO</span>
-              </button>
-
-              <nav className="hidden items-center gap-1 md:flex">
-                <NavLinkButton onClick={() => scrollToSection('ride-home')}>Home</NavLinkButton>
-                <NavLinkButton onClick={() => scrollToSection('ride-services')}>Services</NavLinkButton>
-                <NavLinkButton onClick={() => scrollToSection('ride-safety')}>Safety</NavLinkButton>
-                <NavLinkButton onClick={() => scrollToSection('ride-impact')}>Impact</NavLinkButton>
-              </nav>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate('/auth/login')}
-                  className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-medium transition hover:bg-slate-100"
-                >
-                  Sign in
-                </button>
-              <button
-                type="button"
-                onClick={() => navigate('/rides/workspace')}
-                className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold transition hover:bg-emerald-400"
-              >
-                  Open workspace
-              </button>
-              </div>
-            </div>
-          </header>
-
-          <div className="grid gap-6 px-5 pb-6 pt-5 lg:grid-cols-[1.03fr_1fr] lg:px-8 lg:pb-8 lg:pt-7">
+          <div className="grid gap-6 px-5 py-6 lg:grid-cols-[1.03fr_1fr] lg:px-8 lg:py-8">
             <div className="flex flex-col justify-center">
               <h2 className="max-w-lg text-5xl font-semibold leading-tight">
                 Together, We Make a <Highlight>Greener World</Highlight>.
@@ -204,7 +138,7 @@ export default function RideShowcasePage() {
             <div className="relative">
               <div className="absolute -left-4 top-16 hidden h-16 w-20 bg-emerald-200 lg:block" />
               <div className="absolute -right-4 bottom-12 hidden h-16 w-20 bg-emerald-200 lg:block" />
-              <img src={heroImage} alt="Ride service hero banner" className="h-full min-h-[340px] w-full rounded-2xl object-cover" />
+              <img src={rightHeroImage} alt="Ride system hero visual" className="h-full min-h-[340px] w-full rounded-2xl object-cover" />
             </div>
           </div>
         </section>
@@ -377,90 +311,8 @@ export default function RideShowcasePage() {
           </div>
         </section>
 
-        <section className="rounded-b-2xl bg-emerald-500 px-6 py-9">
-          <div className="max-w-3xl">
-            <h3 className="text-5xl font-semibold leading-tight">From Underdog to Global Leader A Journey of Growth and Innovation.</h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-900/85">
-              The future of student transport depends on reliable operations, transparent analytics, and safe
-              collaboration between riders, passengers, and admins.
-            </p>
-            <div className="mt-5 flex flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => navigate('/rides/workspace')}
-                className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
-              >
-                Open workspace
-              </button>
-              <button
-                type="button"
-                onClick={() => navigate('/admin/ride-dashboard')}
-                className="rounded-lg border border-slate-900/30 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
-              >
-                Open Ride Dashboard
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <footer className="rounded-b-2xl bg-slate-950 px-6 py-10 text-slate-300">
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
-            <div className="lg:col-span-2">
-              <div className="text-xl font-semibold text-white">STAY &amp; GO Ride Sharing</div>
-              <p className="mt-3 text-sm leading-relaxed text-slate-400">
-                We are building transparent mobility systems for students and campuses with realtime ride monitoring,
-                safety workflows, and trusted rider operations.
-              </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate('/')}
-                  className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs transition hover:bg-slate-900"
-                >
-                  Back to Home
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate('/rides/workspace')}
-                  className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400"
-                >
-                  Open Workspace
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-white">Earn with us</h4>
-              <ul className="mt-3 space-y-2 text-sm text-slate-400">
-                <li>City rides</li>
-                <li>Campus shuttle</li>
-                <li>Safe payments</li>
-                <li>Driver profile</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-white">Our services</h4>
-              <ul className="mt-3 space-y-2 text-sm text-slate-400">
-                <li>Trip request</li>
-                <li>Live location</li>
-                <li>SOS alerts</li>
-                <li>Safety checks</li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-sm font-semibold text-white">About</h4>
-              <ul className="mt-3 space-y-2 text-sm text-slate-400">
-                <li>Company</li>
-                <li>Careers</li>
-                <li>News room</li>
-                <li>Support</li>
-              </ul>
-            </div>
-          </div>
-        </footer>
       </main>
+      <SystemFooter />
     </div>
   )
 }

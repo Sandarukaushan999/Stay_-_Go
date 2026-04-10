@@ -1,5 +1,6 @@
 import AdminSidebar from './AdminSidebar'
 import AdminTopNavbar from './AdminTopNavbar'
+import SystemFooter from '../../shared/layout/SystemFooter'
 
 export default function AdminLayout({ children }) {
   return (
@@ -8,6 +9,7 @@ export default function AdminLayout({ children }) {
       <div className="flex-1 flex flex-col">
         <AdminTopNavbar />
         <main className="flex-1 px-4 pb-8 pt-5 sm:px-6">{children}</main>
+        <SystemFooter />
       </div>
     </div>
   )
