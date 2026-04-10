@@ -35,7 +35,10 @@ export const blockUserSchema = z.object({
   isBlocked: z.boolean(),
 })
 
+export const setRoleSchema = z.object({
+  role: z.enum(ROLE_VALUES),
+})
+
 export const approveRiderSchema = z.object({
   approved: z.boolean().default(true),
 })
-

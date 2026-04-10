@@ -28,11 +28,10 @@ export default function AdminSidebar() {
       </div>
 
       <div className="h-[calc(100vh-112px)] space-y-1 overflow-y-auto pr-1">
-        <Section title="Overview" />
-        <Item to="/admin" end>
-          Dashboard Home
-        </Item>
-        <Item to="/admin/campus-summary">Campus Summary</Item>
+        <Section title="System" className="pt-2" />
+        <Item to="/admin/profile">Admin Profile</Item>
+        <Item to="/admin/access-settings">Access Settings</Item>
+        <Item to="/admin/dashboard-settings">Dashboard Settings</Item>
 
         <Section title="User Management" />
         <Item to="/admin/users">All Users</Item>
@@ -62,16 +61,17 @@ export default function AdminSidebar() {
         <Item to="/admin/notifications">Notifications</Item>
         <Item to="/admin/announcements">Announcements</Item>
         <Item to="/admin/complaints">Complaint Center</Item>
-
-        <Section title="System" />
-        <Item to="/admin/profile">Admin Profile</Item>
-        <Item to="/admin/access-settings">Access Settings</Item>
-        <Item to="/admin/dashboard-settings">Dashboard Settings</Item>
       </div>
     </aside>
   )
 }
 
-function Section({ title }) {
-  return <div className="px-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#876DFF]">{title}</div>
+function Section({ title, className = '' }) {
+  return (
+    <div
+      className={`px-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#876DFF] ${className}`.trim()}
+    >
+      {title}
+    </div>
+  )
 }

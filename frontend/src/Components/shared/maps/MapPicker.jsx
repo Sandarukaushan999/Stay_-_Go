@@ -10,6 +10,7 @@ const DEFAULT_ROUTE_COLOR = '#876DFF'
 const DEFAULT_MARKER_COLOR = '#BAF91A'
 
 function makeRideIcon(url) {
+  if (!url) return null
   return new L.Icon({
     iconUrl: url,
     iconSize: [ICON_PX, ICON_PX],
@@ -18,11 +19,13 @@ function makeRideIcon(url) {
   })
 }
 
-const RIDE_MAP_ICONS = {
-  rider: makeRideIcon(bikeUrl),
-  pickup: makeRideIcon(locationUrl),
-  uni: makeRideIcon(uniUrl),
-}
+const RIDE_MAP_ICONS = Object.fromEntries(
+  Object.entries({
+    rider: makeRideIcon(bikeUrl),
+    pickup: makeRideIcon(locationUrl),
+    uni: makeRideIcon(uniUrl),
+  }).filter(([, icon]) => icon != null)
+)
 
 function ClickHandler({ value, onChange, readonly, valueIconKind }) {
   useMapEvents({
@@ -33,8 +36,21 @@ function ClickHandler({ value, onChange, readonly, valueIconKind }) {
   })
 
   if (!value) return null
-  const icon = valueIconKind && RIDE_MAP_ICONS[valueIconKind] ? RIDE_MAP_ICONS[valueIconKind] : undefined
-  return <Marker position={[value.lat, value.lng]} icon={icon} />
+  const rideIcon = valueIconKind ? RIDE_MAP_ICONS[valueIconKind] : null
+  if (rideIcon) {
+    return <Marker position={[value.lat, value.lng]} icon={rideIcon} />
+  }
+  return (
+    <CircleMarker
+      center={[value.lat, value.lng]}
+      radius={10}
+      pathOptions={{
+        color: DEFAULT_MARKER_COLOR,
+        fillColor: DEFAULT_MARKER_COLOR,
+        fillOpacity: 0.9,
+      }}
+    />
+  )
 }
 
 export default function MapPicker({
@@ -84,7 +100,7 @@ export default function MapPicker({
           ? markers
               .filter((m) => typeof m?.lat === 'number' && typeof m?.lng === 'number')
               .map((m, idx) => {
-                const rideIcon = m.iconKind && RIDE_MAP_ICONS[m.iconKind]
+                const rideIcon = m.iconKind ? RIDE_MAP_ICONS[m.iconKind] : null
                 if (rideIcon) {
                   return (
                     <Marker key={idx} position={[m.lat, m.lng]} icon={rideIcon}>

@@ -1,0 +1,137 @@
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1.25rem;
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  position: relative;
+}
+
+.topbar-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.topbar-bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.65rem;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.topbar-bell:hover {
+  background: #f1f5f9;
+}
+
+.topbar-badge {
+  position: absolute;
+  top: -0.2rem;
+  right: -0.2rem;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+  color: #fff;
+  background: #d946ef;
+  border-radius: 999px;
+}
+
+.topbar-identity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.topbar-role-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.topbar-switch-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+}
+
+.topbar-switch-btn:hover {
+  background: #f8fafc;
+}
+
+.topbar-id-panel {
+  position: absolute;
+  top: 100%;
+  right: 1rem;
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.65rem;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.12);
+  z-index: 30;
+}
+
+.topbar-id-input {
+  padding: 0.4rem 0.55rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.4rem;
+  font-size: 0.8rem;
+  min-width: 8rem;
+}
+
+.topbar .btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: 0.45rem;
+  border: none;
+  cursor: pointer;
+}
+
+.topbar .btn-primary {
+  background: #d946ef;
+  color: #fff;
+}
+
+.topbar .btn-primary:hover {
+  background: #c026d3;
+}
+
+.topbar .btn-sm {
+  padding: 0.35rem 0.6rem;
+}
