@@ -27,7 +27,7 @@ const hostelBlocks = ['A', 'B', 'C', 'D', 'E', 'F']
 
 // Shared Tailwind classes for inputs
 // Using hardcoded colors because tailwind.config remaps slate/emerald to custom scales
-const inputClasses = 'w-full rounded-xl border border-[#101312]/15 bg-white px-4 py-2.5 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#876DFF] focus:ring-1 focus:ring-[#876DFF]/20'
+const inputClasses = 'w-full rounded-xl border border-[#101312]/15 bg-white px-4 py-2.5 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#101312]/40 focus:ring-1 focus:ring-[#101312]/10'
 const labelClasses = 'mb-1.5 block text-sm font-medium text-[#101312]'
 const errorClasses = 'mt-1 text-xs text-[#e53e3e]'
 
@@ -40,7 +40,7 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png']
 const initialFormState = {
   title: '',
   category: '',
-  priority: '',
+  priority: 'high',
   hostelBlock: '',
   roomNumber: '',
   description: '',
@@ -139,10 +139,7 @@ function SubmitComplaint({ onSubmit }) {
       newErrors.category = 'Please select a category.'
     }
 
-    // Priority: must be selected
-    if (!form.priority) {
-      newErrors.priority = 'Please select a priority level.'
-    }
+
 
     // Hostel block: must be selected
     if (!form.hostelBlock) {
@@ -314,29 +311,6 @@ function SubmitComplaint({ onSubmit }) {
             onChange={(e) => handleChange('roomNumber', e.target.value)}
           />
           {errors.roomNumber && <p className={errorClasses}>{errors.roomNumber}</p>}
-        </div>
-
-        {/* Priority */}
-        <div>
-          <span className={labelClasses}>Priority</span>
-          <div className="mt-1 flex flex-wrap gap-3">
-            {priorityOptions.map((opt) => (
-              <label key={opt.value} className="cursor-pointer">
-                <input
-                  type="radio"
-                  name="priority"
-                  value={opt.value}
-                  checked={form.priority === opt.value}
-                  onChange={(e) => handleChange('priority', e.target.value)}
-                  className="peer sr-only"
-                />
-                <span className={`inline-block rounded-xl border border-[#101312]/15 px-4 py-2 text-sm text-[#101312]/75 transition peer-checked:font-semibold peer-checked:text-[#101312] ${opt.color}`}>
-                  {opt.label}
-                </span>
-              </label>
-            ))}
-          </div>
-          {errors.priority && <p className={errorClasses}>{errors.priority}</p>}
         </div>
 
         {/* Description */}

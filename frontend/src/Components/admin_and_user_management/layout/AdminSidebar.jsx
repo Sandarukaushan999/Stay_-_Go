@@ -54,7 +54,7 @@ export default function AdminSidebar() {
         <Item to="/admin/match-analytics">Match Analytics</Item>
 
         <Section title="Maintenance Workspace" />
-        <Item to="/maintenance">Maintenance Dashboard</Item>
+        <Item to="/admin/maintenance">Maintenance Dashboard</Item>
 
         <Section title="Communication" />
         <Item to="/admin/notifications">Notifications</Item>

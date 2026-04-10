@@ -21,6 +21,11 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
   const [rating, setRating] = useState(0)
   const [feedback, setFeedback] = useState('')
   const [ratingSubmitted, setRatingSubmitted] = useState(false)
+  const [showResolveForm, setShowResolveForm] = useState(false)
+  const [resolutionNote, setResolutionNote] = useState('')
+
+  const isTechnician = userRole === 'technician'
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin'
 
   function handleSubmitRating() {
     if (rating === 0) return
@@ -83,6 +88,64 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
             </p>
           </div>
 
+          {/* Action Buttons — Technician: Start Work / Resolve */}
+          {isTechnician && ticket.status === 'assigned' && (
+            <div className="rounded-2xl border border-[#BAF91A]/40 bg-[#BAF91A]/5 p-5">
+              <p className="text-sm text-[#101312]/80">This ticket is assigned to you. Ready to begin?</p>
+              <button
+                type="button"
+                onClick={() => onStart(ticket._id)}
+                className="mt-3 rounded-xl bg-[#BAF91A] px-5 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00]"
+              >
+                Start Work
+              </button>
+            </div>
+          )}
+
+          {isTechnician && ticket.status === 'in_progress' && !showResolveForm && (
+            <div className="rounded-2xl border border-[#16a34a]/20 bg-[#16a34a]/5 p-5">
+              <p className="text-sm text-[#101312]/80">Working on this ticket. Mark it resolved when done.</p>
+              <button
+                type="button"
+                onClick={() => setShowResolveForm(true)}
+                className="mt-3 rounded-xl bg-[#16a34a] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#15803d]"
+              >
+                Mark Resolved
+              </button>
+            </div>
+          )}
+
+          {isTechnician && ticket.status === 'in_progress' && showResolveForm && (
+            <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Resolution Note</h2>
+              <textarea
+                className="mt-3 w-full rounded-xl border border-[#101312]/15 bg-white px-4 py-2.5 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#101312]/40"
+                placeholder="Describe how the issue was resolved (min 10 characters)"
+                rows={4}
+                value={resolutionNote}
+                onChange={(e) => setResolutionNote(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-[#101312]/75">{resolutionNote.trim().length}/10 min characters</p>
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  disabled={resolutionNote.trim().length < 10}
+                  onClick={() => { onResolve(ticket._id, resolutionNote.trim()); setShowResolveForm(false) }}
+                  className="rounded-xl bg-[#BAF91A] px-5 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Submit Resolution
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setShowResolveForm(false); setResolutionNote('') }}
+                  className="rounded-xl border border-[#101312]/15 px-4 py-2 text-sm text-[#101312]/80 transition hover:bg-[#101312]/5"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Attachments */}
           {ticket.attachments && ticket.attachments.length > 0 && (
             <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
@@ -115,7 +178,7 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
                 <RatingStars rating={rating} onRate={setRating} />
               </div>
               <textarea
-                className="mt-3 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#876DFF]"
+                className="mt-3 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#101312]/40"
                 placeholder="Optional feedback (max 200 characters)"
                 rows={3}
                 maxLength={200}
