@@ -56,12 +56,17 @@ export default function CreateRideRequestForm({ onPickupChange }) {
       <div className="mt-4 grid gap-4">
         <div>
           <div className="text-sm text-slate-300 mb-2">Pickup location</div>
-          <MapPicker value={form.origin} onChange={(v) => setForm((p) => ({ ...p, origin: v }))} height={260} />
+          <MapPicker
+            value={form.origin}
+            onChange={(v) => setForm((p) => ({ ...p, origin: v }))}
+            readonly={false}
+            valueIconKind="pickup"
+            markers={[{ ...SLIIT, label: 'SLIIT', iconKind: 'uni' }]}
+            height={320}
+          />
         </div>
-
-        <div>
-          <div className="text-sm text-slate-300 mb-2">Destination (University: SLIIT)</div>
-          <MapPicker value={SLIIT} readonly height={260} />
+        <div className="text-xs text-slate-400">
+          Destination is fixed: <span className="font-medium text-slate-200">SLIIT</span>
         </div>
       </div>
 

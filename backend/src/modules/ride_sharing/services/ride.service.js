@@ -1,8 +1,88 @@
+import mongoose from 'mongoose'
 import { ApiError } from '../../../common/utils/ApiError.js'
 import { RideRequest } from '../models/RideRequest.js'
 import { Trip } from '../models/Trip.js'
 import { User } from '../../users/user.model.js'
 import { env } from '../../../config/env.js'
+
+export async function getRiderDashboard({ riderUserId, campusId }) {
+  const riderOid = new mongoose.Types.ObjectId(riderUserId)
+
+  const activeTrips = await Trip.find({
+    riderId: riderOid,
+    status: { $in: ['to_pickup', 'to_university', 'overdue'] },
+  })
+    .populate('passengerId', 'fullName phone studentId')
+    .sort({ startedAt: -1 })
+    .limit(20)
+    .lean()
+
+  const statusAgg = await RideRequest.aggregate([
+    { $match: { riderId: riderOid } },
+    { $group: { _id: '$status', count: { $sum: 1 } } },
+  ])
+  const byStatus = { requested: 0, accepted: 0, completed: 0, cancelled: 0 }
+  for (const row of statusAgg) {
+    if (row._id && byStatus[row._id] !== undefined) byStatus[row._id] = row.count
+  }
+
+  const startOfDay = new Date()
+  startOfDay.setHours(0, 0, 0, 0)
+  const completedToday = await RideRequest.countDocuments({
+    riderId: riderOid,
+    status: 'completed',
+    completedAt: { $gte: startOfDay },
+  })
+
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+  const completedLast30d = await RideRequest.countDocuments({
+    riderId: riderOid,
+    status: 'completed',
+    completedAt: { $gte: thirtyDaysAgo },
+  })
+
+  const acceptedLast30d = await RideRequest.countDocuments({
+    riderId: riderOid,
+    acceptedAt: { $gte: thirtyDaysAgo },
+  })
+
+  const cancelledLast30d = await RideRequest.countDocuments({
+    riderId: riderOid,
+    status: 'cancelled',
+    cancelledAt: { $gte: thirtyDaysAgo },
+  })
+
+  let openCampusQueue = 0
+  if (campusId) {
+    openCampusQueue = await RideRequest.countDocuments({ status: 'requested', campusId })
+  }
+
+  const usedSeats = activeTrips.reduce((sum, t) => sum + Number(t.seatCount ?? 1), 0)
+  const rider = await User.findById(riderUserId).select('seatCount availability rating complaintCount').lean()
+  const capacityPassengers = Math.max(0, Number(rider?.seatCount ?? 0))
+  const remainingSeats = Math.max(0, capacityPassengers - usedSeats)
+
+  const finished30 = completedLast30d + cancelledLast30d
+  const completionRate =
+    finished30 > 0 ? Math.round((completedLast30d / finished30) * 100) : null
+
+  return {
+    activeTrips,
+    byStatus,
+    completedToday,
+    completedLast30d,
+    acceptedLast30d,
+    cancelledLast30d,
+    openCampusQueue,
+    capacityPassengers,
+    usedSeats,
+    remainingSeats,
+    completionRate,
+    availability: rider?.availability ?? 'offline',
+    rating: rider?.rating ?? 0,
+    complaintCount: rider?.complaintCount ?? 0,
+  }
+}
 
 export async function requestRide({ passengerId, campusId, origin, destination, seatCount, femaleOnly }) {
   const rr = await RideRequest.create({
@@ -19,7 +99,11 @@ export async function requestRide({ passengerId, campusId, origin, destination, 
 }
 
 export async function myRequests(passengerId) {
-  const items = await RideRequest.find({ passengerId }).sort({ requestedAt: -1 }).limit(50).lean()
+  const items = await RideRequest.find({ passengerId })
+    .populate('riderId', 'fullName phone vehicleType vehicleNumber')
+    .sort({ requestedAt: -1 })
+    .limit(50)
+    .lean()
   return items
 }
 
@@ -85,8 +169,8 @@ export async function acceptRide({ rideRequestId, riderId }) {
   if (!rr) throw new ApiError(404, 'Ride request not found')
   if (rr.status !== 'requested') throw new ApiError(409, 'Ride request not available')
 
-  // Seat enforcement: rider can carry (seatCount - 1) passengers.
-  const capacityPassengers = Math.max(0, Number(rider.seatCount ?? 0) - 1)
+  // seatCount is treated as passenger capacity (car=3 means 3 passengers).
+  const capacityPassengers = Math.max(0, Number(rider.seatCount ?? 0))
   const activeTrips = await Trip.find({
     riderId,
     status: { $in: ['to_pickup', 'to_university', 'overdue'] },
@@ -134,7 +218,10 @@ export async function cancelRide({ rideRequestId, userId }) {
   rr.cancelledAt = new Date()
   await rr.save()
 
-  await Trip.updateMany({ rideRequestId: rr._id, status: 'in_progress' }, { status: 'cancelled' })
+  await Trip.updateMany(
+    { rideRequestId: rr._id, status: { $in: ['to_pickup', 'to_university', 'overdue', 'in_progress'] } },
+    { status: 'cancelled' }
+  )
 
   return rr.toObject()
 }

@@ -1,5 +1,7 @@
 import { asyncHandler } from '../../common/utils/asyncHandler.js'
 import { RideRequest } from '../ride_sharing/models/RideRequest.js'
+import { Trip } from '../ride_sharing/models/Trip.js'
+import { ApiError } from '../../common/utils/ApiError.js'
 import { User } from '../users/user.model.js'
 
 export const rideRequests = asyncHandler(async (req, res) => {
@@ -27,5 +29,31 @@ export const activeRiders = asyncHandler(async (req, res) => {
     complaintCount: u.complaintCount,
   }))
   res.json({ success: true, items: data })
+})
+
+export const cancelRideRequest = asyncHandler(async (req, res) => {
+  const rr = await RideRequest.findById(req.params.id)
+  if (!rr) throw new ApiError(404, 'Ride request not found')
+
+  rr.status = 'cancelled'
+  rr.cancelledAt = new Date()
+  await rr.save()
+
+  await Trip.updateMany(
+    { rideRequestId: rr._id, status: { $in: ['to_pickup', 'to_university', 'overdue', 'in_progress'] } },
+    { status: 'cancelled' }
+  )
+
+  res.json({ success: true, data: rr.toObject() })
+})
+
+export const deleteRideRequest = asyncHandler(async (req, res) => {
+  const rr = await RideRequest.findById(req.params.id)
+  if (!rr) throw new ApiError(404, 'Ride request not found')
+
+  await Trip.deleteMany({ rideRequestId: rr._id })
+  await RideRequest.deleteOne({ _id: rr._id })
+
+  res.json({ success: true, message: 'Ride request deleted' })
 })
 

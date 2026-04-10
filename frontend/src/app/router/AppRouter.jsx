@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 
@@ -59,6 +59,7 @@ export default function AppRouter() {
           <Route path="/admin/users" element={<UserList />} />
           <Route path="/admin/rider-approvals" element={<RiderApprovalsTable />} />
           <Route path="/admin/live-trips" element={<LiveTripsTable />} />
+          <Route path="/admin/ride-dashboard" element={<Navigate to="/admin/ride-requests" replace />} />
           <Route path="/admin/ride-requests" element={<RideRequestsPage />} />
           <Route path="/admin/active-riders" element={<ActiveRidersPage />} />
           <Route path="/admin/sos-alerts" element={<SOSAlertsTable />} />

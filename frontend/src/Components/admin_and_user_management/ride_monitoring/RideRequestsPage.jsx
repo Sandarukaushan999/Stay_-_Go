@@ -21,6 +21,24 @@ export default function RideRequestsPage() {
     }
   }
 
+  async function cancelRequest(id) {
+    try {
+      await api.patch(`/admin/rides/requests/${id}/cancel`)
+      await load(status)
+    } catch {
+      setError('Failed to cancel ride request')
+    }
+  }
+
+  async function deleteRequest(id) {
+    try {
+      await api.delete(`/admin/rides/requests/${id}`)
+      await load(status)
+    } catch {
+      setError('Failed to delete ride request')
+    }
+  }
+
   useEffect(() => {
     load(status)
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -77,12 +95,13 @@ export default function RideRequestsPage() {
                 <th className="p-3">Seats</th>
                 <th className="p-3">Status</th>
                 <th className="p-3">Requested</th>
+                <th className="p-3">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-slate-900/30">
               {loading ? (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={7}>
+                  <td className="p-3 text-slate-400" colSpan={8}>
                     Loading...
                   </td>
                 </tr>
@@ -100,11 +119,30 @@ export default function RideRequestsPage() {
                     <td className="p-3 text-slate-300">
                       {r.requestedAt ? new Date(r.requestedAt).toLocaleString() : '—'}
                     </td>
+                    <td className="p-3">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => cancelRequest(r._id)}
+                          disabled={r.status === 'cancelled' || r.status === 'completed'}
+                          className="rounded-lg border border-amber-700 px-2 py-1 text-xs text-amber-300 hover:bg-amber-900/20 disabled:opacity-40"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteRequest(r._id)}
+                          className="rounded-lg border border-rose-700 px-2 py-1 text-xs text-rose-300 hover:bg-rose-900/20"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={7}>
+                  <td className="p-3 text-slate-400" colSpan={8}>
                     No results
                   </td>
                 </tr>

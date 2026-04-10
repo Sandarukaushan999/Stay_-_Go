@@ -13,6 +13,11 @@ export const confirmPickup = asyncHandler(async (req, res) => {
   await trip.save()
 
   getIo().to('admin').emit('trip:status', { tripId: trip._id.toString(), status: trip.status, trip: trip.toObject() })
+  getIo().to(`trip:${trip._id.toString()}`).emit('trip:status', {
+    tripId: trip._id.toString(),
+    status: trip.status,
+    trip: trip.toObject(),
+  })
   res.json({ success: true, trip: trip.toObject() })
 })
 
@@ -28,6 +33,11 @@ export const finishTrip = asyncHandler(async (req, res) => {
   await trip.save()
 
   getIo().to('admin').emit('trip:status', { tripId: trip._id.toString(), status: trip.status, trip: trip.toObject() })
+  getIo().to(`trip:${trip._id.toString()}`).emit('trip:status', {
+    tripId: trip._id.toString(),
+    status: trip.status,
+    trip: trip.toObject(),
+  })
   res.json({ success: true, trip: trip.toObject() })
 })
 

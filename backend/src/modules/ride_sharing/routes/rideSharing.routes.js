@@ -10,6 +10,7 @@ import * as profileController from '../controllers/profile.controller.js'
 import * as mapController from '../controllers/map.controller.js'
 import * as riderController from '../controllers/rider.controller.js'
 import * as tripLifecycle from '../controllers/tripLifecycle.controller.js'
+import * as passengerTripController from '../controllers/passengerTrip.controller.js'
 
 export const rideSharingRouter = Router()
 
@@ -90,6 +91,13 @@ rideSharingRouter.get(
 )
 
 rideSharingRouter.get(
+  '/rider/dashboard',
+  requireAuth,
+  requireRole(ROLES.RIDER, ROLES.STUDENT),
+  riderController.dashboard
+)
+
+rideSharingRouter.get(
   '/rides/open-requests',
   requireAuth,
   requireRole(ROLES.RIDER),
@@ -125,6 +133,8 @@ rideSharingRouter.post(
 )
 
 // Trip/SOS flows (used for monitoring + demo)
+rideSharingRouter.get('/trips/my-active', requireAuth, passengerTripController.myActiveTrip)
+
 rideSharingRouter.post(
   '/trips/demo-start',
   requireAuth,

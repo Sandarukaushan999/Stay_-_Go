@@ -1,11 +1,12 @@
 import { asyncHandler } from '../../../common/utils/asyncHandler.js'
 import * as inboxService from '../services/riderInbox.service.js'
+import * as rideService from '../services/ride.service.js'
 import { Trip } from '../models/Trip.js'
 import { User } from '../../users/user.model.js'
 
 export const openRequests = asyncHandler(async (req, res) => {
   const rider = await User.findById(req.user.id).lean()
-  const capacityPassengers = Math.max(0, Number(rider?.seatCount ?? 0) - 1)
+  const capacityPassengers = Math.max(0, Number(rider?.seatCount ?? 0))
   const activeTrips = await Trip.find({
     riderId: req.user.id,
     status: { $in: ['to_pickup', 'to_university', 'overdue'] },
@@ -20,5 +21,13 @@ export const openRequests = asyncHandler(async (req, res) => {
     remainingSeats,
   }))
   res.json({ success: true, data: withAccept })
+})
+
+export const dashboard = asyncHandler(async (req, res) => {
+  const data = await rideService.getRiderDashboard({
+    riderUserId: req.user.id,
+    campusId: req.user.campusId ?? null,
+  })
+  res.json({ success: true, data })
 })
 

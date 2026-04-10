@@ -26,6 +26,8 @@ adminRouter.patch('/sos/:id/resolve', controller.resolveSos)
 
 // Ride sharing workspace (admin monitoring)
 adminRouter.get('/rides/requests', rideAdminController.rideRequests)
+adminRouter.patch('/rides/requests/:id/cancel', rideAdminController.cancelRideRequest)
+adminRouter.delete('/rides/requests/:id', rideAdminController.deleteRideRequest)
 adminRouter.get('/riders/active', rideAdminController.activeRiders)
 adminRouter.get('/safety/alerts', safetyController.safetyAlerts)
 
