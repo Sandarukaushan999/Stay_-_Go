@@ -17,7 +17,7 @@ const categoryIcons = {
   cleaning: '🧹', network: '🌐', other: '📋',
 }
 
-function TicketDetail({ ticket, currentRole, onRate, onBack }) {
+function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, onReject, onStart, onResolve, onRate }) {
   const [rating, setRating] = useState(0)
   const [feedback, setFeedback] = useState('')
   const [ratingSubmitted, setRatingSubmitted] = useState(false)
@@ -37,8 +37,8 @@ function TicketDetail({ ticket, currentRole, onRate, onBack }) {
     })
   }
 
-  const canRate = currentRole === 'student' && ticket.status === 'resolved' && !ratingSubmitted
-  const showRatingDone = currentRole === 'student' && ticket.status === 'resolved' && ratingSubmitted
+  const canRate = userRole === 'student' && ticket.status === 'resolved' && !ratingSubmitted
+  const showRatingDone = userRole === 'student' && ticket.status === 'resolved' && ratingSubmitted
 
   return (
     <div className="min-h-screen bg-slate-950 p-4 md:p-6">
@@ -164,19 +164,19 @@ function TicketDetail({ ticket, currentRole, onRate, onBack }) {
           </div>
 
           {/* Technician info */}
-          {ticket.assignedTechnician && (
+          {ticket.assignedTo && (
             <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
               <h2 className="mb-3 text-sm font-semibold text-slate-300">Assigned Technician</h2>
               <div className="flex items-center gap-3">
                 <span className="flex h-9 w-9 items-center justify-center rounded-full bg-violet-900/60 text-sm font-medium text-violet-200">
-                  {(ticket.assignedTechnician.fullName || ticket.assignedTechnician.name || '?').charAt(0).toUpperCase()}
+                  {(ticket.assignedTo.fullName || ticket.assignedTo.name || '?').charAt(0).toUpperCase()}
                 </span>
                 <div>
                   <p className="text-sm font-medium text-slate-200">
-                    {ticket.assignedTechnician.fullName || ticket.assignedTechnician.name}
+                    {ticket.assignedTo.fullName || ticket.assignedTo.name}
                   </p>
-                  {ticket.assignedTechnician.email && (
-                    <p className="text-xs text-slate-500">{ticket.assignedTechnician.email}</p>
+                  {ticket.assignedTo.email && (
+                    <p className="text-xs text-slate-500">{ticket.assignedTo.email}</p>
                   )}
                 </div>
               </div>

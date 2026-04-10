@@ -22,7 +22,7 @@ function formatDate(dateString) {
   })
 }
 
-function AdminTickets({ tickets = [], technicians = [], onViewTicket, onAssign, onReject }) {
+function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign, onReject }) {
   // Filter state
   const [filters, setFilters] = useState({ status: '', priority: '', category: '', search: '' })
   const [sortBy, setSortBy] = useState('newest')
@@ -58,7 +58,7 @@ function AdminTickets({ tickets = [], technicians = [], onViewTicket, onAssign, 
       result = result.filter((t) =>
         (t.ticketId && t.ticketId.toLowerCase().includes(q)) ||
         (t.title && t.title.toLowerCase().includes(q)) ||
-        (t.submittedBy && t.submittedBy.toLowerCase().includes(q))
+        (t.submittedBy && (typeof t.submittedBy === 'object' ? t.submittedBy.fullName : t.submittedBy || '').toLowerCase().includes(q))
       )
     }
 
@@ -173,14 +173,14 @@ function AdminTickets({ tickets = [], technicians = [], onViewTicket, onAssign, 
               <tr
                 key={ticket.ticketId || ticket._id}
                 className="cursor-pointer border-b border-slate-800/60 transition hover:bg-slate-800/40"
-                onClick={() => onViewTicket(ticket)}
+                onClick={() => onSelectTicket(ticket)}
               >
                 <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-400">{ticket.ticketId}</td>
                 <td className="max-w-[200px] truncate px-4 py-3 text-slate-200">{ticket.title}</td>
                 <td className="px-4 py-3 text-xs text-slate-400">{categoryLabels[ticket.category] || ticket.category}</td>
                 <td className="px-4 py-3"><PriorityBadge priority={ticket.priority} /></td>
                 <td className="px-4 py-3"><StatusBadge status={ticket.status} /></td>
-                <td className="px-4 py-3 text-xs text-slate-400">{ticket.submittedBy}</td>
+                <td className="px-4 py-3 text-xs text-slate-400">{typeof ticket.submittedBy === 'object' ? ticket.submittedBy?.fullName : ticket.submittedBy}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">{formatDate(ticket.createdAt)}</td>
                 <td className="px-4 py-3">
                   {ticket.status === 'submitted' && (
@@ -188,14 +188,14 @@ function AdminTickets({ tickets = [], technicians = [], onViewTicket, onAssign, 
                       <button
                         type="button"
                         className="rounded-lg bg-violet-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-violet-500"
-                        onClick={(e) => openAssignModal(e, ticket.ticketId)}
+                        onClick={(e) => openAssignModal(e, ticket._id || ticket.ticketId)}
                       >
                         Assign
                       </button>
                       <button
                         type="button"
                         className="rounded-lg bg-red-900/60 px-2.5 py-1 text-xs font-medium text-red-200 transition hover:bg-red-800/60"
-                        onClick={(e) => openRejectModal(e, ticket.ticketId)}
+                        onClick={(e) => openRejectModal(e, ticket._id || ticket.ticketId)}
                       >
                         Reject
                       </button>
@@ -249,7 +249,7 @@ function AdminTickets({ tickets = [], technicians = [], onViewTicket, onAssign, 
               <option value="">Choose technician...</option>
               {technicians.map((tech) => (
                 <option key={tech._id || tech.id} value={tech._id || tech.id}>
-                  {tech.name || tech.fullName || `${tech.firstName} ${tech.lastName}`}
+                  {tech.fullName || tech.name || 'Unknown'}
                 </option>
               ))}
             </select>

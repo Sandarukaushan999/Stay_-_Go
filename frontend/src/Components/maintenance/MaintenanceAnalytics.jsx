@@ -100,9 +100,9 @@ function MaintenanceAnalytics({ tickets }) {
     const techMap = {}
 
     tickets.forEach((t) => {
-      if (!t.assignedTo) return
-      const techId = t.assignedTo._id || t.assignedTo.id
-      const techName = t.assignedTo.fullName || 'Unknown'
+      if (!t.assignedTo || typeof t.assignedTo === 'string') return
+      const techId = t.assignedTo._id || t.assignedTo.id || t.assignedTo
+      const techName = t.assignedTo.fullName || t.assignedTo.name || 'Unknown'
 
       if (!techMap[techId]) {
         techMap[techId] = { name: techName, assigned: 0, resolved: 0, totalRating: 0, ratedCount: 0 }

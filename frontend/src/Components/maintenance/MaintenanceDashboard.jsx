@@ -196,6 +196,15 @@ function MaintenanceDashboard() {
     }
   }
 
+  async function handleUpdateAnnouncement(id, data) {
+    try {
+      await maintenanceApi.updateAnnouncement(id, data)
+      await loadData()
+    } catch (err) {
+      setError('Failed to update announcement.')
+    }
+  }
+
   async function handleDeleteAnnouncement(id) {
     try {
       await maintenanceApi.deleteAnnouncement(id)
@@ -283,6 +292,7 @@ function MaintenanceDashboard() {
             announcements={announcements}
             userRole={role}
             onCreate={handleCreateAnnouncement}
+            onUpdate={handleUpdateAnnouncement}
             onDelete={handleDeleteAnnouncement}
             onToggle={handleToggleAnnouncement}
           />
