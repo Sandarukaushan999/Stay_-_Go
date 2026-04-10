@@ -65,18 +65,25 @@ export default function StudentDashboard() {
             </button>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 transition-all hover:shadow-md cursor-pointer flex flex-col justify-between" onClick={() => navigate('/rides')}>
+          <div
+            className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 transition-all hover:shadow-md cursor-pointer flex flex-col justify-between"
+            onClick={() => navigate('/rides/workspace?view=passenger')}
+            role="presentation"
+          >
             <div>
               <div className="p-3 bg-emerald-50 text-emerald-600 w-12 h-12 rounded-xl mb-6 flex items-center justify-center">
                 <Car className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">Ride Sharing Platform</h3>
+              <h3 className="text-xl font-bold text-slate-900 mb-2">Ride Sharing Workspace</h3>
               <p className="text-slate-500 mb-6">
-                Find rides to and from campus with fellow verified students and riders.
+                Live trip map, request rides to SLIIT, and your ride history — same tools as the top nav Workspace.
               </p>
             </div>
-            <button className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors">
-              Open Ride Sharing
+            <button
+              type="button"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+            >
+              Open ride workspace
             </button>
           </div>
         </div>

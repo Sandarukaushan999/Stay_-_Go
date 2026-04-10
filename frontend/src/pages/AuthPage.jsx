@@ -124,8 +124,12 @@ export default function AuthPage({
       const roleAfter = authedUser?.role ?? user?.role
       if (roleAfter === 'admin' || roleAfter === 'super_admin') {
         window.location.href = '/admin'
-      } else if (roleAfter === 'student' || roleAfter === 'rider' || roleAfter === 'technician') {
+      } else if (roleAfter === 'student') {
+        window.location.href = '/student/dashboard'
+      } else if (roleAfter === 'rider') {
         window.location.href = '/rides/workspace'
+      } else if (roleAfter === 'technician') {
+        window.location.href = '/technician/dashboard'
       } else {
         afterAuthRedirect?.()
       }

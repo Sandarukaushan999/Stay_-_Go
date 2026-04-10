@@ -11,8 +11,8 @@ export default function RidesGatewayPage() {
   // If user is somehow missing (race), let ProtectedRoute handle it, but keep safe.
   if (!user) return <Navigate to="/auth/login" replace />
 
-  // Only students can use ride system; admin should use admin dashboard.
   if (user.role === 'admin' || user.role === 'super_admin') return <Navigate to="/admin" replace />
+  if (user.role === 'technician') return <Navigate to="/technician/dashboard" replace />
 
   // Rider UI should show for:
   // - approved riders (role=rider)

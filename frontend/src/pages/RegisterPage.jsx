@@ -31,7 +31,7 @@ export default function RegisterPage() {
       )
       setToken(data.token)
       await hydrateMe()
-      navigate('/', { replace: true })
+      navigate('/student/dashboard', { replace: true })
     } catch (err) {
       const msg = err?.response?.data?.message
       const details = err?.response?.data?.details
