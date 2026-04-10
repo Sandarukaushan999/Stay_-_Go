@@ -54,6 +54,7 @@ export async function register(payload) {
     isVerified: true,
     riderVerificationStatus: wantsRider ? 'pending' : 'none',
     riderAppliedAt: wantsRider ? new Date() : null,
+    lastLogin: new Date(),
   })
 
   const token = signAccessToken({ sub: user._id.toString(), role: user.role })
@@ -68,6 +69,9 @@ export async function login({ email, password }) {
   const ok = await verifyPassword(password, user.passwordHash)
   if (!ok) throw new ApiError(401, 'Invalid email or password')
 
+  user.lastLogin = new Date()
+  await user.save()
+
   const token = signAccessToken({ sub: user._id.toString(), role: user.role })
   return { user: sanitizeUser(user), token }
 }
@@ -80,4 +84,3 @@ export function sanitizeUser(userDoc) {
   delete safe._id
   return safe
 }
-

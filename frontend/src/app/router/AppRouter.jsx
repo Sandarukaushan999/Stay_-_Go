@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 
@@ -8,6 +8,7 @@ import NotFoundPage from '../../pages/NotFoundPage'
 import HomePage from '../../pages/HomePage'
 import RidesGatewayPage from '../../pages/RidesGatewayPage'
 import RideShowcasePage from '../../pages/RideShowcasePage'
+import UserProfilePage from '../../pages/UserProfilePage'
 
 import AdminDashboard from '../../Components/admin_and_user_management/dashboard/AdminDashboard'
 import UserList from '../../Components/admin_and_user_management/users/UserList'
@@ -18,7 +19,31 @@ import SafetyAlertsPage from '../../Components/admin_and_user_management/sos_and
 import RideRequestsPage from '../../Components/admin_and_user_management/ride_monitoring/RideRequestsPage'
 import ActiveRidersPage from '../../Components/admin_and_user_management/ride_monitoring/ActiveRidersPage'
 import RideDashboardPage from '../../Components/admin_and_user_management/ride_monitoring/RideDashboardPage'
-import MaintenanceDashboard from '../../Components/maintenance/MaintenanceDashboard'
+import StudentDashboard from '../../Components/admin_and_user_management/dashboard/StudentDashboard'
+import RiderDashboard from '../../Components/admin_and_user_management/dashboard/RiderDashboard'
+import TechnicianDashboard from '../../Components/admin_and_user_management/dashboard/TechnicianDashboard'
+import TechnicianJobs from '../../Components/admin_and_user_management/technician/TechnicianJobs'
+import RoommateDashboard from '../../Components/admin_and_user_management/roommate/RoommateDashboard'
+import MatchProfiles from '../../Components/admin_and_user_management/roommate/MatchProfiles'
+import RoommateReports from '../../Components/admin_and_user_management/roommate/RoommateReports'
+import MatchAnalytics from '../../Components/admin_and_user_management/roommate/MatchAnalytics'
+import AdminProfile from '../../Components/admin_and_user_management/system/AdminProfile'
+import AccessSettings from '../../Components/admin_and_user_management/system/AccessSettings'
+import DashboardSettings from '../../Components/admin_and_user_management/system/DashboardSettings'
+
+import MaintenanceDashboard from '../../Components/Maintenance/MaintenanceDashboard'
+import MainLayout from '../../Components/shared/layout/MainLayout'
+
+import RoomMateDashboard from '../../Components/Room_Mate_Matching/pages/Dashboard'
+import FinalResultPage from '../../Components/Room_Mate_Matching/pages/FinalResultPage'
+import IssuesPage from '../../Components/Room_Mate_Matching/pages/IssuesPage'
+import MatchRequestsPage from '../../Components/Room_Mate_Matching/pages/MatchRequestsPage'
+import MatchSuggestionsPage from '../../Components/Room_Mate_Matching/pages/MatchSuggestionsPage'
+import NotificationsPage from '../../Components/Room_Mate_Matching/pages/NotificationsPage'
+import ProfilePage from '../../Components/Room_Mate_Matching/pages/ProfilePage'
+import RoomPreferencePage from '../../Components/Room_Mate_Matching/pages/RoomPreferencePage'
+import SetupPage from '../../Components/Room_Mate_Matching/pages/SetupPage'
+import { DevIdentityProvider } from '../../Components/Room_Mate_Matching/contexts/DevIdentityContext'
 
 export default function AppRouter() {
   return (
@@ -56,6 +81,15 @@ export default function AppRouter() {
       <Route path="/rides" element={<RideShowcasePage />} />
 
       <Route element={<ProtectedRoute />}>
+        <Route
+          path="/profile"
+          element={
+            <MainLayout>
+              <UserProfilePage />
+            </MainLayout>
+          }
+        />
+
         <Route path="/rides/workspace" element={<RidesGatewayPage />} />
         <Route path="/maintenance" element={<MaintenanceDashboard />} />
 
@@ -70,10 +104,53 @@ export default function AppRouter() {
           <Route path="/admin/sos-alerts" element={<SOSAlertsTable />} />
           <Route path="/admin/safety-alerts" element={<SafetyAlertsPage />} />
           <Route path="/admin/incidents" element={<LiveTripsTable />} />
+
+          <Route path="/admin/roommate-dashboard" element={<RoommateDashboard />} />
+          <Route path="/admin/match-profiles" element={<MatchProfiles />} />
+          <Route path="/admin/roommate-reports" element={<RoommateReports />} />
+          <Route path="/admin/match-analytics" element={<MatchAnalytics />} />
+
+          <Route path="/admin/profile" element={<AdminProfile />} />
+          <Route path="/admin/access-settings" element={<AccessSettings />} />
+          <Route path="/admin/dashboard-settings" element={<DashboardSettings />} />
+        </Route>
+
+        <Route element={<RoleRoute allow={['student']} />}>
+          <Route path="/student/dashboard" element={<StudentDashboard />} />
+        </Route>
+
+        <Route element={<RoleRoute allow={['rider']} />}>
+          <Route path="/rider/dashboard" element={<RiderDashboard />} />
+        </Route>
+
+        <Route element={<RoleRoute allow={['technician']} />}>
+          <Route path="/technician/dashboard" element={<TechnicianDashboard />} />
+          <Route path="/technician/jobs/*" element={<TechnicianJobs />} />
+          <Route path="/technician/performance" element={<TechnicianDashboard />} />
+          <Route path="/technician/tasks/*" element={<TechnicianJobs />} />
         </Route>
 
         <Route element={<RoleRoute allow={['student', 'rider', 'technician']} />}>
-          <Route path="/student/dashboard" element={<RidesGatewayPage />} />
+          <Route
+            path="/roommate"
+            element={
+              <DevIdentityProvider>
+                <MainLayout>
+                  <Outlet />
+                </MainLayout>
+              </DevIdentityProvider>
+            }
+          >
+            <Route path="setup" element={<SetupPage />} />
+            <Route path="dashboard" element={<RoomMateDashboard />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="preferences" element={<RoomPreferencePage />} />
+            <Route path="matches" element={<MatchSuggestionsPage />} />
+            <Route path="requests" element={<MatchRequestsPage />} />
+            <Route path="notifications" element={<NotificationsPage />} />
+            <Route path="issues" element={<IssuesPage />} />
+            <Route path="final-result" element={<FinalResultPage />} />
+          </Route>
         </Route>
       </Route>
 

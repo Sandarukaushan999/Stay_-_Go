@@ -2,6 +2,7 @@ import { asyncHandler } from '../../common/utils/asyncHandler.js'
 import * as userService from '../users/user.service.js'
 import * as tripService from '../ride_sharing/services/trip.service.js'
 import * as sosService from '../ride_sharing/services/sos.service.js'
+import { AdminActionLog } from './models/AdminActionLog.js'
 
 export const dashboard = asyncHandler(async (req, res) => {
   const counts = await userService.dashboardCounts()
@@ -21,6 +22,19 @@ export const createUser = asyncHandler(async (req, res) => {
 
 export const setBlocked = asyncHandler(async (req, res) => {
   const user = await userService.setBlocked(req.params.id, req.body.isBlocked)
+  res.json({ success: true, user })
+})
+
+export const setRole = asyncHandler(async (req, res) => {
+  const user = await userService.updateUserRole(req.params.id, req.body.role)
+
+  await AdminActionLog.create({
+    adminId: req.user.id,
+    actionType: 'ROLE_UPDATE',
+    description: `Modified role for user ${user.email} -> ${req.body.role}`,
+    targetId: user.id,
+  })
+
   res.json({ success: true, user })
 })
 
@@ -59,4 +73,3 @@ export const resolveSos = asyncHandler(async (req, res) => {
   const sos = await sosService.resolveSos(req.params.id)
   res.json({ success: true, sos })
 })
-

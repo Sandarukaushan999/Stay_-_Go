@@ -72,6 +72,16 @@ export async function setBlocked(userId, isBlocked) {
   return sanitizeUser(user)
 }
 
+export async function updateUserRole(userId, role) {
+  const user = await User.findByIdAndUpdate(
+    userId,
+    { role },
+    { new: true, runValidators: true }
+  ).lean()
+  if (!user) throw new ApiError(404, 'User not found')
+  return sanitizeUser(user)
+}
+
 export async function approveRider(userId, approved = true) {
   const user = await User.findById(userId)
   if (!user) throw new ApiError(404, 'User not found')
@@ -142,4 +152,3 @@ export function sanitizeUser(userDoc) {
   delete safe._id
   return safe
 }
-
