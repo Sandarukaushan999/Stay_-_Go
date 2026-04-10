@@ -1,6 +1,11 @@
 import { z } from 'zod'
 import { ROLE_VALUES } from '../../common/constants/roles.js'
 
+const latLngSchema = z.object({
+  lat: z.coerce.number(),
+  lng: z.coerce.number(),
+})
+
 export const registerSchema = z.object({
   fullName: z.string().min(2),
   email: z.string().email(),
@@ -17,12 +22,9 @@ export const registerSchema = z.object({
   vehicleNumber: z.string().optional(),
   seatCount: z.number().optional(),
 
-  residenceLocation: z
-    .object({ lat: z.number(), lng: z.number() })
-    .optional(),
-  vehicleOriginLocation: z
-    .object({ lat: z.number(), lng: z.number() })
-    .optional(),
+  /** JSON often sends explicit `null`; `.optional()` alone rejects null. */
+  residenceLocation: latLngSchema.nullish(),
+  vehicleOriginLocation: latLngSchema.nullish(),
 })
 
 export const loginSchema = z.object({

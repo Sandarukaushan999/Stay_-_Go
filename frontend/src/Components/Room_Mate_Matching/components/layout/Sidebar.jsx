@@ -9,7 +9,7 @@ const studentLinks = [
     { to: '/roommate/profile', label: 'Profile', icon: <FaUser /> },
     { to: '/roommate/preferences', label: 'Room Preference', icon: <FaBed /> },
     { to: '/roommate/matches', label: 'Find Matches', icon: <FaUsers /> },
-    { to: '/roommate/match-requests', label: 'Match Requests', icon: <FaHandshake /> },
+    { to: '/roommate/requests', label: 'Match Requests', icon: <FaHandshake /> },
     { to: '/roommate/final-result', label: 'Final Result', icon: <FaLock /> },
     { to: '/roommate/issues', label: 'Report Issues', icon: <FaExclamationTriangle /> },
     { to: '/roommate/notifications', label: 'Notifications', icon: <FaBell /> },
@@ -27,7 +27,7 @@ export default function Sidebar() {
         if (to === '/roommate/dashboard') return 'available'; // Dashboard is always available
         if (to === '/roommate/profile') return 'available';
         if (to === '/roommate/preferences') return isProfileComplete ? 'available' : 'locked';
-        if (['/roommate/matches', '/roommate/match-requests', '/roommate/final-result'].includes(to)) return isRoomPrefComplete ? 'available' : 'locked';
+        if (['/roommate/matches', '/roommate/requests', '/roommate/final-result'].includes(to)) return isRoomPrefComplete ? 'available' : 'locked';
         return 'available';
     };
 

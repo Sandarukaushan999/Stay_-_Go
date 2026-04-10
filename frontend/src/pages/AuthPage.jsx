@@ -86,21 +86,37 @@ export default function AuthPage({
       } else {
         const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api'
         const isStudent = accountType === 'student'
-        const { data } = await axios.post(`${base}/auth/register`, {
+        const body = {
           fullName,
           email,
           password,
           role: accountType,
-          phone: isStudent ? phone : undefined,
-          studentId: isStudent ? studentId : undefined,
-          campusId: isStudent ? campusId : undefined,
-          emergencyContact: isStudent ? emergencyContact : undefined,
           hasVehicle: isStudent ? hasVehicle : false,
-          vehicleType: isStudent && hasVehicle ? vehicleType : undefined,
-          vehicleNumber: isStudent && hasVehicle ? vehicleNumber : undefined,
-          residenceLocation: isStudent && !hasVehicle ? residenceLocation : undefined,
-          vehicleOriginLocation: isStudent && hasVehicle ? vehicleOriginLocation : undefined,
-        })
+        }
+        if (isStudent) {
+          body.campusId = campusId.trim()
+          if (phone.trim()) body.phone = phone.trim()
+          if (studentId.trim()) body.studentId = studentId.trim()
+          if (emergencyContact.trim()) body.emergencyContact = emergencyContact.trim()
+          if (hasVehicle) {
+            body.vehicleType = vehicleType
+            if (vehicleNumber.trim()) body.vehicleNumber = vehicleNumber.trim()
+            if (
+              vehicleOriginLocation &&
+              typeof vehicleOriginLocation.lat === 'number' &&
+              typeof vehicleOriginLocation.lng === 'number'
+            ) {
+              body.vehicleOriginLocation = vehicleOriginLocation
+            }
+          } else if (
+            residenceLocation &&
+            typeof residenceLocation.lat === 'number' &&
+            typeof residenceLocation.lng === 'number'
+          ) {
+            body.residenceLocation = residenceLocation
+          }
+        }
+        const { data } = await axios.post(`${base}/auth/register`, body)
         setToken(data.token)
         authedUser = await hydrateMe()
       }
@@ -116,10 +132,15 @@ export default function AuthPage({
     } catch (e) {
       const status = e?.response?.status
       const message = e?.response?.data?.message
+      const details = e?.response?.data?.details
+      const fieldErr =
+        details?.fieldErrors && Object.values(details.fieldErrors).flat().filter(Boolean)[0]
 
       if (status === 409) setError(message ?? 'Email already registered. Try logging in.')
       else if (status === 401) setError(message ?? 'Invalid email or password.')
       else if (status === 403) setError(message ?? 'Account blocked or not allowed.')
+      else if (status === 400)
+        setError(message && message !== 'Validation error' ? message : fieldErr ?? message ?? 'Invalid registration data.')
       else setError('Authentication failed. Check credentials and server.')
     } finally {
       setLoading(false)

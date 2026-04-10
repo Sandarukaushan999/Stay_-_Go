@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 
@@ -33,6 +33,7 @@ import DashboardSettings from '../../Components/admin_and_user_management/system
 
 import MaintenanceDashboard from '../../Components/Maintenance/MaintenanceDashboard'
 import MainLayout from '../../Components/shared/layout/MainLayout'
+import RoommateAppLayout from '../../Components/Room_Mate_Matching/components/layout/AppLayout'
 
 import RoomMateDashboard from '../../Components/Room_Mate_Matching/pages/Dashboard'
 import FinalResultPage from '../../Components/Room_Mate_Matching/pages/FinalResultPage'
@@ -43,6 +44,8 @@ import NotificationsPage from '../../Components/Room_Mate_Matching/pages/Notific
 import ProfilePage from '../../Components/Room_Mate_Matching/pages/ProfilePage'
 import RoomPreferencePage from '../../Components/Room_Mate_Matching/pages/RoomPreferencePage'
 import SetupPage from '../../Components/Room_Mate_Matching/pages/SetupPage'
+import RoomsAdminPage from '../../Components/Room_Mate_Matching/pages/admin/RoomsAdminPage'
+import IssuesAdminPage from '../../Components/Room_Mate_Matching/pages/admin/IssuesAdminPage'
 import { DevIdentityProvider } from '../../Components/Room_Mate_Matching/contexts/DevIdentityContext'
 
 export default function AppRouter() {
@@ -130,26 +133,28 @@ export default function AppRouter() {
           <Route path="/technician/tasks/*" element={<TechnicianJobs />} />
         </Route>
 
-        <Route element={<RoleRoute allow={['student', 'rider', 'technician']} />}>
+        <Route element={<RoleRoute allow={['student', 'rider', 'technician', 'admin', 'super_admin']} />}>
           <Route
             path="/roommate"
             element={
               <DevIdentityProvider>
-                <MainLayout>
-                  <Outlet />
-                </MainLayout>
+                <RoommateAppLayout />
               </DevIdentityProvider>
             }
           >
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="setup" element={<SetupPage />} />
             <Route path="dashboard" element={<RoomMateDashboard />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="preferences" element={<RoomPreferencePage />} />
             <Route path="matches" element={<MatchSuggestionsPage />} />
+            <Route path="match-requests" element={<Navigate to="/roommate/requests" replace />} />
             <Route path="requests" element={<MatchRequestsPage />} />
             <Route path="notifications" element={<NotificationsPage />} />
             <Route path="issues" element={<IssuesPage />} />
             <Route path="final-result" element={<FinalResultPage />} />
+            <Route path="admin/rooms" element={<RoomsAdminPage />} />
+            <Route path="admin/issues" element={<IssuesAdminPage />} />
           </Route>
         </Route>
       </Route>

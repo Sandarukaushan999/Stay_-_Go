@@ -39,8 +39,14 @@ export default function TopNavbar() {
           <HeaderLink label="Home" onClick={() => navigate('/')} />
           <HeaderLink label="Rides" onClick={() => navigate('/rides')} />
           <HeaderLink label="Workspace" onClick={() => navigate('/rides/workspace')} />
+          {['student', 'rider', 'technician'].includes(user?.role) && (
+            <HeaderLink label="Roommates" onClick={() => navigate('/roommate/dashboard')} />
+          )}
           {(user?.role === 'admin' || user?.role === 'super_admin') && (
-            <HeaderLink label="Admin Ride Dashboard" onClick={() => navigate('/admin/ride-dashboard')} />
+            <>
+              <HeaderLink label="Roommate admin" onClick={() => navigate('/admin/roommate-dashboard')} />
+              <HeaderLink label="Admin Ride Dashboard" onClick={() => navigate('/admin/ride-dashboard')} />
+            </>
           )}
         </nav>
 

@@ -1,0 +1,30 @@
+/* Scoped styles for RoomMateMatchingModule (MemoryRouter demo shell) */
+.roommate-module {
+  min-height: 200px;
+}
+
+.roommate-module-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
+}
+
+.roommate-module-hint {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.roommate-module-exit {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.roommate-module-exit:hover {
+  color: #0f172a;
+}

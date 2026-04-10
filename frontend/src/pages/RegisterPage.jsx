@@ -7,6 +7,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [campusId, setCampusId] = useState('')
   const [error, setError] = useState(null)
   const [loading, setLoading] = useState(false)
   const setToken = useAuthStore((s) => s.setToken)
@@ -20,13 +21,23 @@ export default function RegisterPage() {
     try {
       const { data } = await axios.post(
         (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api') + '/auth/register',
-        { fullName, email, password }
+        {
+          fullName,
+          email,
+          password,
+          role: 'student',
+          campusId: campusId.trim(),
+        }
       )
       setToken(data.token)
       await hydrateMe()
       navigate('/', { replace: true })
     } catch (err) {
-      setError('Registration failed')
+      const msg = err?.response?.data?.message
+      const details = err?.response?.data?.details
+      const fieldErr =
+        details?.fieldErrors && Object.values(details.fieldErrors).flat().filter(Boolean)[0]
+      setError(msg || fieldErr || 'Registration failed')
     } finally {
       setLoading(false)
     }
@@ -66,7 +77,19 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               type="password"
               required
+              minLength={6}
             />
+          </div>
+          <div>
+            <label className="text-sm text-slate-300">University / campus ID</label>
+            <input
+              className="mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+              value={campusId}
+              onChange={(e) => setCampusId(e.target.value)}
+              placeholder="e.g. uoc-main"
+              required
+            />
+            <p className="mt-1 text-xs text-slate-500">Required for student accounts on the API.</p>
           </div>
 
           {error ? (

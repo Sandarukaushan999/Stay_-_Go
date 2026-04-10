@@ -39,7 +39,7 @@ export function DevIdentityProvider({ children }) {
     const isProfileComplete = profile?.profileCompleted === true;
     const isRoomPrefComplete = profile?.roomPreferenceCompleted === true;
     const isLocked = profile?.finalLockCompleted === true;
-    const isAdmin = role === 'admin';
+    const isAdmin = role === 'admin' || role === 'super_admin';
 
     // Alias the role and ID for backwards compatibility
     return (
