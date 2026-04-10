@@ -1,7 +1,7 @@
 // TicketFilters component - compact inline filter bar
 // Using hardcoded hex colors for consistency
 
-const selectClasses = 'rounded-xl border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312] outline-none focus:border-[#876DFF] focus:ring-1 focus:ring-[#876DFF]/20'
+const selectClasses = 'rounded-xl border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312] outline-none focus:border-[#101312]/40 focus:ring-1 focus:ring-[#101312]/10'
 
 function TicketFilters({
   filters,
@@ -62,7 +62,7 @@ function TicketFilters({
       {showSearch && (
         <input
           type="text"
-          className="rounded-xl border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312] placeholder-[#101312]/50 outline-none focus:border-[#876DFF] focus:ring-1 focus:ring-[#876DFF]/20"
+          className="rounded-xl border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312] placeholder-[#101312]/50 outline-none focus:border-[#101312]/40 focus:ring-1 focus:ring-[#101312]/10"
           placeholder="Search ID, title, or room..."
           value={filters.search || ''}
           onChange={(e) => handleChange('search', e.target.value)}

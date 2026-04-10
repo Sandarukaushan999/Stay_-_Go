@@ -161,10 +161,21 @@ function MaintenanceDashboard() {
     }
   }
 
+  // Helper: refresh the selected ticket detail after an action
+  async function refreshSelectedTicket(ticketId) {
+    try {
+      const updated = await maintenanceApi.getTicketById(ticketId)
+      setSelectedTicket(updated)
+    } catch {
+      setSelectedTicket(null)
+    }
+  }
+
   async function handleStartTicket(ticketId) {
     try {
       await maintenanceApi.startTicket(ticketId)
       await loadData()
+      await refreshSelectedTicket(ticketId)
     } catch (err) {
       setError('Failed to start ticket.')
     }
@@ -174,6 +185,7 @@ function MaintenanceDashboard() {
     try {
       await maintenanceApi.resolveTicket(ticketId, resolutionNote)
       await loadData()
+      await refreshSelectedTicket(ticketId)
     } catch (err) {
       setError('Failed to resolve ticket.')
     }
@@ -316,7 +328,7 @@ function MaintenanceDashboard() {
     <div className="mx-auto max-w-6xl text-[#101312]">
       {/* Error Banner */}
       {error && (
-        <div className="mb-4 rounded-xl border border-[#e53e3e]/20 bg-[#e53e3e]/5 px-4 py-3 text-sm text-[#e53e3e]">
+        <div data-print-hide="true" className="mb-4 rounded-xl border border-[#e53e3e]/20 bg-[#e53e3e]/5 px-4 py-3 text-sm text-[#e53e3e]">
           <div className="flex items-center justify-between">
             <span>{error}</span>
             <button onClick={() => setError(null)} className="ml-3 hover:opacity-70">Dismiss</button>
@@ -324,8 +336,8 @@ function MaintenanceDashboard() {
         </div>
       )}
 
-      {/* Page Header — compact bar */}
-      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      {/* Page Header */}
+      <div data-print-hide="true" className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-[#101312]">Maintenance</h1>
           <p className="mt-1 text-sm text-[#101312]/75">
@@ -356,8 +368,8 @@ function MaintenanceDashboard() {
         </div>
       </div>
 
-      {/* Tab Navigation — clean tab bar */}
-      <div className="mb-6 border-b border-[#101312]/10">
+      {/* Tab Navigation */}
+      <div data-print-hide="true" className="mb-6 border-b border-[#101312]/10">
         <div className="flex gap-1">
           {tabs.map((tab) => (
             <button
