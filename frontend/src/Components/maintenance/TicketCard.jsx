@@ -17,10 +17,10 @@ const categoryLabels = {
 
 // Priority left-border colors
 const priorityBorder = {
-  low: 'border-l-slate-600',
-  medium: 'border-l-blue-500',
-  high: 'border-l-orange-500',
-  emergency: 'border-l-red-500',
+  low: 'border-l-slate-400',
+  medium: 'border-l-violet-400',
+  high: 'border-l-emerald-500',
+  emergency: 'border-l-violet-600',
 }
 
 function TicketCard({ ticket, onClick }) {
@@ -34,7 +34,7 @@ function TicketCard({ ticket, onClick }) {
 
   return (
     <article
-      className={`group relative cursor-pointer rounded-2xl border border-slate-800 border-l-4 ${priorityBorder[ticket.priority] || 'border-l-slate-600'} bg-slate-900/40 p-4 transition hover:border-slate-700 hover:bg-slate-900/70`}
+      className={`group relative cursor-pointer rounded-2xl border border-slate-200 border-l-4 ${priorityBorder[ticket.priority] || 'border-l-slate-400'} bg-white p-4 transition hover:border-slate-300 hover:shadow-md`}
       onClick={onClick}
     >
       {/* Top row - ticket ID and date */}
@@ -44,10 +44,10 @@ function TicketCard({ ticket, onClick }) {
       </div>
 
       {/* Title */}
-      <h3 className="mt-2 text-sm font-semibold text-slate-100">{ticket.title}</h3>
+      <h3 className="mt-2 text-sm font-semibold text-slate-950">{ticket.title}</h3>
 
       {/* Category + location */}
-      <div className="mt-2 flex items-center gap-3 text-xs text-slate-400">
+      <div className="mt-2 flex items-center gap-3 text-xs text-slate-600">
         <span>{categoryIcons[ticket.category] || '📋'} {categoryLabels[ticket.category] || ticket.category}</span>
         <span>Block {ticket.hostelBlock} · Room {ticket.roomNumber}</span>
       </div>
@@ -59,7 +59,7 @@ function TicketCard({ ticket, onClick }) {
       </div>
 
       {/* Hover arrow */}
-      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 opacity-0 transition group-hover:opacity-100" aria-hidden="true">→</span>
+      <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 opacity-0 transition group-hover:opacity-100" aria-hidden="true">→</span>
     </article>
   )
 }

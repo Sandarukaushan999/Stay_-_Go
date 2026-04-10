@@ -22,7 +22,7 @@ function TicketTimeline({ statusHistory = [] }) {
 
   if (statusHistory.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4">
         <p className="text-sm text-slate-500">No status history available yet.</p>
       </div>
     )
@@ -36,13 +36,13 @@ function TicketTimeline({ statusHistory = [] }) {
           <div key={index} className="flex gap-3">
             {/* Timeline marker - dot + line */}
             <div className="flex flex-col items-center">
-              <span className={`mt-1 h-3 w-3 rounded-full ${isLast ? 'bg-violet-500' : 'bg-slate-600'}`} />
-              {!isLast && <span className="w-px flex-1 bg-slate-700" />}
+              <span className={`mt-1 h-3 w-3 rounded-full ${isLast ? 'bg-emerald-500' : 'bg-slate-300'}`} />
+              {!isLast && <span className="w-px flex-1 bg-slate-200" />}
             </div>
 
             {/* Content */}
             <div className={`pb-4 ${isLast ? '' : ''}`}>
-              <p className={`text-sm font-medium ${isLast ? 'text-violet-300' : 'text-slate-200'}`}>
+              <p className={`text-sm font-medium ${isLast ? 'text-emerald-700' : 'text-slate-900'}`}>
                 {statusLabels[entry.status] || entry.status}
               </p>
               <p className="mt-0.5 text-xs text-slate-500">{formatDate(entry.changedAt)}</p>
@@ -52,7 +52,7 @@ function TicketTimeline({ statusHistory = [] }) {
                 </p>
               )}
               {entry.note && (
-                <p className="mt-1 text-xs text-slate-400">{entry.note}</p>
+                <p className="mt-1 text-xs text-slate-600">{entry.note}</p>
               )}
             </div>
           </div>

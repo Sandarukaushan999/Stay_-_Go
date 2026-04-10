@@ -19,8 +19,8 @@ function RatingStars({ rating = 0, onRate, readOnly = false }) {
           key={starValue}
           type="button"
           className={`text-xl transition ${
-            starValue <= rating ? 'text-amber-400' : 'text-slate-600'
-          } ${readOnly ? 'cursor-default' : 'cursor-pointer hover:text-amber-300'}`}
+            starValue <= rating ? 'text-emerald-500' : 'text-slate-300'
+          } ${readOnly ? 'cursor-default' : 'cursor-pointer hover:text-emerald-400'}`}
           onClick={() => handleClick(starValue)}
           disabled={readOnly}
           aria-label={`Rate ${starValue} out of 5`}
@@ -29,7 +29,7 @@ function RatingStars({ rating = 0, onRate, readOnly = false }) {
         </button>
       ))}
       {rating > 0 && (
-        <span className="ml-1 text-sm text-slate-400">{rating}/5</span>
+        <span className="ml-1 text-sm text-slate-500">{rating}/5</span>
       )}
     </div>
   )

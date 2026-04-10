@@ -7,12 +7,12 @@ import TicketFilters from './TicketFilters'
 
 // Status definitions with colors for the overview cards
 const statusList = [
-  { key: 'submitted', label: 'Submitted', bg: 'bg-slate-800', text: 'text-slate-200', accent: 'border-slate-600' },
-  { key: 'assigned', label: 'Assigned', bg: 'bg-violet-900/30', text: 'text-violet-300', accent: 'border-violet-600' },
-  { key: 'in_progress', label: 'In Progress', bg: 'bg-amber-900/30', text: 'text-amber-300', accent: 'border-amber-600' },
-  { key: 'resolved', label: 'Resolved', bg: 'bg-emerald-900/30', text: 'text-emerald-300', accent: 'border-emerald-600' },
-  { key: 'closed', label: 'Closed', bg: 'bg-slate-800/60', text: 'text-slate-400', accent: 'border-slate-600' },
-  { key: 'rejected', label: 'Rejected', bg: 'bg-red-900/30', text: 'text-red-300', accent: 'border-red-600' },
+  { key: 'submitted', label: 'Submitted', bg: 'bg-white', activeBg: 'bg-emerald-100', text: 'text-slate-600', accent: 'border-slate-400' },
+  { key: 'assigned', label: 'Assigned', bg: 'bg-white', activeBg: 'bg-emerald-100', text: 'text-violet-600', accent: 'border-violet-500' },
+  { key: 'in_progress', label: 'In Progress', bg: 'bg-white', activeBg: 'bg-emerald-100', text: 'text-amber-600', accent: 'border-amber-500' },
+  { key: 'resolved', label: 'Resolved', bg: 'bg-white', activeBg: 'bg-emerald-100', text: 'text-emerald-600', accent: 'border-emerald-500' },
+  { key: 'closed', label: 'Closed', bg: 'bg-white', activeBg: 'bg-emerald-100', text: 'text-slate-500', accent: 'border-slate-400' },
+  { key: 'rejected', label: 'Rejected', bg: 'bg-white', activeBg: 'bg-emerald-100', text: 'text-violet-600', accent: 'border-violet-500' },
 ]
 
 // Priority weights for sorting (higher number = more urgent)
@@ -78,29 +78,32 @@ function MyTickets({ tickets = [], onSelectTicket }) {
     <div className="space-y-6">
       {/* Page heading */}
       <div>
-        <h2 className="text-lg font-semibold text-slate-100">My Tickets</h2>
-        <p className="mt-1 text-sm text-slate-400">
+        <h2 className="text-lg font-semibold text-slate-950">My Tickets</h2>
+        <p className="mt-1 text-sm text-slate-600">
           {tickets.length} total ticket{tickets.length !== 1 ? 's' : ''}
         </p>
       </div>
 
       {/* Status overview cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {statusList.map((s) => (
-          <button
-            key={s.key}
-            type="button"
-            className={`rounded-2xl border-l-4 ${s.accent} ${s.bg} px-4 py-3 text-left transition hover:brightness-110`}
-            onClick={() => setFilters((prev) => ({
-              ...prev,
-              status: prev.status === s.key ? '' : s.key,
-            }))}
-            aria-label={`Filter by ${s.label}`}
-          >
-            <p className="text-2xl font-bold text-slate-100">{statusCounts[s.key]}</p>
-            <p className={`text-xs font-medium ${s.text}`}>{s.label}</p>
-          </button>
-        ))}
+        {statusList.map((s) => {
+          const isActive = filters.status === s.key
+          return (
+            <button
+              key={s.key}
+              type="button"
+              className={`rounded-2xl border border-slate-200 border-l-4 ${s.accent} ${isActive ? s.activeBg : s.bg} px-4 py-3 text-left transition hover:bg-emerald-50/50`}
+              onClick={() => setFilters((prev) => ({
+                ...prev,
+                status: prev.status === s.key ? '' : s.key,
+              }))}
+              aria-label={`Filter by ${s.label}`}
+            >
+              <p className="text-2xl font-bold text-slate-950">{statusCounts[s.key]}</p>
+              <p className={`text-xs font-medium ${s.text}`}>{s.label}</p>
+            </button>
+          )
+        })}
       </div>
 
       {/* Filter bar - reuses TicketFilters component */}
@@ -127,9 +130,9 @@ function MyTickets({ tickets = [], onSelectTicket }) {
         </div>
       ) : (
         // Empty state
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/40 py-16 text-center">
+        <div className="rounded-2xl border border-slate-200 bg-white py-16 text-center">
           <p className="text-3xl">📭</p>
-          <p className="mt-3 text-sm font-medium text-slate-300">No tickets found</p>
+          <p className="mt-3 text-sm font-medium text-slate-950">No tickets found</p>
           <p className="mt-1 text-xs text-slate-500">
             {tickets.length === 0
               ? 'You have not submitted any maintenance tickets yet.'
@@ -138,7 +141,7 @@ function MyTickets({ tickets = [], onSelectTicket }) {
           {tickets.length > 0 && (
             <button
               type="button"
-              className="mt-4 rounded-xl bg-slate-800 px-4 py-2 text-xs text-slate-300 transition hover:bg-slate-700"
+              className="mt-4 rounded-xl border border-slate-300 bg-white px-4 py-2 text-xs text-slate-700 transition hover:bg-emerald-50"
               onClick={() => setFilters({ status: '', priority: '', category: '' })}
             >
               Clear Filters

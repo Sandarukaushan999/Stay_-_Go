@@ -25,8 +25,8 @@ const valueSignals = [
   {
     title: 'Transparent hostel support',
     description: 'Maintenance tickets stay visible from reporting to final closure and rating.',
-    actionLabel: 'Open Maintenance Section',
-    actionTarget: { type: 'section', value: 'maintenance' },
+    actionLabel: 'Open Maintenance',
+    actionTarget: { type: 'maintenance' },
   },
   {
     title: 'Role-based analytics',
@@ -59,7 +59,7 @@ const valueCards = [
     description:
       'Submit issues digitally, follow every stage of the workflow, and rate service quality after resolution.',
     actionLabel: 'Open Maintenance',
-    actionTarget: { type: 'section', value: 'maintenance' },
+    actionTarget: { type: 'maintenance' },
   },
 ]
 
@@ -205,6 +205,7 @@ function Home({ headerNavItems, onNavigateToRide, onNavigateToPage, onNavigateTo
   function handleDirectNavigation(target) {
     if (!target) return
     if (target.type === 'ride') return onNavigateToRide()
+    if (target.type === 'maintenance') return navigate('/maintenance')
     if (target.type === 'auth') return onNavigateToAuth(target.value)
     if (target.type === 'page') return onNavigateToPage(target.value)
     if (target.type === 'section') return scrollToSection(target.value)
@@ -521,7 +522,7 @@ export default function HomePage() {
     { label: 'Home', onClick: () => navigate('/') },
     { label: 'Roommates', onClick: () => document.getElementById('roommates')?.scrollIntoView({ behavior: 'smooth' }) },
     { label: 'Rides', onClick: () => document.getElementById('rides')?.scrollIntoView({ behavior: 'smooth' }) },
-    { label: 'Maintenance', onClick: () => document.getElementById('maintenance')?.scrollIntoView({ behavior: 'smooth' }) },
+    { label: 'Maintenance', onClick: () => navigate('/maintenance') },
     { label: 'Dashboard', onClick: () => document.getElementById('dashboard')?.scrollIntoView({ behavior: 'smooth' }) },
   ]
 

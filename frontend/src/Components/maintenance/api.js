@@ -25,12 +25,12 @@ export async function createTicket(formData) {
       form.append('attachments', file)
     })
     const res = await api.post('/maintenance/tickets', form)
-    return res.data
+    return res.data.data
   }
 
   // No files - send as JSON
   const res = await api.post('/maintenance/tickets', formData)
-  return res.data
+  return res.data.data
 }
 
 // Student: Get my tickets
@@ -77,31 +77,31 @@ export async function getTechnicians() {
 // Admin: Assign technician to ticket
 export async function assignTicket(ticketId, technicianId) {
   const res = await api.patch(`/maintenance/tickets/${ticketId}/assign`, { technicianId })
-  return res.data
+  return res.data.data
 }
 
 // Admin: Reject ticket
 export async function rejectTicket(ticketId, reason) {
   const res = await api.patch(`/maintenance/tickets/${ticketId}/reject`, { reason })
-  return res.data
+  return res.data.data
 }
 
 // Technician: Start working on ticket
 export async function startTicket(ticketId) {
   const res = await api.patch(`/maintenance/tickets/${ticketId}/start`)
-  return res.data
+  return res.data.data
 }
 
 // Technician: Resolve ticket
 export async function resolveTicket(ticketId, resolutionNote) {
   const res = await api.patch(`/maintenance/tickets/${ticketId}/resolve`, { resolutionNote })
-  return res.data
+  return res.data.data
 }
 
 // Student: Rate and close ticket
 export async function rateTicket(ticketId, rating, ratingFeedback) {
   const res = await api.patch(`/maintenance/tickets/${ticketId}/rate`, { rating, ratingFeedback })
-  return res.data
+  return res.data.data
 }
 
 // Admin: Get analytics data
@@ -129,23 +129,23 @@ export async function getAllAnnouncements() {
 // Admin: Create announcement
 export async function createAnnouncement(data) {
   const res = await api.post('/maintenance/announcements', data)
-  return res.data
+  return res.data.data
 }
 
 // Admin: Update announcement
 export async function updateAnnouncement(id, data) {
   const res = await api.put(`/maintenance/announcements/${id}`, data)
-  return res.data
+  return res.data.data
 }
 
 // Admin: Delete announcement
 export async function deleteAnnouncement(id) {
   const res = await api.delete(`/maintenance/announcements/${id}`)
-  return res.data
+  return res.data.data
 }
 
 // Admin: Toggle announcement visibility
 export async function toggleAnnouncement(id) {
   const res = await api.patch(`/maintenance/announcements/${id}/toggle`)
-  return res.data
+  return res.data.data
 }

@@ -1,7 +1,7 @@
 // TicketFilters component - compact inline filter bar
 // Filters: status, priority, category, search, sort
 
-const selectClasses = 'rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 outline-none focus:border-violet-500'
+const selectClasses = 'rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 outline-none focus:border-emerald-500'
 
 function TicketFilters({
   filters,
@@ -19,7 +19,7 @@ function TicketFilters({
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3">
       <span className="text-xs font-medium text-slate-500">Filters</span>
 
       {/* Status filter */}
@@ -68,7 +68,7 @@ function TicketFilters({
       {showSearch && (
         <input
           type="text"
-          className="rounded-xl border border-slate-700 bg-slate-900 px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500"
+          className="rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500"
           placeholder="Search ID, title, or room..."
           value={filters.search || ''}
           onChange={(e) => handleChange('search', e.target.value)}
@@ -86,7 +86,7 @@ function TicketFilters({
       {/* Clear all */}
       <button
         type="button"
-        className="rounded-lg px-2 py-1 text-xs text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+        className="rounded-lg px-2 py-1 text-xs text-slate-600 hover:bg-emerald-50 hover:text-slate-900"
         onClick={() => onFilterChange({ status: '', priority: '', category: '', search: '' })}
       >
         Clear
