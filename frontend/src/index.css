@@ -17,7 +17,7 @@ body,
 }
 
 body {
-  @apply bg-slate-50 text-slate-950;
+  @apply bg-white text-slate-950;
 }
 
 @layer base {
@@ -33,10 +33,10 @@ body {
   }
 
   .theme-accent-btn {
-    @apply rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400;
+    @apply rounded-xl bg-[#BAF91A] px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00];
   }
 
   .theme-outline-btn {
-    @apply rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100;
+    @apply rounded-xl border border-[#101312]/20 bg-white px-4 py-2 text-sm text-[#101312] transition hover:bg-[#E2FF99];
   }
 }

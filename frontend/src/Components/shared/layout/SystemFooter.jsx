@@ -12,42 +12,84 @@ export default function SystemFooter({ onNavigateToPage }) {
     navigate('/rides/workspace')
   }
 
+  function goPassengerDashboard() {
+    navigate('/rides/workspace?view=passenger')
+  }
+
+  function goRiderDashboard() {
+    navigate('/rides/workspace?view=rider')
+  }
+
+  function goCreateAccount() {
+    navigate('/auth/register')
+  }
+
   function goRideDashboard() {
     navigate('/admin/ride-dashboard')
   }
 
   return (
     <section className="mt-10">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="rounded-t-2xl bg-emerald-500 px-6 py-9">
+      <div className="w-full px-4 sm:px-6 lg:px-8">
+        <div className="rounded-t-2xl border border-[#101312]/15 bg-[#BAF91A] px-6 py-9">
           <div className="max-w-3xl">
-            <h3 className="text-5xl font-semibold leading-tight text-slate-950">
+            <h3 className="text-4xl font-semibold leading-tight text-[#101312] sm:text-5xl">
               From Underdog to Global Leader A Journey of Growth and Innovation.
             </h3>
-            <p className="mt-3 text-sm leading-relaxed text-slate-900/85">
+            <p className="mt-3 text-sm leading-relaxed text-[#101312]/85">
               The future of student transport depends on reliable operations, transparent analytics, and safe
               collaboration between riders, passengers, and admins.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <button
                 type="button"
+                onClick={goHome}
+                className="rounded-lg border border-[#101312]/25 bg-white px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+              >
+                Home
+              </button>
+              <button
+                type="button"
                 onClick={goWorkspace}
-                className="rounded-lg bg-slate-950 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="rounded-lg bg-[#101312] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#2a2f2c]"
               >
                 Open workspace
               </button>
               <button
                 type="button"
                 onClick={goRideDashboard}
-                className="rounded-lg border border-slate-900/30 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
+                className="rounded-lg border border-[#101312]/30 bg-white px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
               >
                 Open Ride Dashboard
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={goPassengerDashboard}
+                className="rounded-lg border border-[#101312]/25 bg-white px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+              >
+                Passenger Dashboard
+              </button>
+              <button
+                type="button"
+                onClick={goRiderDashboard}
+                className="rounded-lg border border-[#101312]/25 bg-white px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+              >
+                Rider Dashboard
+              </button>
+              <button
+                type="button"
+                onClick={goCreateAccount}
+                className="rounded-lg border border-[#101312]/25 bg-white px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+              >
+                Create Account
               </button>
             </div>
           </div>
         </div>
 
-        <footer className="rounded-b-2xl bg-slate-950 px-6 py-10 text-slate-300">
+        <footer className="rounded-b-2xl bg-[#101312] px-6 py-10 text-slate-300">
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-5">
             <div className="lg:col-span-2">
               <div className="text-xl font-semibold text-white">STAY &amp; GO Ride Sharing</div>
@@ -59,16 +101,39 @@ export default function SystemFooter({ onNavigateToPage }) {
                 <button
                   type="button"
                   onClick={goHome}
-                  className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs transition hover:bg-slate-900"
+                  className="rounded-lg border border-white/25 px-3 py-1.5 text-xs transition hover:bg-white/10"
                 >
                   Back to Home
                 </button>
                 <button
                   type="button"
                   onClick={goWorkspace}
-                  className="rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition hover:bg-emerald-400"
+                  className="rounded-lg bg-[#BAF91A] px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#a9ea00]"
                 >
                   Open Workspace
+                </button>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={goPassengerDashboard}
+                  className="rounded-lg border border-white/25 px-3 py-1.5 text-xs transition hover:bg-white/10"
+                >
+                  Passenger Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={goRiderDashboard}
+                  className="rounded-lg border border-white/25 px-3 py-1.5 text-xs transition hover:bg-white/10"
+                >
+                  Rider Dashboard
+                </button>
+                <button
+                  type="button"
+                  onClick={goCreateAccount}
+                  className="rounded-lg border border-white/25 px-3 py-1.5 text-xs transition hover:bg-white/10"
+                >
+                  Create Account
                 </button>
               </div>
             </div>

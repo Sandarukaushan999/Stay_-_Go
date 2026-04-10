@@ -6,7 +6,7 @@ function HeaderLink({ label, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className="rounded-lg px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-emerald-100 hover:text-slate-950"
+      className="rounded-lg px-3 py-2 text-xs font-medium text-[#101312]/80 transition hover:bg-[#E2FF99] hover:text-[#101312]"
     >
       {label}
     </button>
@@ -19,20 +19,20 @@ export default function TopNavbar() {
   const logout = useAuthStore((s) => s.logout)
 
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-300 bg-slate-50/95 px-4 py-3 backdrop-blur sm:px-6">
+    <header className="sticky top-0 z-20 border-b border-[#101312]/15 bg-white/95 px-4 py-3 backdrop-blur sm:px-6">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-sm font-semibold"
+            className="inline-flex items-center gap-2 rounded-lg border border-[#101312]/20 bg-white px-2.5 py-2 text-sm font-semibold text-[#101312]"
           >
-            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-[10px] font-bold text-slate-950">
+            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#BAF91A] text-[10px] font-bold text-[#101312]">
               iD
             </span>
             STAY &amp; GO
           </button>
-          <div className="hidden text-xs text-slate-500 md:block">Ride Sharing Workspace</div>
+          <div className="hidden text-xs text-[#101312]/65 md:block">Ride Sharing Workspace</div>
         </div>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -45,13 +45,13 @@ export default function TopNavbar() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="hidden rounded-lg border border-slate-300 bg-white px-2.5 py-2 text-xs text-slate-600 sm:block">
+          <div className="hidden rounded-lg border border-[#101312]/20 bg-white px-2.5 py-2 text-xs text-[#101312]/70 sm:block">
             {user?.fullName ?? 'Guest'}
           </div>
           <button
             type="button"
             onClick={logout}
-            className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-800 transition hover:bg-emerald-100"
+            className="rounded-lg border border-[#101312]/20 bg-white px-3 py-2 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
           >
             Logout
           </button>
