@@ -1,4 +1,6 @@
+import mongoose from 'mongoose'
 import { asyncHandler } from '../../common/utils/asyncHandler.js'
+import { ApiError } from '../../common/utils/ApiError.js'
 import * as userService from '../users/user.service.js'
 import * as tripService from '../ride_sharing/services/trip.service.js'
 import * as sosService from '../ride_sharing/services/sos.service.js'
@@ -65,11 +67,13 @@ export const listSos = asyncHandler(async (req, res) => {
 })
 
 export const acknowledgeSos = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) throw new ApiError(400, 'Invalid SOS id')
   const sos = await sosService.acknowledgeSos(req.params.id)
   res.json({ success: true, sos })
 })
 
 export const resolveSos = asyncHandler(async (req, res) => {
+  if (!mongoose.isValidObjectId(req.params.id)) throw new ApiError(400, 'Invalid SOS id')
   const sos = await sosService.resolveSos(req.params.id)
   res.json({ success: true, sos })
 })

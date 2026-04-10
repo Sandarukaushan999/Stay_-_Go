@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuthStore } from '../../../app/store/authStore'
+import { describeApiUnreachable, isApiUnreachable } from '../../../lib/axios'
 import { rideApi } from '../services/rideApi'
 import IncomingRideRequests from '../rider/IncomingRideRequests'
 
@@ -51,15 +52,26 @@ export default function RiderDashboardPage() {
       setDash(res.data.data ?? null)
     } catch (err) {
       setDash(null)
-      setError(err?.response?.data?.message ?? 'Could not load rider dashboard data.')
+      setError(
+        isApiUnreachable(err)
+          ? describeApiUnreachable()
+          : err?.response?.data?.message ?? 'Could not load rider dashboard data.'
+      )
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    loadDashboard()
-  }, [loadDashboard, user?.id])
+    let cancelled = false
+    ;(async () => {
+      await hydrateMe()
+      if (!cancelled) await loadDashboard()
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [hydrateMe, loadDashboard])
 
   async function onConfirmPickup(tripId) {
     if (!tripId || user?.role !== 'rider') return

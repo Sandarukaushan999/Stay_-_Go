@@ -27,6 +27,46 @@ function buildUtcDayKeys(days) {
   })
 }
 
+const MAX_DASHBOARD_RANGE_DAYS = 60
+
+/** @param {{ from?: string, to?: string }} q */
+function resolveDashboardWindow(q) {
+  const today = new Date()
+  const todayKey = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()))
+    .toISOString()
+    .slice(0, 10)
+
+  let fromKey
+  let toKey
+  if (q?.from && q?.to) {
+    fromKey = q.from
+    toKey = q.to
+  } else {
+    toKey = todayKey
+    const endDate = new Date(`${toKey}T00:00:00.000Z`)
+    endDate.setUTCDate(endDate.getUTCDate() - 6)
+    fromKey = endDate.toISOString().slice(0, 10)
+  }
+
+  if (fromKey > toKey) {
+    throw new ApiError(400, 'from must be on or before to (UTC dates).')
+  }
+
+  const windowStart = new Date(`${fromKey}T00:00:00.000Z`)
+  const windowEnd = new Date(`${toKey}T23:59:59.999Z`)
+
+  const dayKeys = []
+  for (let t = windowStart.getTime(); t <= new Date(`${toKey}T00:00:00.000Z`).getTime(); t += 86400000) {
+    dayKeys.push(new Date(t).toISOString().slice(0, 10))
+  }
+
+  if (dayKeys.length > MAX_DASHBOARD_RANGE_DAYS) {
+    throw new ApiError(400, `Date range cannot exceed ${MAX_DASHBOARD_RANGE_DAYS} days.`)
+  }
+
+  return { fromKey, toKey, windowStart, windowEnd, dayKeys }
+}
+
 function rowsToDateMap(rows) {
   const map = {}
   for (const row of rows) {
@@ -126,8 +166,8 @@ function mapSafetyTrip(trip) {
 }
 
 export const rideDashboard = asyncHandler(async (req, res) => {
-  const dayKeys = buildUtcDayKeys(7)
-  const windowStart = new Date(`${dayKeys[0]}T00:00:00Z`)
+  const q = req.validatedQuery ?? {}
+  const { fromKey, toKey, windowStart, windowEnd, dayKeys } = resolveDashboardWindow(q)
 
   const [
     rideStatusRows,
@@ -146,7 +186,7 @@ export const rideDashboard = asyncHandler(async (req, res) => {
     SOSAlert.aggregate([{ $group: { _id: '$status', count: { $sum: 1 } } }]),
     SOSAlert.aggregate([{ $group: { _id: '$severity', count: { $sum: 1 } } }]),
     RideRequest.aggregate([
-      { $match: { requestedAt: { $gte: windowStart } } },
+      { $match: { requestedAt: { $gte: windowStart, $lte: windowEnd } } },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$requestedAt', timezone: 'UTC' } },
@@ -155,7 +195,12 @@ export const rideDashboard = asyncHandler(async (req, res) => {
       },
     ]),
     RideRequest.aggregate([
-      { $match: { status: 'completed', completedAt: { $gte: windowStart } } },
+      {
+        $match: {
+          status: 'completed',
+          completedAt: { $gte: windowStart, $lte: windowEnd },
+        },
+      },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$completedAt', timezone: 'UTC' } },
@@ -164,7 +209,12 @@ export const rideDashboard = asyncHandler(async (req, res) => {
       },
     ]),
     RideRequest.aggregate([
-      { $match: { status: 'cancelled', cancelledAt: { $gte: windowStart } } },
+      {
+        $match: {
+          status: 'cancelled',
+          cancelledAt: { $gte: windowStart, $lte: windowEnd },
+        },
+      },
       {
         $group: {
           _id: { $dateToString: { format: '%Y-%m-%d', date: '$cancelledAt', timezone: 'UTC' } },
@@ -178,9 +228,9 @@ export const rideDashboard = asyncHandler(async (req, res) => {
       status: { $in: ACTIVE_TRIP_STATUSES },
       $or: [{ suspiciousStopFlag: true }, { noUpdateFlag: true }, { status: 'overdue' }],
     }),
-    SOSAlert.find({})
+    SOSAlert.find({ createdAt: { $gte: windowStart, $lte: windowEnd } })
       .sort({ createdAt: -1 })
-      .limit(20)
+      .limit(200)
       .populate('tripId', 'status startedAt bufferedDeadlineAt currentLocation')
       .populate('riderId', 'fullName email phone campusId vehicleType vehicleNumber')
       .populate('passengerId', 'fullName email phone campusId studentId')
@@ -191,7 +241,7 @@ export const rideDashboard = asyncHandler(async (req, res) => {
       $or: [{ suspiciousStopFlag: true }, { noUpdateFlag: true }, { status: 'overdue' }],
     })
       .sort({ updatedAt: -1 })
-      .limit(20)
+      .limit(200)
       .populate('riderId', 'fullName phone vehicleType vehicleNumber')
       .populate('passengerId', 'fullName phone studentId campusId')
       .lean(),
@@ -237,6 +287,7 @@ export const rideDashboard = asyncHandler(async (req, res) => {
   res.json({
     success: true,
     data: {
+      range: { from: fromKey, to: toKey, days: dayKeys.length },
       generatedAt: new Date().toISOString(),
       kpis: {
         totalRequests,

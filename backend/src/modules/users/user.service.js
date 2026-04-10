@@ -82,12 +82,26 @@ export async function updateUserRole(userId, role) {
   return sanitizeUser(user)
 }
 
+function seatCountForVehicleType(vehicleType) {
+  if (vehicleType === 'bike') return 1
+  if (vehicleType === 'car') return 3
+  if (vehicleType === 'van') return 7
+  return 1
+}
+
 export async function approveRider(userId, approved = true) {
   const user = await User.findById(userId)
   if (!user) throw new ApiError(404, 'User not found')
   user.role = approved ? 'rider' : 'student'
   user.riderVerificationStatus = approved ? 'approved' : 'rejected'
   user.isVerified = true
+  if (approved) {
+    const cap = Number(user.seatCount ?? 0)
+    if (!cap || cap < 1) {
+      user.seatCount = seatCountForVehicleType(user.vehicleType)
+    }
+    if (!user.hasVehicle) user.hasVehicle = true
+  }
   await user.save()
   return sanitizeUser(user)
 }

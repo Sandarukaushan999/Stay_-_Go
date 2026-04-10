@@ -2,9 +2,15 @@ import { Router } from 'express'
 import * as controller from './admin.controller.js'
 import { requireAuth } from '../../common/middlewares/auth.middleware.js'
 import { requireRole } from '../../common/middlewares/role.middleware.js'
-import { validateBody } from '../../common/middlewares/validate.middleware.js'
+import { validateBody, validateQuery } from '../../common/middlewares/validate.middleware.js'
 import { ROLES } from '../../common/constants/roles.js'
-import { approveRiderSchema, blockUserSchema, createUserSchema, setRoleSchema } from './admin.validation.js'
+import {
+  approveRiderSchema,
+  blockUserSchema,
+  createUserSchema,
+  rideDashboardQuerySchema,
+  setRoleSchema,
+} from './admin.validation.js'
 import * as rideAdminController from './rideAdmin.controller.js'
 import * as safetyController from './safety.controller.js'
 import * as roommateController from './roommateAdmin.controller.js'
@@ -28,7 +34,7 @@ adminRouter.patch('/sos/:id/acknowledge', controller.acknowledgeSos)
 adminRouter.patch('/sos/:id/resolve', controller.resolveSos)
 
 // Ride sharing workspace (admin monitoring)
-adminRouter.get('/rides/dashboard', rideAdminController.rideDashboard)
+adminRouter.get('/rides/dashboard', validateQuery(rideDashboardQuerySchema), rideAdminController.rideDashboard)
 adminRouter.get('/rides/requests', rideAdminController.rideRequests)
 adminRouter.patch('/rides/requests/:id/cancel', rideAdminController.cancelRideRequest)
 adminRouter.delete('/rides/requests/:id', rideAdminController.deleteRideRequest)

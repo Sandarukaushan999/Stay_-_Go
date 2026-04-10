@@ -11,3 +11,14 @@ export function validateBody(schema) {
   }
 }
 
+export function validateQuery(schema) {
+  return function validateQueryMiddleware(req, res, next) {
+    const result = schema.safeParse(req.query)
+    if (!result.success) {
+      return next(new ApiError(400, 'Validation error', result.error.flatten()))
+    }
+    req.validatedQuery = result.data
+    next()
+  }
+}
+

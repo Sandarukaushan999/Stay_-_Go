@@ -53,11 +53,10 @@ export default function TopNavbar() {
               active={pathname === '/student/dashboard'}
             />
           ) : null}
-          <HeaderLink label="Rides" onClick={() => navigate('/rides')} active={pathname === '/rides'} />
           <HeaderLink
-            label="Workspace"
-            onClick={() => navigate('/rides/workspace')}
-            active={pathname === '/rides/workspace'}
+            label="Rides"
+            onClick={() => navigate('/rides')}
+            active={pathname === '/rides' || pathname === '/rides/workspace'}
           />
           <HeaderLink
             label="Maintenance"

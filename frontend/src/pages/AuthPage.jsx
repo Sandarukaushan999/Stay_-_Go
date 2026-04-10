@@ -1,10 +1,13 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
 import Footer from '../Components/landing/footer'
 import Header from '../Components/landing/header'
 import MapPicker from '../Components/shared/maps/MapPicker'
 import { useAuthStore } from '../app/store/authStore'
+import { getApiBaseURL } from '../lib/axios'
+import { validateLoginFields, validateRegisterFields } from '../utils/authFormValidation'
 
 const authContent = {
   login: {
@@ -45,6 +48,7 @@ export default function AuthPage({
   afterAuthRedirect,
 }) {
   const content = authContent[mode]
+  const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
   const setToken = useAuthStore((s) => s.setToken)
   const hydrateMe = useAuthStore((s) => s.hydrateMe)
@@ -65,6 +69,12 @@ export default function AuthPage({
   const [vehicleOriginLocation, setVehicleOriginLocation] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [fieldErrors, setFieldErrors] = useState({})
+
+  useEffect(() => {
+    setFieldErrors({})
+    setError(null)
+  }, [mode])
 
   const actionItems = useMemo(
     () => [
@@ -74,33 +84,126 @@ export default function AuthPage({
     [onNavigateToPage, onNavigateToRide]
   )
 
+  function inputClass(fieldKey) {
+    const err = fieldErrors[fieldKey]
+    return [
+      'w-full rounded-xl border px-3 py-2 outline-none focus:ring-2',
+      err
+        ? 'border-rose-500 bg-rose-50/50 text-[#101312] focus:ring-rose-400'
+        : 'border-[#101312]/20 bg-white focus:ring-[#876DFF]',
+    ].join(' ')
+  }
+
+  function blurLoginField(key) {
+    if (mode !== 'login') return
+    const errs = validateLoginFields({ email, password })
+    const msg = errs[key]
+    setFieldErrors((prev) => {
+      const next = { ...prev }
+      if (msg) next[key] = msg
+      else delete next[key]
+      return next
+    })
+  }
+
+  function blurRegisterField(key) {
+    if (mode !== 'register') return
+    const { errors } = validateRegisterFields({
+      fullName,
+      email,
+      password,
+      accountType,
+      phone,
+      studentId,
+      campusId,
+      emergencyContact,
+      hasVehicle,
+      vehicleNumber,
+      residenceLocation,
+      vehicleOriginLocation,
+    })
+    const msg = errors[key]
+    setFieldErrors((prev) => {
+      const next = { ...prev }
+      if (msg) next[key] = msg
+      else delete next[key]
+      return next
+    })
+  }
+
+  function clearFieldError(key) {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev
+      const next = { ...prev }
+      delete next[key]
+      return next
+    })
+  }
+
   async function onSubmit(event) {
     event.preventDefault()
     setError(null)
+
+    /** @type {{ phone?: string, emergencyContact?: string, vehicleNumber?: string } | null} */
+    let registerNormalized = null
+
+    if (mode === 'login') {
+      const errs = validateLoginFields({ email, password })
+      if (Object.keys(errs).length) {
+        setFieldErrors(errs)
+        return
+      }
+      setFieldErrors({})
+    } else {
+      const { errors, normalized } = validateRegisterFields({
+        fullName,
+        email,
+        password,
+        accountType,
+        phone,
+        studentId,
+        campusId,
+        emergencyContact,
+        hasVehicle,
+        vehicleNumber,
+        residenceLocation,
+        vehicleOriginLocation,
+      })
+      if (Object.keys(errors).length) {
+        setFieldErrors(errors)
+        return
+      }
+      setFieldErrors({})
+      registerNormalized = normalized
+    }
+
     setLoading(true)
     try {
       let authedUser = null
       if (mode === 'login') {
-        const result = await login({ email, password })
+        const result = await login({ email: email.trim(), password })
         authedUser = result?.user ?? null
       } else {
-        const base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api'
+        const base = getApiBaseURL()
         const isStudent = accountType === 'student'
+        const normalized = registerNormalized ?? {}
         const body = {
-          fullName,
-          email,
+          fullName: fullName.trim(),
+          email: email.trim(),
           password,
           role: accountType,
           hasVehicle: isStudent ? hasVehicle : false,
         }
         if (isStudent) {
-          body.campusId = campusId.trim()
-          if (phone.trim()) body.phone = phone.trim()
+          body.campusId = campusId.trim().toLowerCase()
+          if (normalized.phone) body.phone = normalized.phone
           if (studentId.trim()) body.studentId = studentId.trim()
-          if (emergencyContact.trim()) body.emergencyContact = emergencyContact.trim()
+          if (emergencyContact.trim() && normalized.emergencyContact) {
+            body.emergencyContact = normalized.emergencyContact
+          }
           if (hasVehicle) {
             body.vehicleType = vehicleType
-            if (vehicleNumber.trim()) body.vehicleNumber = vehicleNumber.trim()
+            if (normalized.vehicleNumber) body.vehicleNumber = normalized.vehicleNumber
             if (
               vehicleOriginLocation &&
               typeof vehicleOriginLocation.lat === 'number' &&
@@ -115,21 +218,23 @@ export default function AuthPage({
           ) {
             body.residenceLocation = residenceLocation
           }
+        } else if (normalized.phone) {
+          body.phone = normalized.phone
         }
         const { data } = await axios.post(`${base}/auth/register`, body)
         setToken(data.token)
         authedUser = await hydrateMe()
       }
 
-      const roleAfter = authedUser?.role ?? user?.role
+      const roleAfter = authedUser?.role ?? useAuthStore.getState().user?.role
       if (roleAfter === 'admin' || roleAfter === 'super_admin') {
-        window.location.href = '/admin'
+        navigate('/admin', { replace: true })
       } else if (roleAfter === 'student') {
-        window.location.href = '/student/dashboard'
+        navigate('/student/dashboard', { replace: true })
       } else if (roleAfter === 'rider') {
-        window.location.href = '/rides/workspace'
+        navigate('/rides/workspace', { replace: true })
       } else if (roleAfter === 'technician') {
-        window.location.href = '/technician/dashboard'
+        navigate('/technician/dashboard', { replace: true })
       } else {
         afterAuthRedirect?.()
       }
@@ -195,38 +300,62 @@ export default function AuthPage({
                 <label className="grid gap-1 text-sm">
                   <span className="text-[#101312]/80">Full name</span>
                   <input
-                    className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                    className={inputClass('fullName')}
                     type="text"
                     value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
+                    onChange={(e) => {
+                      setFullName(e.target.value)
+                      clearFieldError('fullName')
+                    }}
+                    onBlur={() => blurRegisterField('fullName')}
                     placeholder="Enter your full name"
-                    required
+                    autoComplete="name"
+                    aria-invalid={Boolean(fieldErrors.fullName)}
                   />
+                  {fieldErrors.fullName ? (
+                    <span className="text-sm font-medium text-rose-600">{fieldErrors.fullName}</span>
+                  ) : null}
                 </label>
               ) : null}
 
               <label className="grid gap-1 text-sm">
-                <span className="text-[#101312]/80">University email</span>
+                <span className="text-[#101312]/80">{mode === 'register' ? 'University email' : 'Email'}</span>
                 <input
-                  className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                  className={inputClass('email')}
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="name@university.edu"
-                  required
+                  onChange={(e) => {
+                    setEmail(e.target.value)
+                    clearFieldError('email')
+                  }}
+                  onBlur={() => (mode === 'login' ? blurLoginField('email') : blurRegisterField('email'))}
+                  placeholder={mode === 'register' ? 'name@university.edu' : 'you@example.com'}
+                  autoComplete="email"
+                  aria-invalid={Boolean(fieldErrors.email)}
                 />
+                {fieldErrors.email ? (
+                  <span className="text-sm font-medium text-rose-600">{fieldErrors.email}</span>
+                ) : null}
               </label>
 
               <label className="grid gap-1 text-sm">
                 <span className="text-[#101312]/80">Password</span>
                 <input
-                  className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                  className={inputClass('password')}
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value)
+                    clearFieldError('password')
+                  }}
+                  onBlur={() => (mode === 'login' ? blurLoginField('password') : blurRegisterField('password'))}
                   placeholder="Enter your password"
-                  required
+                  autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                  aria-invalid={Boolean(fieldErrors.password)}
                 />
+                {fieldErrors.password ? (
+                  <span className="text-sm font-medium text-rose-600">{fieldErrors.password}</span>
+                ) : null}
               </label>
 
               {mode === 'register' ? (
@@ -234,12 +363,13 @@ export default function AuthPage({
                   <label className="grid gap-1 text-sm">
                     <span className="text-[#101312]/80">Account type</span>
                     <select
-                      className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                      className={inputClass('accountType')}
                       value={accountType}
                       onChange={(e) => {
                         const next = e.target.value
                         setAccountType(next)
                         if (next !== 'student') setHasVehicle(false)
+                        setFieldErrors({})
                       }}
                     >
                       <option value="student">Student</option>
@@ -251,11 +381,25 @@ export default function AuthPage({
                   <label className="grid gap-1 text-sm">
                     <span className="text-[#101312]/80">Phone</span>
                     <input
-                      className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                      className={inputClass('phone')}
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+94..."
+                      onChange={(e) => {
+                        setPhone(e.target.value)
+                        clearFieldError('phone')
+                      }}
+                      onBlur={() => blurRegisterField('phone')}
+                      placeholder="0771234567 or +94771234567"
+                      inputMode="tel"
+                      autoComplete="tel"
+                      aria-invalid={Boolean(fieldErrors.phone)}
                     />
+                    {fieldErrors.phone ? (
+                      <span className="text-sm font-medium text-rose-600">{fieldErrors.phone}</span>
+                    ) : accountType === 'student' ? (
+                      <span className="text-xs text-[#101312]/55">10-digit Sri Lankan mobile (leading 0 or +94).</span>
+                    ) : (
+                      <span className="text-xs text-[#101312]/55">Optional for staff; same format if provided.</span>
+                    )}
                   </label>
 
                   {accountType === 'student' ? (
@@ -263,30 +407,63 @@ export default function AuthPage({
                       <label className="grid gap-1 text-sm">
                         <span className="text-[#101312]/80">Student ID</span>
                         <input
-                          className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          className={inputClass('studentId')}
                           value={studentId}
-                          onChange={(e) => setStudentId(e.target.value)}
+                          onChange={(e) => {
+                            setStudentId(e.target.value)
+                            clearFieldError('studentId')
+                          }}
+                          onBlur={() => blurRegisterField('studentId')}
+                          placeholder="Optional"
+                          aria-invalid={Boolean(fieldErrors.studentId)}
                         />
+                        {fieldErrors.studentId ? (
+                          <span className="text-sm font-medium text-rose-600">{fieldErrors.studentId}</span>
+                        ) : null}
                       </label>
 
                       <label className="grid gap-1 text-sm">
                         <span className="text-[#101312]/80">University / Campus ID</span>
                         <input
-                          className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          className={inputClass('campusId')}
                           value={campusId}
-                          onChange={(e) => setCampusId(e.target.value)}
+                          onChange={(e) => {
+                            setCampusId(e.target.value)
+                            clearFieldError('campusId')
+                          }}
+                          onBlur={() => blurRegisterField('campusId')}
                           placeholder="e.g. uoc-main"
-                          required
+                          aria-invalid={Boolean(fieldErrors.campusId)}
                         />
+                        {fieldErrors.campusId ? (
+                          <span className="text-sm font-medium text-rose-600">{fieldErrors.campusId}</span>
+                        ) : (
+                          <span className="text-xs text-[#101312]/55">Letters, numbers, single hyphens (slug style).</span>
+                        )}
                       </label>
 
                       <label className="grid gap-1 text-sm">
                         <span className="text-[#101312]/80">Emergency contact</span>
                         <input
-                          className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          className={inputClass('emergencyContact')}
                           value={emergencyContact}
-                          onChange={(e) => setEmergencyContact(e.target.value)}
+                          onChange={(e) => {
+                            setEmergencyContact(e.target.value)
+                            clearFieldError('emergencyContact')
+                          }}
+                          onBlur={() => blurRegisterField('emergencyContact')}
+                          placeholder="e.g. 0771234567 or hotline 117"
+                          inputMode="tel"
+                          aria-invalid={Boolean(fieldErrors.emergencyContact)}
                         />
+                        {fieldErrors.emergencyContact ? (
+                          <span className="text-sm font-medium text-rose-600">{fieldErrors.emergencyContact}</span>
+                        ) : (
+                          <span className="text-xs text-[#101312]/55">
+                            Optional: family/friend mobile (10 digits) or 3–5 digit hotline (117, 1990). Leave blank if you
+                            prefer.
+                          </span>
+                        )}
                       </label>
                     </>
                   ) : null}
@@ -294,7 +471,16 @@ export default function AuthPage({
                   {accountType === 'student' ? (
                     <div className="rounded-2xl border border-[#101312]/12 bg-[#f9fce9] p-4">
                       <label className="flex items-center gap-2 text-sm text-[#101312]">
-                        <input type="checkbox" checked={hasVehicle} onChange={(e) => setHasVehicle(e.target.checked)} />
+                        <input
+                          type="checkbox"
+                          checked={hasVehicle}
+                          onChange={(e) => {
+                            setHasVehicle(e.target.checked)
+                            clearFieldError('vehicleNumber')
+                            clearFieldError('vehicleOriginLocation')
+                            clearFieldError('residenceLocation')
+                          }}
+                        />
                         I own a vehicle (Rider-candidate)
                       </label>
                       <p className="mt-2 text-xs text-[#101312]/65">
@@ -306,7 +492,7 @@ export default function AuthPage({
                           <label className="grid gap-1 text-sm">
                             <span className="text-[#101312]/80">Vehicle type</span>
                             <select
-                              className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                              className={inputClass('vehicleType')}
                               value={vehicleType}
                               onChange={(e) => setVehicleType(e.target.value)}
                             >
@@ -319,11 +505,23 @@ export default function AuthPage({
                           <label className="grid gap-1 text-sm">
                             <span className="text-[#101312]/80">Vehicle number</span>
                             <input
-                              className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                              className={inputClass('vehicleNumber')}
                               value={vehicleNumber}
-                              onChange={(e) => setVehicleNumber(e.target.value)}
-                              required
+                              onChange={(e) => {
+                                setVehicleNumber(e.target.value.replace(/\D/g, ''))
+                                clearFieldError('vehicleNumber')
+                              }}
+                              onBlur={() => blurRegisterField('vehicleNumber')}
+                              placeholder="Digits only (e.g. 1234567)"
+                              inputMode="numeric"
+                              maxLength={12}
+                              aria-invalid={Boolean(fieldErrors.vehicleNumber)}
                             />
+                            {fieldErrors.vehicleNumber ? (
+                              <span className="text-sm font-medium text-rose-600">{fieldErrors.vehicleNumber}</span>
+                            ) : (
+                              <span className="text-xs text-[#101312]/55">4–12 digits. No letters, spaces, or dashes.</span>
+                            )}
                           </label>
                         </div>
                       ) : null}
@@ -333,14 +531,56 @@ export default function AuthPage({
                   {accountType === 'student' && !hasVehicle ? (
                     <div>
                       <div className="mb-2 text-sm text-[#101312]/80">Your residence location (pickup default)</div>
-                      <MapPicker value={residenceLocation} onChange={setResidenceLocation} height={240} />
+                      <p className="mb-2 text-xs text-[#101312]/55">
+                        Optional — helps with ride pickup defaults. You can add or change it later in your profile.
+                      </p>
+                      <div
+                        className={
+                          fieldErrors.residenceLocation
+                            ? 'rounded-2xl ring-2 ring-rose-500 ring-offset-2'
+                            : undefined
+                        }
+                      >
+                        <MapPicker
+                          value={residenceLocation}
+                          onChange={(v) => {
+                            setResidenceLocation(v)
+                            clearFieldError('residenceLocation')
+                          }}
+                          height={240}
+                        />
+                      </div>
+                      {fieldErrors.residenceLocation ? (
+                        <p className="mt-2 text-sm font-medium text-rose-600">{fieldErrors.residenceLocation}</p>
+                      ) : null}
                     </div>
                   ) : null}
 
                   {accountType === 'student' && hasVehicle ? (
                     <div>
                       <div className="mb-2 text-sm text-[#101312]/80">Vehicle origin / start location</div>
-                      <MapPicker value={vehicleOriginLocation} onChange={setVehicleOriginLocation} height={240} />
+                      <p className="mb-2 text-xs text-[#101312]/55">
+                        Optional — used for route previews when you drive. You can update it later.
+                      </p>
+                      <div
+                        className={
+                          fieldErrors.vehicleOriginLocation
+                            ? 'rounded-2xl ring-2 ring-rose-500 ring-offset-2'
+                            : undefined
+                        }
+                      >
+                        <MapPicker
+                          value={vehicleOriginLocation}
+                          onChange={(v) => {
+                            setVehicleOriginLocation(v)
+                            clearFieldError('vehicleOriginLocation')
+                          }}
+                          height={240}
+                        />
+                      </div>
+                      {fieldErrors.vehicleOriginLocation ? (
+                        <p className="mt-2 text-sm font-medium text-rose-600">{fieldErrors.vehicleOriginLocation}</p>
+                      ) : null}
                     </div>
                   ) : null}
                 </>

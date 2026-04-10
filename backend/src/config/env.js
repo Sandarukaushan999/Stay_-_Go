@@ -20,7 +20,13 @@ export const env = {
   MONGO_FALLBACK_URI: process.env.MONGO_FALLBACK_URI ?? null,
   JWT_SECRET: required('JWT_SECRET'),
   JWT_TTL: process.env.JWT_TTL ?? '7d',
-  PUBLIC_REGISTER: process.env.PUBLIC_REGISTER === 'true',
+  // Default: allow public signup in non-production unless explicitly disabled.
+  PUBLIC_REGISTER:
+    process.env.PUBLIC_REGISTER === 'true'
+      ? true
+      : process.env.PUBLIC_REGISTER === 'false'
+        ? false
+        : process.env.NODE_ENV !== 'production',
   PUBLIC_REGISTER_ROLES: (process.env.PUBLIC_REGISTER_ROLES ?? 'student')
     .split(',')
     .map((s) => s.trim())
