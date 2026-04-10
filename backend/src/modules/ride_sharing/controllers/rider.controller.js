@@ -5,6 +5,7 @@ import { Trip } from '../models/Trip.js'
 import { User } from '../../users/user.model.js'
 
 export const openRequests = asyncHandler(async (req, res) => {
+  const isApprovedRider = req.user.role === 'rider'
   const rider = await User.findById(req.user.id).lean()
   const capacityPassengers = Math.max(0, Number(rider?.seatCount ?? 0))
   const activeTrips = await Trip.find({
@@ -17,7 +18,7 @@ export const openRequests = asyncHandler(async (req, res) => {
   const items = await inboxService.listOpenRequests({ campusId: req.user.campusId ?? req.query?.campusId })
   const withAccept = items.map((r) => ({
     ...r,
-    canAccept: Number(r.seatCount ?? 1) <= remainingSeats,
+    canAccept: isApprovedRider && Number(r.seatCount ?? 1) <= remainingSeats,
     remainingSeats,
   }))
   res.json({ success: true, data: withAccept })

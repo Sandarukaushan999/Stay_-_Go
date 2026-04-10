@@ -3,12 +3,13 @@ import PassengerLiveTripMap from '../passenger/PassengerLiveTripMap'
 
 function PassengerDashboardPage() {
   return (
-    <section className="grid gap-4">
-      <h2 className="text-2xl font-semibold">Passenger</h2>
-      <PassengerLiveTripMap />
-      <RideHistoryTable />
+    <section className="grid gap-5">
+      <div className="grid gap-5 xl:grid-cols-[1.55fr_1fr]">
+        <PassengerLiveTripMap />
+        <RideHistoryTable />
+      </div>
     </section>
   )
 }
 
-export default PassengerDashboardPage;
+export default PassengerDashboardPage

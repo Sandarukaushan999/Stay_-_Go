@@ -6,6 +6,8 @@ import locationUrl from '../../ride_and_sharing_system/assets/location.png'
 import uniUrl from '../../ride_and_sharing_system/assets/uni.png'
 
 const ICON_PX = 42
+const DEFAULT_ROUTE_COLOR = '#876DFF'
+const DEFAULT_MARKER_COLOR = '#BAF91A'
 
 function makeRideIcon(url) {
   return new L.Icon({
@@ -50,7 +52,7 @@ export default function MapPicker({
 }) {
   const c = value ?? center
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800">
+    <div className="overflow-hidden rounded-2xl border border-slate-300">
       <MapContainer
         center={[c.lat, c.lng]}
         zoom={zoom}
@@ -68,7 +70,11 @@ export default function MapPicker({
                 <Polyline
                   key={idx}
                   positions={p.positions}
-                  pathOptions={{ color: p.color ?? '#3b82f6', weight: p.weight ?? 5, opacity: p.opacity ?? 0.9 }}
+                  pathOptions={{
+                    color: p.color ?? DEFAULT_ROUTE_COLOR,
+                    weight: p.weight ?? 5,
+                    opacity: p.opacity ?? 0.9,
+                  }}
                 />
               ))
           : Array.isArray(polyline) && polyline.length
@@ -96,8 +102,8 @@ export default function MapPicker({
                     center={[m.lat, m.lng]}
                     radius={m.radius ?? 8}
                     pathOptions={{
-                      color: m.color ?? '#22c55e',
-                      fillColor: m.fillColor ?? m.color ?? '#22c55e',
+                      color: m.color ?? DEFAULT_MARKER_COLOR,
+                      fillColor: m.fillColor ?? m.color ?? DEFAULT_MARKER_COLOR,
                       fillOpacity: 0.9,
                     }}
                   >

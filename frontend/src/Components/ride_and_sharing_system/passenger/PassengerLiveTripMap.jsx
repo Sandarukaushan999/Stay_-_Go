@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import api from '../../../lib/axios'
 import { mapsApi } from '../services/mapsApi'
 import MapPicker from '../../shared/maps/MapPicker'
@@ -7,6 +7,8 @@ import { useAuthStore } from '../../../app/store/authStore'
 import PassengerSafetyCountdown from './PassengerSafetyCountdown'
 
 const SLIIT = { lat: 6.9147, lng: 79.9720 }
+const PICKUP_ROUTE_COLOR = '#876DFF'
+const CAMPUS_ROUTE_COLOR = '#BAF91A'
 
 function toLatLngLine(coords) {
   if (!Array.isArray(coords)) return null
@@ -20,226 +22,270 @@ export default function PassengerLiveTripMap() {
   const [legToCampus, setLegToCampus] = useState(null)
   const [etaToPickup, setEtaToPickup] = useState(null)
   const [etaToCampus, setEtaToCampus] = useState(null)
-  const [requestPickup, setRequestPickup] = useState(null)
+  const [requestPickup, setRequestPickup] = useState(() =>
+    user?.residenceLocation?.lat && user?.residenceLocation?.lng ? user.residenceLocation : null
+  )
   const [requestSeatCount, setRequestSeatCount] = useState(1)
   const [requestFemaleOnly, setRequestFemaleOnly] = useState(false)
   const [requestPreview, setRequestPreview] = useState(null)
   const [requestMessage, setRequestMessage] = useState(null)
+  const [requestError, setRequestError] = useState(null)
+
+  const fallbackPickup =
+    user?.residenceLocation?.lat && user?.residenceLocation?.lng
+      ? user.residenceLocation
+      : { lat: 6.9271, lng: 79.8612 }
 
   async function load() {
     try {
       const res = await api.get('/ride-sharing/trips/my-active')
       setTrip(res.data.data || null)
     } catch {
-      // If auth expires or backend temporarily restarts, don't crash the UI.
+      // If auth expires or backend temporarily restarts, do not crash the UI.
       setTrip(null)
     }
   }
 
   useEffect(() => {
-    load()
-    const t = setInterval(load, 4000)
-    return () => clearInterval(t)
+    const initial = setTimeout(() => {
+      load().catch(() => {})
+    }, 0)
+    const t = setInterval(() => {
+      load().catch(() => {})
+    }, 4000)
+    return () => {
+      clearTimeout(initial)
+      clearInterval(t)
+    }
   }, [])
 
-  useEffect(() => {
-    if (user?.residenceLocation?.lat && user?.residenceLocation?.lng) {
-      setRequestPickup(user.residenceLocation)
-    } else {
-      setRequestPickup({ lat: 6.9271, lng: 79.8612 })
-    }
-  }, [user?.residenceLocation?.lat, user?.residenceLocation?.lng])
-
-  const pickup = useMemo(() => trip?.origin ?? null, [trip?._id])
-  const riderLoc = useMemo(() => trip?.currentLocation ?? null, [trip?.currentLocation?.lat, trip?.currentLocation?.lng])
+  const pickup = trip?.origin ?? null
+  const riderLoc = trip?.currentLocation ?? null
   const status = trip?.status
 
   useEffect(() => {
     async function build() {
+      const activeTrip = trip
+      const pickupPoint = activeTrip?.origin ?? null
+      const riderPoint = activeTrip?.currentLocation ?? null
+      const tripStatus = activeTrip?.status
       setLegToPickup(null)
       setLegToCampus(null)
       setEtaToPickup(null)
       setEtaToCampus(null)
-      if (!trip || !pickup?.lat || !pickup?.lng) return
+      if (!activeTrip || !pickupPoint?.lat || !pickupPoint?.lng) return
 
-      // Red: rider -> passenger pickup (while coming / overdue)
-      if (riderLoc?.lat && riderLoc?.lng && (status === 'to_pickup' || status === 'overdue')) {
-        const r1 = await mapsApi.routePreview({ origin: riderLoc, destination: pickup })
+      if (riderPoint?.lat && riderPoint?.lng && (tripStatus === 'to_pickup' || tripStatus === 'overdue')) {
+        const r1 = await mapsApi.routePreview({ origin: riderPoint, destination: pickupPoint })
         const coords1 = r1.data.data?.geometry?.coordinates
         setLegToPickup(toLatLngLine(coords1))
         setEtaToPickup(r1.data.data?.expectedDurationSeconds ?? null)
       }
 
-      // Blue: pickup -> SLIIT (always show for active trip planning)
-      if (status === 'to_pickup' || status === 'to_university' || status === 'overdue') {
-        const r2 = await mapsApi.routePreview({ origin: pickup, destination: SLIIT })
+      if (tripStatus === 'to_pickup' || tripStatus === 'to_university' || tripStatus === 'overdue') {
+        const r2 = await mapsApi.routePreview({ origin: pickupPoint, destination: SLIIT })
         const coords2 = r2.data.data?.geometry?.coordinates
         setLegToCampus(toLatLngLine(coords2))
         setEtaToCampus(r2.data.data?.expectedDurationSeconds ?? null)
       }
     }
     build().catch(() => {})
-  }, [trip?._id, pickup?.lat, pickup?.lng, riderLoc?.lat, riderLoc?.lng, status])
+  }, [trip])
 
   async function previewRequestRoute() {
-    if (!requestPickup) return
+    const pickupPoint = requestPickup ?? fallbackPickup
+    if (!pickupPoint) return
     setRequestPreview(null)
-    const res = await mapsApi.routePreview({ origin: requestPickup, destination: SLIIT })
-    setRequestPreview(res.data.data ?? null)
+    setRequestError(null)
+    try {
+      const res = await mapsApi.routePreview({ origin: pickupPoint, destination: SLIIT })
+      setRequestPreview(res.data.data ?? null)
+    } catch (err) {
+      setRequestError(err?.response?.data?.message ?? 'Could not preview route right now.')
+    }
   }
 
   async function submitRequest() {
-    if (!requestPickup) return
+    const pickupPoint = requestPickup ?? fallbackPickup
+    if (!pickupPoint) return
     setRequestMessage(null)
+    setRequestError(null)
     const payload = {
-      origin: requestPickup,
+      origin: pickupPoint,
       destination: SLIIT,
       seatCount: Number(requestSeatCount ?? 1),
       femaleOnly: Boolean(requestFemaleOnly),
     }
-    const res = await rideApi.requestRide(payload)
-    setRequestMessage(`Ride request created: ${res.data.data._id}`)
-    await load()
+    try {
+      const res = await rideApi.requestRide(payload)
+      setRequestMessage(`Ride request created: ${res.data.data._id}`)
+      await load()
+    } catch (err) {
+      setRequestError(err?.response?.data?.message ?? 'Could not create ride request.')
+    }
   }
 
   const polylines = [
-    legToPickup ? { positions: legToPickup, color: '#ef4444', weight: 6, opacity: 0.95 } : null, // red
-    legToCampus ? { positions: legToCampus, color: '#3b82f6', weight: 6, opacity: 0.95 } : null, // blue
+    legToPickup ? { positions: legToPickup, color: PICKUP_ROUTE_COLOR, weight: 6, opacity: 0.95 } : null,
+    legToCampus ? { positions: legToCampus, color: CAMPUS_ROUTE_COLOR, weight: 6, opacity: 0.95 } : null,
   ].filter(Boolean)
 
-  // Pickup uses `value` on MapPicker (passenger icon); avoid duplicating that marker here.
+  // Pickup uses `value` in MapPicker (passenger icon), so keep markers list clean.
   const markers = [
     trip && riderLoc?.lat && riderLoc?.lng ? { ...riderLoc, label: 'Rider', iconKind: 'rider' } : null,
     { ...SLIIT, label: 'SLIIT', iconKind: 'uni' },
   ].filter(Boolean)
 
   return (
-    <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-lg font-semibold">Live Trip</div>
-          {trip ? (
-            <div className="mt-1 text-xs text-slate-400">
-              Status: {trip.status} • Trip ID <span className="font-mono">{String(trip._id)}</span>
+    <section className="overflow-hidden rounded-3xl border border-[#101312]/15 bg-white shadow-[0_10px_30px_rgba(16,19,18,0.08)]">
+      <div className="border-b border-[#101312]/10 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-base font-semibold text-[#101312] sm:text-lg">Live Trip</div>
+              {trip ? (
+                <span className="rounded-full border border-[#101312]/15 bg-[#E2FF99] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#101312]">
+                  {trip.status?.replace(/_/g, ' ')}
+                </span>
+              ) : (
+                <span className="rounded-full border border-[#101312]/15 bg-[#f6f8ef] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#101312]/70">
+                  No active trip
+                </span>
+              )}
             </div>
-          ) : (
-            <div className="mt-1 text-xs text-slate-400">No active trip yet. Use Ride Request below.</div>
-          )}
-          {trip?.riderId ? (
-            <div className="mt-2 text-xs text-slate-300">
-              Rider: <span className="font-medium">{trip.riderId.fullName ?? '—'}</span> •{' '}
-              <span className="font-mono">{trip.riderId.phone ?? '—'}</span> • {trip.riderId.vehicleType ?? 'vehicle'}{' '}
-              {trip.riderId.vehicleNumber ? `(${trip.riderId.vehicleNumber})` : ''}
-            </div>
-          ) : null}
+
+            {trip ? (
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 font-mono text-[#101312]/75">
+                  {String(trip._id).slice(-12)}
+                </span>
+                {trip?.riderId?.fullName ? (
+                  <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 text-[#101312]/75">
+                    {trip.riderId.fullName}
+                  </span>
+                ) : null}
+                {trip?.riderId?.phone ? (
+                  <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 font-mono text-[#101312]/75">
+                    {trip.riderId.phone}
+                  </span>
+                ) : null}
+                <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 text-[#101312]/75">
+                  {trip?.riderId?.vehicleType ?? 'vehicle'} {trip?.riderId?.vehicleNumber ? `(${trip.riderId.vehicleNumber})` : ''}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-2 text-xs text-[#101312]/65">Create a request below to start live tracking.</div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={load}
+            className="w-full rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99] sm:w-auto"
+          >
+            Refresh
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={load}
-          className="rounded-xl border border-slate-800 px-3 py-2 text-sm hover:bg-slate-900"
-        >
-          Refresh
-        </button>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#101312]/72">
+          {status === 'to_pickup' ? (
+            <span className="rounded-full border border-[#876DFF]/35 bg-[#876DFF]/10 px-2 py-1 font-medium text-[#4a35b6]">
+              Rider to pickup route
+              {typeof etaToPickup === 'number' ? ` • ETA ${Math.max(1, Math.round(etaToPickup / 60))} min` : ''}
+            </span>
+          ) : null}
+          {status === 'to_university' || status === 'to_pickup' || status === 'overdue' ? (
+            <span className="rounded-full border border-[#BAF91A]/45 bg-[#E2FF99] px-2 py-1 font-medium text-[#101312]">
+              Pickup to SLIIT route
+              {typeof etaToCampus === 'number' ? ` • ETA ${Math.max(1, Math.round(etaToCampus / 60))} min` : ''}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="mt-3 text-xs text-slate-400">
-        {status === 'to_pickup' ? (
-          <div>
-            Rider → your pickup route (red){' '}
-            {typeof etaToPickup === 'number' ? <span>• ETA {Math.max(1, Math.round(etaToPickup / 60))} min</span> : null}
-          </div>
-        ) : null}
-        {status === 'to_university' ? (
-          <div>
-            Pickup → SLIIT route (blue){' '}
-            {typeof etaToCampus === 'number' ? <span>• ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
-          </div>
-        ) : null}
-        {status === 'to_pickup' || status === 'overdue' ? (
-          <div>
-            Pickup → SLIIT route (blue){' '}
-            {typeof etaToCampus === 'number' ? <span>• ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
-          </div>
-        ) : null}
-      </div>
-
-      {trip && ['to_pickup', 'to_university', 'overdue'].includes(trip.status) ? (
-        <PassengerSafetyCountdown
-          tripId={String(trip._id)}
-          tripStatus={trip.status}
-          etaToPickupSec={etaToPickup}
-          etaToCampusSec={etaToCampus}
-          pickupLocation={pickup?.lat != null && pickup?.lng != null ? pickup : null}
-        />
-      ) : null}
-
-      <div className="mt-3">
+      <div className="p-3 sm:p-5">
         <MapPicker
-          value={(pickup?.lat && pickup?.lng ? pickup : requestPickup) ?? null}
+          value={(pickup?.lat && pickup?.lng ? pickup : requestPickup ?? fallbackPickup) ?? null}
           onChange={(v) => setRequestPickup(v)}
           readonly={Boolean(trip)}
           polylines={polylines}
           markers={markers}
           valueIconKind="pickup"
-          height={360}
+          height={340}
         />
       </div>
 
-      <div className="mt-4 rounded-xl border border-slate-800 bg-slate-950 p-3">
-        <div className="text-sm font-semibold text-slate-200">Ride Request</div>
-        <div className="mt-1 text-xs text-slate-400">Single map mode: select pickup on the map above, destination is SLIIT.</div>
+      {trip && ['to_pickup', 'to_university', 'overdue'].includes(trip.status) ? (
+        <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+          <PassengerSafetyCountdown
+            tripId={String(trip._id)}
+            tripStatus={trip.status}
+            etaToPickupSec={etaToPickup}
+            etaToCampusSec={etaToCampus}
+            pickupLocation={pickup?.lat != null && pickup?.lng != null ? pickup : null}
+          />
+        </div>
+      ) : null}
+
+      <div className="border-t border-[#101312]/10 bg-[#f9fce9] p-4 sm:p-5">
+        <div className="text-sm font-semibold text-[#101312]">Ride Request</div>
+        <div className="mt-1 text-xs text-[#101312]/65">Select your pickup on map. Destination is fixed to SLIIT.</div>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="grid gap-1 text-sm">
-            <span className="text-slate-300">Seats</span>
+            <span className="text-[#101312]/80">Seats</span>
             <input
               type="number"
               min="1"
               max="4"
               value={requestSeatCount}
               onChange={(e) => setRequestSeatCount(Number(e.target.value))}
-              className="rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+              className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
             />
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-200 sm:mt-6">
+          <label className="flex items-center gap-2 rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-[#101312] sm:self-end">
             <input
               type="checkbox"
               checked={requestFemaleOnly}
               onChange={(e) => setRequestFemaleOnly(e.target.checked)}
+              className="h-4 w-4 accent-[#876DFF]"
             />
             Female only
           </label>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <button
             type="button"
             onClick={previewRequestRoute}
-            className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900 disabled:opacity-60"
-            disabled={!requestPickup}
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99] disabled:opacity-60"
+            disabled={!requestPickup && !fallbackPickup}
           >
             Preview Route
           </button>
           <button
             type="button"
             onClick={submitRequest}
-            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-60"
-            disabled={!requestPickup}
+            className="rounded-xl bg-[#BAF91A] px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:opacity-60"
+            disabled={!requestPickup && !fallbackPickup}
           >
             Request Ride
           </button>
         </div>
 
         {requestPreview ? (
-          <div className="mt-2 text-sm text-slate-300">
+          <div className="mt-2 rounded-lg border border-[#101312]/10 bg-white p-2.5 text-sm text-[#101312]/75">
             Distance {(requestPreview.distanceMeters / 1000).toFixed(2)} km • ETA{' '}
             {Math.max(1, Math.round((requestPreview.expectedDurationSeconds ?? 0) / 60))} min
           </div>
         ) : null}
-        {requestMessage ? <div className="mt-2 text-sm text-slate-400">{requestMessage}</div> : null}
+        {requestMessage ? (
+          <div className="mt-2 rounded-lg border border-[#101312]/10 bg-white p-2.5 text-sm text-[#101312]/75">{requestMessage}</div>
+        ) : null}
+        {requestError ? (
+          <div className="mt-2 rounded-lg border border-rose-200 bg-rose-50 p-2.5 text-sm text-rose-700">{requestError}</div>
+        ) : null}
       </div>
     </section>
   )
 }
-

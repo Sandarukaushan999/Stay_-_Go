@@ -3,39 +3,36 @@ import { useAuthStore } from '../../../app/store/authStore'
 import { rideApi } from '../services/rideApi'
 import IncomingRideRequests from '../rider/IncomingRideRequests'
 
-function StatCard({ label, value, hint, accent = 'slate' }) {
-  const accents = {
-    slate: 'border-slate-800 bg-slate-900/50',
-    emerald: 'border-emerald-800/60 bg-emerald-950/25',
-    violet: 'border-violet-800/50 bg-violet-950/30',
-    amber: 'border-amber-800/50 bg-amber-950/25',
-    sky: 'border-sky-800/50 bg-sky-950/25',
-  }
+function StatCard({ label, value, hint }) {
   return (
-    <div className={`rounded-2xl border p-4 shadow-sm ${accents[accent] ?? accents.slate}`}>
-      <div className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</div>
-      <div className="mt-2 text-2xl font-semibold tabular-nums text-slate-50">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-slate-500">{hint}</div> : null}
+    <article className="rounded-2xl border border-[#101312]/12 bg-white p-4 shadow-[0_8px_24px_rgba(16,19,18,0.06)]">
+      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-[#876DFF]">{label}</div>
+      <div className="mt-2 text-3xl font-semibold text-[#101312] tabular-nums">{value}</div>
+      {hint ? <div className="mt-2 text-xs text-[#101312]/65">{hint}</div> : null}
+    </article>
+  )
+}
+
+function ProgressRow({ label, value, max }) {
+  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-xs text-[#101312]/70">
+        <span>{label}</span>
+        <span className="tabular-nums font-semibold text-[#101312]">{value}</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-[#edf5d0]">
+        <div className="h-full rounded-full bg-[#876DFF] transition-all duration-500" style={{ width: `${pct}%` }} />
+      </div>
     </div>
   )
 }
 
-function BarRow({ label, value, max }) {
-  const pct = max > 0 ? Math.min(100, Math.round((value / max) * 100)) : 0
-  return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs text-slate-400">
-        <span>{label}</span>
-        <span className="tabular-nums text-slate-300">{value}</span>
-      </div>
-      <div className="h-2 overflow-hidden rounded-full bg-slate-800">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-500 transition-all duration-500"
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-    </div>
-  )
+function formatDateTime(value) {
+  if (!value) return '-'
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return '-'
+  return d.toLocaleString()
 }
 
 export default function RiderDashboardPage() {
@@ -44,14 +41,17 @@ export default function RiderDashboardPage() {
   const [dash, setDash] = useState(null)
   const [loading, setLoading] = useState(true)
   const [tripActionId, setTripActionId] = useState(null)
+  const [error, setError] = useState(null)
 
   const loadDashboard = useCallback(async () => {
     setLoading(true)
+    setError(null)
     try {
       const res = await rideApi.riderDashboard()
       setDash(res.data.data ?? null)
-    } catch {
+    } catch (err) {
       setDash(null)
+      setError(err?.response?.data?.message ?? 'Could not load rider dashboard data.')
     } finally {
       setLoading(false)
     }
@@ -65,9 +65,12 @@ export default function RiderDashboardPage() {
     if (!tripId || user?.role !== 'rider') return
     const id = String(tripId)
     setTripActionId(id)
+    setError(null)
     try {
       await rideApi.confirmPickup(id)
       await loadDashboard()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not confirm pickup for this trip.')
     } finally {
       setTripActionId(null)
     }
@@ -77,200 +80,183 @@ export default function RiderDashboardPage() {
     if (!tripId) return
     const id = String(tripId)
     setTripActionId(id)
+    setError(null)
     try {
       await rideApi.finishTrip(id)
       await loadDashboard()
+    } catch (err) {
+      setError(err?.response?.data?.message ?? 'Could not finish this trip.')
     } finally {
       setTripActionId(null)
     }
   }
 
-  const bs = dash?.byStatus ?? {}
-  const maxBar = Math.max(bs.completed ?? 0, bs.accepted ?? 0, bs.cancelled ?? 0, bs.requested ?? 0, 1)
+  const byStatus = dash?.byStatus ?? {}
+  const maxBar = Math.max(byStatus.completed ?? 0, byStatus.accepted ?? 0, byStatus.cancelled ?? 0, byStatus.requested ?? 0, 1)
   const activeCount = dash?.activeTrips?.length ?? 0
   const isApprovedRider = user?.role === 'rider'
 
   return (
-    <div className="space-y-8">
-      <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-950 via-slate-900 to-violet-950/50 px-6 py-8 md:px-10 md:py-10">
-        <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-violet-600/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-fuchsia-600/10 blur-3xl" />
-        <div className="relative">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-300/90">Ride Sharing Workspace</p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Ride Dashboard</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-relaxed text-slate-400">
-            Monitor campus demand, active trips, and your performance. Stay online to receive requests; use the map below
-            to review routes before accepting.
-          </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-slate-700/80 bg-slate-900/60 px-4 py-2 text-sm text-slate-200">
-              <span className="text-slate-500">Signed in as </span>
-              <span className="font-medium">{user?.fullName ?? 'Rider'}</span>
-            </div>
-            <div className="rounded-full border border-slate-700/80 bg-slate-900/60 px-4 py-2 text-sm text-slate-200">
-              Campus: <span className="font-medium text-violet-200">{user?.campusId ?? '—'}</span>
-            </div>
-            <div className="rounded-full border border-slate-700/80 bg-slate-900/60 px-4 py-2 text-sm text-slate-200">
-              Vehicle:{' '}
-              <span className="font-medium capitalize text-slate-100">
-                {user?.vehicleType ?? '—'} {user?.vehicleNumber ? `• ${user.vehicleNumber}` : ''}
-              </span>
-            </div>
-            {!isApprovedRider ? (
-              <div className="rounded-full border border-amber-700/60 bg-amber-950/40 px-4 py-2 text-xs text-amber-200">
-                Rider approval: <span className="font-semibold">{user?.riderVerificationStatus ?? 'pending'}</span>
-              </div>
-            ) : null}
-          </div>
+    <section className="space-y-5">
+      <div className="rounded-3xl border border-[#101312]/15 bg-white p-4 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-[#101312] sm:text-xl">Rider Workspace</h2>
+          <button
+            type="button"
+            onClick={() => {
+              hydrateMe()
+              loadDashboard()
+            }}
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+          >
+            Refresh
+          </button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2 text-xs">
+          <span className="rounded-full border border-[#101312]/15 bg-[#E2FF99] px-2.5 py-1 font-semibold text-[#101312]">
+            Rider: {user?.fullName ?? 'Rider'}
+          </span>
+          <span className="rounded-full border border-[#101312]/15 bg-[#E2FF99] px-2.5 py-1 font-semibold text-[#101312]">
+            Campus: {user?.campusId ?? '-'}
+          </span>
+          <span className="rounded-full border border-[#101312]/15 bg-[#E2FF99] px-2.5 py-1 font-semibold text-[#101312]">
+            Vehicle: {user?.vehicleType ?? '-'} {user?.vehicleNumber ? `(${user.vehicleNumber})` : ''}
+          </span>
+          {!isApprovedRider ? (
+            <span className="rounded-full border border-[#876DFF]/35 bg-[#876DFF]/10 px-2.5 py-1 font-semibold text-[#4a35b6]">
+              Approval: {user?.riderVerificationStatus ?? 'pending'}
+            </span>
+          ) : null}
         </div>
       </div>
 
+      {error ? <div className="rounded-2xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</div> : null}
+
       {loading ? (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-6 text-sm text-slate-400">Loading analytics…</div>
+        <div className="rounded-3xl border border-[#101312]/15 bg-white p-5 text-sm text-[#101312]/65">Loading rider data...</div>
       ) : (
         <>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <StatCard label="Campus Queue" value={dash?.openCampusQueue ?? 0} hint="Open ride requests at your campus" />
             <StatCard
-              label="Campus queue"
-              value={dash?.openCampusQueue ?? 0}
-              hint="Open ride requests on your campus"
-              accent="violet"
-            />
-            <StatCard
-              label="Your active trips"
+              label="Active Trips"
               value={activeCount}
-              hint={`${dash?.usedSeats ?? 0} / ${dash?.capacityPassengers ?? 0} passenger seats in use`}
-              accent="emerald"
+              hint={`${dash?.usedSeats ?? 0} / ${dash?.capacityPassengers ?? 0} seats currently in use`}
             />
+            <StatCard label="Completed Today" value={dash?.completedToday ?? 0} hint="Trips completed today" />
             <StatCard
-              label="Completed today"
-              value={dash?.completedToday ?? 0}
-              hint="Rides marked complete today"
-              accent="sky"
-            />
-            <StatCard
-              label="30-day completion"
-              value={dash?.completionRate != null ? `${dash.completionRate}%` : '—'}
+              label="30-Day Completion"
+              value={dash?.completionRate != null ? `${dash.completionRate}%` : '-'}
               hint={
                 dash?.completionRate != null
-                  ? `Completed ${dash?.completedLast30d ?? 0} vs cancelled ${dash?.cancelledLast30d ?? 0} (30d)`
-                  : 'Not enough finished rides yet'
+                  ? `Completed ${dash?.completedLast30d ?? 0} vs cancelled ${dash?.cancelledLast30d ?? 0}`
+                  : 'Not enough completed rides yet'
               }
-              accent="amber"
             />
           </div>
 
-          <div className="grid gap-6 lg:grid-cols-3">
-            <div className="lg:col-span-2 space-y-4">
-              <h2 className="text-lg font-semibold text-slate-100">Active trips</h2>
+          <div className="grid gap-5 lg:grid-cols-3">
+            <section className="space-y-3 lg:col-span-2">
+              <h3 className="text-lg font-semibold text-[#101312]">Active Trips</h3>
+
               {!dash?.activeTrips?.length ? (
-                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-900/20 p-8 text-center text-sm text-slate-500">
-                  No live trips. Accept a request below to start tracking pickup and drop-off.
+                <div className="rounded-3xl border border-dashed border-[#101312]/25 bg-white p-6 text-center text-sm text-[#101312]/65">
+                  No live trips right now. Accept a request below to start pickup and destination tracking.
                 </div>
               ) : (
                 <div className="grid gap-3">
-                  {dash.activeTrips.map((t) => (
-                    <div
-                      key={t._id}
-                      className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4 shadow-sm"
-                    >
-                      <div className="flex flex-wrap items-start justify-between gap-3">
+                  {dash.activeTrips.map((trip) => (
+                    <article key={trip._id} className="rounded-2xl border border-[#101312]/12 bg-white p-4 shadow-[0_8px_24px_rgba(16,19,18,0.06)]">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div>
-                          <div className="text-xs font-mono text-slate-500">Trip {String(t._id).slice(-12)}</div>
-                          <div className="mt-1 text-sm font-medium capitalize text-slate-200">
-                            Status: <span className="text-violet-300">{t.status?.replace(/_/g, ' ')}</span>
+                          <div className="text-xs font-mono text-[#101312]/65">Trip {String(trip._id).slice(-12)}</div>
+                          <div className="mt-1 text-sm font-semibold capitalize text-[#101312]">
+                            Status:{' '}
+                            <span className="rounded-full border border-[#876DFF]/35 bg-[#876DFF]/10 px-2 py-0.5 text-[11px] text-[#4a35b6]">
+                              {trip.status?.replace(/_/g, ' ')}
+                            </span>
                           </div>
-                          <div className="mt-2 text-xs text-slate-400">
-                            Seats: {t.seatCount ?? 1} • Started {t.startedAt ? new Date(t.startedAt).toLocaleString() : '—'}
+                          <div className="mt-2 text-xs text-[#101312]/72">
+                            Seats: {trip.seatCount ?? 1} • Started: {formatDateTime(trip.startedAt)}
                           </div>
-                          {t.passengerId ? (
-                            <div className="mt-2 text-xs text-slate-300">
-                              Passenger: <span className="font-medium">{t.passengerId.fullName}</span> •{' '}
-                              <span className="font-mono">{t.passengerId.phone ?? '—'}</span>
+                          {trip.passengerId ? (
+                            <div className="mt-2 rounded-lg border border-[#101312]/10 bg-[#f9fce9] p-2.5 text-xs text-[#101312]/75">
+                              Passenger: <span className="font-semibold text-[#101312]">{trip.passengerId.fullName}</span> •{' '}
+                              <span className="font-mono">{trip.passengerId.phone ?? '-'}</span>
                             </div>
                           ) : null}
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                          {t.status === 'to_pickup' || t.status === 'overdue' ? (
+
+                        <div className="grid w-full gap-2 sm:w-auto">
+                          {(trip.status === 'to_pickup' || trip.status === 'overdue') && (
                             <button
                               type="button"
-                              disabled={!isApprovedRider || tripActionId === String(t._id)}
-                              onClick={() => onConfirmPickup(t._id)}
-                              className="rounded-xl bg-violet-600 px-3 py-2 text-xs font-medium text-white hover:bg-violet-500 disabled:opacity-50"
+                              disabled={!isApprovedRider || tripActionId === String(trip._id)}
+                              onClick={() => onConfirmPickup(trip._id)}
+                              className="rounded-xl border border-[#876DFF]/35 bg-[#876DFF]/10 px-3 py-2 text-xs font-semibold text-[#4a35b6] transition hover:bg-[#876DFF]/20 disabled:opacity-50"
                             >
                               Confirm pickup
                             </button>
-                          ) : null}
-                          {t.status === 'to_university' || t.status === 'overdue' ? (
+                          )}
+
+                          {(trip.status === 'to_university' || trip.status === 'overdue') && (
                             <button
                               type="button"
-                              disabled={tripActionId === String(t._id)}
-                              onClick={() => onFinishTrip(t._id)}
-                              className="rounded-xl bg-emerald-600 px-3 py-2 text-xs font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                              disabled={tripActionId === String(trip._id)}
+                              onClick={() => onFinishTrip(trip._id)}
+                              className="rounded-xl bg-[#BAF91A] px-3 py-2 text-xs font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:opacity-50"
                             >
                               Finish at campus
                             </button>
-                          ) : null}
+                          )}
                         </div>
                       </div>
-                    </div>
+                    </article>
                   ))}
                 </div>
               )}
-            </div>
+            </section>
 
-            <div className="space-y-4">
-              <h2 className="text-lg font-semibold text-slate-100">Performance</h2>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-sm text-slate-400">Rating</span>
-                  <span className="text-2xl font-semibold text-amber-200 tabular-nums">
-                    {typeof dash?.rating === 'number' ? dash.rating.toFixed(1) : '—'}
+            <aside className="space-y-4">
+              <section className="rounded-3xl border border-[#101312]/12 bg-white p-5 shadow-[0_8px_24px_rgba(16,19,18,0.06)]">
+                <h3 className="text-base font-semibold text-[#101312]">Performance</h3>
+                <div className="mt-3 flex items-baseline justify-between">
+                  <span className="text-sm text-[#101312]/75">Rating</span>
+                  <span className="text-2xl font-semibold text-[#101312] tabular-nums">
+                    {typeof dash?.rating === 'number' ? dash.rating.toFixed(1) : '-'}
                   </span>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between gap-2 border-t border-slate-800 pt-3">
-                  <span className="text-sm text-slate-400">Complaints</span>
-                  <span className="text-lg font-medium text-slate-200 tabular-nums">{dash?.complaintCount ?? 0}</span>
+                <div className="mt-3 border-t border-[#101312]/10 pt-3 text-sm text-[#101312]/75">
+                  Complaints: <span className="font-semibold text-[#101312]">{dash?.complaintCount ?? 0}</span>
                 </div>
-                <div className="mt-3 flex items-baseline justify-between gap-2 border-t border-slate-800 pt-3">
-                  <span className="text-sm text-slate-400">Rides accepted (30d)</span>
-                  <span className="text-lg font-medium text-slate-200 tabular-nums">{dash?.acceptedLast30d ?? 0}</span>
+                <div className="mt-2 text-sm text-[#101312]/75">
+                  Accepted (30d): <span className="font-semibold text-[#101312]">{dash?.acceptedLast30d ?? 0}</span>
                 </div>
-                <p className="mt-4 text-xs text-slate-500">
-                  Availability: <span className="text-slate-300">{dash?.availability ?? user?.availability ?? '—'}</span>
-                </p>
-              </div>
+                <div className="mt-2 text-xs text-[#101312]/65">
+                  Availability: <span className="font-semibold text-[#101312]">{dash?.availability ?? user?.availability ?? '-'}</span>
+                </div>
+              </section>
 
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
-                <h3 className="text-sm font-semibold text-slate-200">Lifetime mix</h3>
-                <p className="mt-1 text-xs text-slate-500">All-time ride request outcomes assigned to you</p>
+              <section className="rounded-3xl border border-[#101312]/12 bg-white p-5 shadow-[0_8px_24px_rgba(16,19,18,0.06)]">
+                <h4 className="text-sm font-semibold text-[#101312]">Lifetime Mix</h4>
+                <p className="mt-1 text-xs text-[#101312]/65">All-time outcomes across your assigned ride requests.</p>
                 <div className="mt-4 space-y-4">
-                  <BarRow label="Completed" value={bs.completed ?? 0} max={maxBar} />
-                  <BarRow label="Accepted (active pipeline)" value={bs.accepted ?? 0} max={maxBar} />
-                  <BarRow label="Cancelled" value={bs.cancelled ?? 0} max={maxBar} />
-                  <BarRow label="Requested (legacy)" value={bs.requested ?? 0} max={maxBar} />
+                  <ProgressRow label="Completed" value={byStatus.completed ?? 0} max={maxBar} />
+                  <ProgressRow label="Accepted (pipeline)" value={byStatus.accepted ?? 0} max={maxBar} />
+                  <ProgressRow label="Cancelled" value={byStatus.cancelled ?? 0} max={maxBar} />
+                  <ProgressRow label="Requested (legacy)" value={byStatus.requested ?? 0} max={maxBar} />
                 </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => {
-                  hydrateMe()
-                  loadDashboard()
-                }}
-                className="w-full rounded-xl border border-slate-700 py-2.5 text-sm text-slate-300 hover:bg-slate-800"
-              >
-                Refresh profile & analytics
-              </button>
-            </div>
+              </section>
+            </aside>
           </div>
         </>
       )}
 
-      <div>
-        <h2 className="mb-4 text-lg font-semibold text-slate-100">Operations</h2>
+      <section className="space-y-3">
+        <h3 className="text-lg font-semibold text-[#101312]">Operations</h3>
         <IncomingRideRequests onWorkspaceRefresh={loadDashboard} />
-      </div>
-    </div>
+      </section>
+    </section>
   )
 }

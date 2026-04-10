@@ -9,6 +9,7 @@ export const rideApi = {
   startRide: (id) => api.post(`/ride-sharing/rides/${id}/start`),
   completeRide: (id) => api.post(`/ride-sharing/rides/${id}/complete`),
   cancelRide: (id) => api.post(`/ride-sharing/rides/${id}/cancel`),
+  submitFeedback: (id, payload) => api.post(`/ride-sharing/rides/${id}/feedback`, payload),
   confirmPickup: (tripId) => api.post(`/ride-sharing/trips/${tripId}/confirm-pickup`),
   finishTrip: (tripId) => api.post(`/ride-sharing/trips/${tripId}/finish`),
   sos: (id, payload) => api.post(`/ride-sharing/trips/${id}/sos`, payload),

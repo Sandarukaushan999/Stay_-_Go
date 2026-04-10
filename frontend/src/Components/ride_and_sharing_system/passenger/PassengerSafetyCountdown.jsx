@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { rideApi } from '../services/rideApi'
+/* eslint-disable react-hooks/set-state-in-effect */
 
 /** Extra time after OSRM ETA before we consider the trip abnormally late (traffic, etc.). */
 const BUFFER_SEC = 5 * 60
@@ -26,7 +27,10 @@ export default function PassengerSafetyCountdown({
   const [manualStatus, setManualStatus] = useState(null)
   const firedRef = useRef(false)
   const pickupRef = useRef(pickupLocation)
-  pickupRef.current = pickupLocation
+
+  useEffect(() => {
+    pickupRef.current = pickupLocation
+  }, [pickupLocation])
 
   const relevantEtaSec = useMemo(() => {
     if (tripStatus === 'to_university') return typeof etaToCampusSec === 'number' ? etaToCampusSec : null
@@ -60,8 +64,7 @@ export default function PassengerSafetyCountdown({
     return () => clearInterval(id)
   }, [tripId])
 
-  const remainingSec =
-    deadlineAt != null ? Math.max(0, Math.floor((deadlineAt - now) / 1000)) : null
+  const remainingSec = deadlineAt != null ? Math.max(0, Math.floor((deadlineAt - now) / 1000)) : null
 
   const inCancelWindow = remainingSec != null && remainingSec > 0 && remainingSec <= CANCEL_WINDOW_SEC
 
@@ -75,8 +78,7 @@ export default function PassengerSafetyCountdown({
     const loc = pickupRef.current
     rideApi
       .sos(tripId, {
-        message:
-          'Automatic passenger safety alert: expected arrival window (ETA + 5 min buffer) has passed.',
+        message: 'Automatic passenger safety alert: expected arrival window (ETA + 5 min buffer) has passed.',
         severity: 'high',
         location: loc?.lat != null && loc?.lng != null ? loc : undefined,
       })
@@ -106,26 +108,21 @@ export default function PassengerSafetyCountdown({
   if (!tripId) return null
 
   return (
-    <div className="mt-4 rounded-xl border border-amber-900/50 bg-amber-950/20 p-4">
-      <div className="text-sm font-semibold text-amber-100">Safety countdown</div>
-      <p className="mt-1 text-xs text-amber-200/80">
+    <div className="rounded-2xl border border-[#101312]/15 bg-[#fff7df] p-4">
+      <div className="text-sm font-semibold text-[#101312]">Safety countdown</div>
+      <p className="mt-1 text-xs text-[#101312]/75">
         Deadline = current route ETA + <span className="font-medium">5 min</span> buffer (traffic / delays). When it
-        reaches zero, an SOS is sent automatically unless you cancel in the final{' '}
-        <span className="font-medium">10 minutes</span>.
+        reaches zero, an SOS is sent automatically unless you cancel in the final <span className="font-medium">10 minutes</span>.
       </p>
 
       {relevantEtaSec == null ? (
-        <div className="mt-2 text-sm text-slate-400">Waiting for route ETA…</div>
+        <div className="mt-2 text-sm text-[#101312]/65">Waiting for route ETA...</div>
       ) : deadlineAt == null ? (
-        <div className="mt-2 text-sm text-slate-400">Calibrating…</div>
+        <div className="mt-2 text-sm text-[#101312]/65">Calibrating...</div>
       ) : (
         <>
-          <div className="mt-3 font-mono text-3xl font-semibold tracking-tight text-amber-50">
-            {formatMmSs(remainingSec)}
-          </div>
-          <div className="mt-1 text-xs text-slate-400">
-            Time left before automatic SOS • ETA leg + {BUFFER_SEC / 60} min buffer
-          </div>
+          <div className="mt-3 font-mono text-3xl font-semibold tracking-tight text-[#101312]">{formatMmSs(remainingSec)}</div>
+          <div className="mt-1 text-xs text-[#101312]/65">Time left before automatic SOS • ETA leg + {BUFFER_SEC / 60} min buffer</div>
         </>
       )}
 
@@ -134,31 +131,31 @@ export default function PassengerSafetyCountdown({
           <button
             type="button"
             onClick={() => setAutoSosCancelled(true)}
-            className="rounded-xl border border-emerald-700 bg-emerald-950/40 px-3 py-2 text-sm font-medium text-emerald-200 hover:bg-emerald-900/30"
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-medium text-[#101312] transition hover:bg-[#E2FF99]"
           >
             Stop automatic SOS (this trip)
           </button>
-          <span className="text-xs text-amber-200/90">Available only in the last 10 minutes.</span>
+          <span className="text-xs text-[#101312]/75">Available only in the last 10 minutes.</span>
         </div>
       ) : null}
 
       {autoSosCancelled ? (
-        <div className="mt-2 text-xs text-emerald-300">Automatic SOS cancelled for this trip. Emergency SOS still below.</div>
+        <div className="mt-2 text-xs text-emerald-700">Automatic SOS cancelled for this trip. Emergency SOS still below.</div>
       ) : null}
 
       {autoSosFired && !autoSosCancelled ? (
-        <div className="mt-2 text-xs text-rose-300">Automatic SOS was triggered (admins notified).</div>
+        <div className="mt-2 text-xs text-rose-700">Automatic SOS was triggered (admins notified).</div>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap gap-2 border-t border-amber-900/30 pt-3">
+      <div className="mt-4 flex flex-wrap gap-2 border-t border-[#101312]/10 pt-3">
         <button
           type="button"
           onClick={sendManualSos}
-          className="rounded-xl bg-rose-700 px-4 py-2 text-sm font-medium text-white hover:bg-rose-600"
+          className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-rose-500"
         >
           Emergency SOS now
         </button>
-        {manualStatus ? <span className="self-center text-xs text-slate-400">{manualStatus}</span> : null}
+        {manualStatus ? <span className="self-center text-xs text-[#101312]/75">{manualStatus}</span> : null}
       </div>
     </div>
   )

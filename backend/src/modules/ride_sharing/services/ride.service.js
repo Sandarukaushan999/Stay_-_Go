@@ -243,3 +243,66 @@ export async function completeRide({ rideRequestId, riderId }) {
   return rr.toObject()
 }
 
+async function recomputeRiderQualityStats(riderId) {
+  const riderOid = new mongoose.Types.ObjectId(riderId)
+
+  const [ratingAgg] = await RideRequest.aggregate([
+    {
+      $match: {
+        riderId: riderOid,
+        status: 'completed',
+        'feedback.rating': { $ne: null },
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        avgRating: { $avg: '$feedback.rating' },
+      },
+    },
+  ])
+
+  const complaintCount = await RideRequest.countDocuments({
+    riderId: riderOid,
+    status: 'completed',
+    'feedback.complaint': true,
+  })
+
+  const nextRating = typeof ratingAgg?.avgRating === 'number' ? Number(ratingAgg.avgRating.toFixed(2)) : 5
+
+  await User.updateOne(
+    { _id: riderOid },
+    {
+      $set: {
+        rating: nextRating,
+        complaintCount,
+      },
+    }
+  )
+}
+
+export async function submitRideFeedback({
+  rideRequestId,
+  passengerId,
+  rating,
+  complaint = false,
+  complaintText = '',
+}) {
+  const rr = await RideRequest.findById(rideRequestId)
+  if (!rr) throw new ApiError(404, 'Ride request not found')
+  if (rr.passengerId?.toString?.() !== passengerId) throw new ApiError(403, 'Only the trip passenger can submit feedback')
+  if (rr.status !== 'completed') throw new ApiError(409, 'Feedback can be submitted only for completed rides')
+  if (!rr.riderId) throw new ApiError(409, 'No rider assigned for this ride')
+
+  rr.feedback = {
+    rating: Number(rating),
+    complaint: Boolean(complaint),
+    complaintText: complaint ? String(complaintText ?? '').trim().slice(0, 500) : '',
+    submittedAt: new Date(),
+  }
+  await rr.save()
+
+  await recomputeRiderQualityStats(rr.riderId)
+  return rr.toObject()
+}
+

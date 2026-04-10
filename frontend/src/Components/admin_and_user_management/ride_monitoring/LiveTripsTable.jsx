@@ -6,7 +6,7 @@ import { api } from '../../../lib/apiClient'
 import { useSocketStore } from '../../../app/store/socketStore'
 
 const ACTIVE_TRIP_STATUSES = new Set(['to_pickup', 'to_university', 'overdue', 'in_progress'])
-const ROUTE_COLORS = ['#38bdf8', '#a78bfa', '#f59e0b', '#10b981', '#ef4444', '#14b8a6', '#f97316', '#22c55e']
+const ROUTE_COLORS = ['#876DFF', '#BAF91A', '#E2FF99', '#FFFFFF', '#101312', '#876DFF', '#BAF91A', '#E2FF99']
 
 function isActiveStatus(status) {
   return ACTIVE_TRIP_STATUSES.has(status)
@@ -294,24 +294,24 @@ export default function LiveTripsTable() {
   return (
     <AdminLayout>
       <div>
-        <h1 className="text-2xl font-semibold">Live Trip Monitoring</h1>
-        <p className="mt-2 text-slate-400">
+        <h1 className="text-2xl font-semibold text-slate-950">Live Trip Monitoring</h1>
+        <p className="mt-2 text-slate-700">
           Big live map with all ongoing rides, current positions, and route paths.
         </p>
 
         {error ? (
-          <div className="mt-4 rounded-2xl border border-red-900/50 bg-red-950/30 p-4 text-red-200">
+          <div className="mt-4 rounded-2xl border border-violet-300 bg-violet-50 p-4 text-violet-900">
             {error}
           </div>
         ) : null}
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 bg-slate-900/50 px-4 py-3">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-slate-50 px-4 py-3">
             <div className="flex flex-wrap items-center gap-3 text-sm">
-              <span className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-slate-200">
+              <span className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-slate-800">
                 Live rides: {activeItems.length}
               </span>
-              <span className="rounded-lg border border-slate-700 bg-slate-900 px-2 py-1 text-slate-200">
+              <span className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-slate-800">
                 Route matched: {osrmRouteCount}/{activeItems.length}
               </span>
             </div>
@@ -320,14 +320,14 @@ export default function LiveTripsTable() {
               <button
                 type="button"
                 onClick={() => setFitVersion((v) => v + 1)}
-                className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900"
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
               >
                 Fit All Rides
               </button>
               <button
                 type="button"
                 onClick={load}
-                className="rounded-xl border border-slate-700 px-3 py-2 text-sm hover:bg-slate-900"
+                className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
               >
                 Refresh
               </button>
@@ -358,7 +358,7 @@ export default function LiveTripsTable() {
                 {trip.originTuple && trip.currentTuple ? (
                   <Polyline
                     positions={[trip.originTuple, trip.currentTuple]}
-                    pathOptions={{ color: '#22c55e', weight: 4, opacity: 0.95 }}
+                    pathOptions={{ color: '#876DFF', weight: 4, opacity: 0.95 }}
                   />
                 ) : null}
 
@@ -366,7 +366,7 @@ export default function LiveTripsTable() {
                   <CircleMarker
                     center={trip.originTuple}
                     radius={4}
-                    pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.95 }}
+                    pathOptions={{ color: '#BAF91A', fillColor: '#BAF91A', fillOpacity: 0.95 }}
                   >
                     <Tooltip direction="top">Pickup</Tooltip>
                   </CircleMarker>
@@ -376,7 +376,7 @@ export default function LiveTripsTable() {
                   <CircleMarker
                     center={trip.destinationTuple}
                     radius={4}
-                    pathOptions={{ color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 0.95 }}
+                    pathOptions={{ color: '#876DFF', fillColor: '#876DFF', fillOpacity: 0.95 }}
                   >
                     <Tooltip direction="top">Destination</Tooltip>
                   </CircleMarker>
@@ -386,7 +386,7 @@ export default function LiveTripsTable() {
                   <CircleMarker
                     center={trip.currentTuple}
                     radius={8}
-                    pathOptions={{ color: '#0f172a', fillColor: '#38bdf8', fillOpacity: 1, weight: 2 }}
+                    pathOptions={{ color: '#101312', fillColor: '#E2FF99', fillOpacity: 1, weight: 2 }}
                   >
                     <Tooltip direction="top">{`Trip ${trip.shortId}`}</Tooltip>
                     <Popup>
@@ -404,10 +404,10 @@ export default function LiveTripsTable() {
           </MapContainer>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800">
+        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-300 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-950">
-              <tr className="text-slate-300">
+            <thead className="bg-slate-100">
+              <tr className="text-slate-700">
                 <th className="p-3">Trip</th>
                 <th className="p-3">Rider</th>
                 <th className="p-3">Passenger</th>
@@ -418,10 +418,10 @@ export default function LiveTripsTable() {
                 <th className="p-3">Route</th>
               </tr>
             </thead>
-            <tbody className="bg-slate-900/30">
+            <tbody className="bg-white">
               {loading ? (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={8}>
+                  <td className="p-3 text-slate-600" colSpan={8}>
                     Loading...
                   </td>
                 </tr>
@@ -431,27 +431,27 @@ export default function LiveTripsTable() {
                   const rider = t.riderId
                   const passenger = t.passengerId
                   return (
-                    <tr key={id} className="border-t border-slate-800">
-                      <td className="p-3 text-slate-100 font-mono text-xs">{shortId(id)}</td>
-                      <td className="p-3 text-slate-300">
+                    <tr key={id} className="border-t border-slate-200">
+                      <td className="p-3 font-mono text-xs text-slate-900">{shortId(id)}</td>
+                      <td className="p-3 text-slate-700">
                         <div>{personName(rider)}</div>
                         <div className="font-mono text-xs text-slate-500">{shortId(personId(rider))}</div>
                       </td>
-                      <td className="p-3 text-slate-300">
+                      <td className="p-3 text-slate-700">
                         <div>{personName(passenger)}</div>
                         <div className="font-mono text-xs text-slate-500">{shortId(personId(passenger))}</div>
                       </td>
-                      <td className="p-3 text-slate-300">{formatDateTime(t.startedAt)}</td>
-                      <td className="p-3 text-slate-300">{formatDateTime(t.bufferedDeadlineAt)}</td>
-                      <td className="p-3 text-slate-300">{formatLocation(t.currentLocation)}</td>
-                      <td className="p-3 text-slate-300">{t.status}</td>
-                      <td className="p-3 text-slate-300">{routeByTripId[id]?.source === 'osrm' ? 'OSRM' : 'Direct'}</td>
+                      <td className="p-3 text-slate-700">{formatDateTime(t.startedAt)}</td>
+                      <td className="p-3 text-slate-700">{formatDateTime(t.bufferedDeadlineAt)}</td>
+                      <td className="p-3 text-slate-700">{formatLocation(t.currentLocation)}</td>
+                      <td className="p-3 text-slate-700">{t.status}</td>
+                      <td className="p-3 text-slate-700">{routeByTripId[id]?.source === 'osrm' ? 'OSRM' : 'Direct'}</td>
                     </tr>
                   )
                 })
               ) : (
                 <tr>
-                  <td className="p-3 text-slate-400" colSpan={8}>
+                  <td className="p-3 text-slate-600" colSpan={8}>
                     No active trips
                   </td>
                 </tr>

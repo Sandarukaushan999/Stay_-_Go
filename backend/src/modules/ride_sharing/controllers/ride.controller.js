@@ -54,3 +54,13 @@ export const completeRide = asyncHandler(async (req, res) => {
   res.json({ success: true, data: rr })
 })
 
+export const submitFeedback = asyncHandler(async (req, res) => {
+  const rr = await rideService.submitRideFeedback({
+    rideRequestId: req.params.id,
+    passengerId: req.user.id,
+    rating: req.body.rating,
+    complaint: req.body.complaint,
+    complaintText: req.body.complaintText,
+  })
+  res.json({ success: true, data: rr })
+})
