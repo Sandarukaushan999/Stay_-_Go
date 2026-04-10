@@ -28,8 +28,9 @@ export async function createTicket(formData) {
     return res.data.data
   }
 
-  // No files - send as JSON
-  const res = await api.post('/maintenance/tickets', formData)
+  // No files - send as JSON (exclude the files key)
+  const { files, ...jsonData } = formData
+  const res = await api.post('/maintenance/tickets', jsonData)
   return res.data.data
 }
 

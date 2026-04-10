@@ -58,7 +58,7 @@ export default function AppRouter() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/rides/workspace" element={<RidesGatewayPage />} />
-        <Route path="/maintenance" element={<MainLayout><MaintenanceDashboard /></MainLayout>} />
+        <Route path="/maintenance" element={<MainLayout showFooter={false}><MaintenanceDashboard /></MainLayout>} />
 
         <Route element={<RoleRoute allow={['admin', 'super_admin']} />}>
           <Route path="/admin" element={<AdminDashboard />} />

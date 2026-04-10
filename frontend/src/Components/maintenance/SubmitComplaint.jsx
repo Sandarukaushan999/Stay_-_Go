@@ -16,19 +16,20 @@ const categoryOptions = [
 
 // Radio options for priority
 const priorityOptions = [
-  { value: 'low', label: 'Low', color: 'peer-checked:border-slate-400 peer-checked:bg-slate-100' },
-  { value: 'medium', label: 'Medium', color: 'peer-checked:border-blue-500 peer-checked:bg-blue-50' },
-  { value: 'high', label: 'High', color: 'peer-checked:border-orange-500 peer-checked:bg-orange-50' },
-  { value: 'emergency', label: 'Emergency', color: 'peer-checked:border-red-500 peer-checked:bg-red-50' },
+  { value: 'low', label: 'Low', color: 'peer-checked:border-[#101312] peer-checked:bg-[#101312]/5' },
+  { value: 'medium', label: 'Medium', color: 'peer-checked:border-[#876DFF] peer-checked:bg-[#876DFF]/10' },
+  { value: 'high', label: 'High', color: 'peer-checked:border-[#BAF91A] peer-checked:bg-[#BAF91A]/20' },
+  { value: 'emergency', label: 'Emergency', color: 'peer-checked:border-[#876DFF] peer-checked:bg-[#876DFF]/15' },
 ]
 
 // Hostel blocks A through F
 const hostelBlocks = ['A', 'B', 'C', 'D', 'E', 'F']
 
 // Shared Tailwind classes for inputs
-const inputClasses = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-emerald-500'
-const labelClasses = 'mb-1.5 block text-sm font-medium text-slate-700'
-const errorClasses = 'mt-1 text-xs text-violet-600'
+// Using hardcoded colors because tailwind.config remaps slate/emerald to custom scales
+const inputClasses = 'w-full rounded-xl border border-[#101312]/15 bg-white px-4 py-2.5 text-sm text-[#101312] placeholder-[#101312]/50 outline-none transition focus:border-[#876DFF] focus:ring-1 focus:ring-[#876DFF]/20'
+const labelClasses = 'mb-1.5 block text-sm font-medium text-[#101312]'
+const errorClasses = 'mt-1 text-xs text-[#e53e3e]'
 
 // Max file constraints
 const MAX_FILES = 3
@@ -208,7 +209,7 @@ function SubmitComplaint({ onSubmit }) {
   // ---- Success screen shown after submission ----
   if (submitted) {
     return (
-      <div className="rounded-2xl border border-slate-200 bg-white p-8 text-center">
+      <div className="rounded-2xl border border-[#101312]/10 bg-white p-8 text-center">
         {/* Check icon */}
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-3xl text-emerald-600">
           ✓
@@ -240,13 +241,13 @@ function SubmitComplaint({ onSubmit }) {
 
       {/* General submission error */}
       {errors.submit && (
-        <div className="rounded-xl border border-violet-300 bg-violet-50 px-4 py-3 text-sm text-violet-700">
+        <div className="rounded-xl border border-[#e53e3e]/30 bg-[#e53e3e]/5 px-4 py-3 text-sm text-[#e53e3e]">
           {errors.submit}
         </div>
       )}
 
       {/* Card wrapper */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-5">
+      <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 space-y-5 sm:p-6">
 
         {/* Title */}
         <div>
@@ -261,7 +262,7 @@ function SubmitComplaint({ onSubmit }) {
             onChange={(e) => handleChange('title', e.target.value)}
           />
           {errors.title && <p className={errorClasses}>{errors.title}</p>}
-          <p className="mt-1 text-xs text-slate-500">{form.title.length}/100</p>
+          <p className="mt-1 text-xs text-[#101312]/75">{form.title.length}/100</p>
         </div>
 
         {/* Category and Hostel Block row */}
@@ -329,7 +330,7 @@ function SubmitComplaint({ onSubmit }) {
                   onChange={(e) => handleChange('priority', e.target.value)}
                   className="peer sr-only"
                 />
-                <span className={`inline-block rounded-xl border border-slate-300 px-4 py-2 text-sm text-slate-600 transition peer-checked:text-slate-950 ${opt.color}`}>
+                <span className={`inline-block rounded-xl border border-[#101312]/15 px-4 py-2 text-sm text-[#101312]/75 transition peer-checked:font-semibold peer-checked:text-[#101312] ${opt.color}`}>
                   {opt.label}
                 </span>
               </label>
@@ -350,16 +351,16 @@ function SubmitComplaint({ onSubmit }) {
             onChange={(e) => handleChange('description', e.target.value)}
           />
           {errors.description && <p className={errorClasses}>{errors.description}</p>}
-          <p className="mt-1 text-xs text-slate-500">{form.description.length}/500</p>
+          <p className="mt-1 text-xs text-[#101312]/75">{form.description.length}/500</p>
         </div>
 
         {/* File Upload */}
         <div>
           <span className={labelClasses}>Attachments (optional)</span>
-          <p className="mb-2 text-xs text-slate-500">Max {MAX_FILES} files. JPG or PNG only, up to 5MB each.</p>
+          <p className="mb-2 text-xs text-[#101312]/75">Max {MAX_FILES} files. JPG or PNG only, up to 5MB each.</p>
 
           {/* Upload button area */}
-          <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-500 transition hover:border-emerald-500 hover:text-slate-700">
+          <label className="flex cursor-pointer items-center justify-center rounded-xl border-2 border-dashed border-[#101312]/15 bg-[#101312]/[0.02] px-4 py-8 text-sm text-[#101312]/80 transition hover:border-[#BAF91A] hover:bg-[#BAF91A]/5 hover:text-[#101312]">
             <span>Click to upload images</span>
             <input
               type="file"
@@ -376,7 +377,7 @@ function SubmitComplaint({ onSubmit }) {
           {previews.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-3">
               {previews.map((url, i) => (
-                <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-xl border border-slate-200">
+                <div key={i} className="group relative h-20 w-20 overflow-hidden rounded-xl border border-[#101312]/10">
                   <img src={url} alt={`Preview ${i + 1}`} className="h-full w-full object-cover" />
                   {/* Remove button overlay */}
                   <button

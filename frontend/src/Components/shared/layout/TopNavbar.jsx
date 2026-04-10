@@ -24,7 +24,7 @@ export default function TopNavbar() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/rides/workspace')}
             className="inline-flex items-center gap-2 rounded-lg border border-[#101312]/20 bg-white px-2.5 py-2 text-sm font-semibold text-[#101312]"
           >
             <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-[#BAF91A] text-[10px] font-bold text-[#101312]">
@@ -35,8 +35,8 @@ export default function TopNavbar() {
         </div>
 
         <nav className="hidden items-center gap-1 md:flex">
-          <HeaderLink label="Home" onClick={() => navigate('/')} />
-          <HeaderLink label="Rides" onClick={() => navigate('/rides')} />
+          <HeaderLink label="Home" onClick={() => navigate('/rides/workspace')} />
+          <HeaderLink label="Rides" onClick={() => navigate('/rides/workspace')} />
           <HeaderLink label="Maintenance" onClick={() => navigate('/maintenance')} />
           {(user?.role === 'admin' || user?.role === 'super_admin') && (
             <HeaderLink label="Admin" onClick={() => navigate('/admin')} />

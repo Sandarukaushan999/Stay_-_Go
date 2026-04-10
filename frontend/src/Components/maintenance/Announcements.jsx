@@ -5,9 +5,9 @@
 import { useState } from 'react'
 
 const priorityStyles = {
-  urgent: { border: 'border-violet-400', bg: 'bg-violet-50', badge: 'bg-violet-100 text-violet-700' },
-  important: { border: 'border-emerald-400', bg: 'bg-emerald-50', badge: 'bg-emerald-100 text-emerald-700' },
-  normal: { border: 'border-slate-200', bg: 'bg-white', badge: 'bg-slate-100 text-slate-600' },
+  urgent: { border: 'border-l-[#e53e3e]', bg: 'bg-white', badge: 'bg-[#e53e3e]/10 text-[#e53e3e] border border-[#e53e3e]/20' },
+  important: { border: 'border-l-[#f59e0b]', bg: 'bg-white', badge: 'bg-[#f59e0b]/10 text-[#d97706] border border-[#f59e0b]/20' },
+  normal: { border: 'border-l-[#101312]/15', bg: 'bg-white', badge: 'bg-[#101312]/5 text-[#101312]/75 border border-[#101312]/10' },
 }
 
 function formatDate(dateString) {
@@ -112,16 +112,16 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
             Create New
           </button>
         ) : (
-          <div className="rounded-2xl border border-slate-200 bg-white p-5">
-            <h3 className="text-sm font-semibold text-slate-950">New Announcement</h3>
+          <div className="rounded-2xl border border-[#101312]/10 bg-white p-5">
+            <h3 className="text-sm font-semibold text-[#101312]">New Announcement</h3>
 
             <div className="mt-4 space-y-3">
               <div>
-                <label className="block text-xs font-medium text-slate-600" htmlFor="create-title">Title</label>
+                <label className="block text-xs font-medium text-[#101312]/75" htmlFor="create-title">Title</label>
                 <input
                   id="create-title"
                   type="text"
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500"
+                  className="mt-1 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-[#876DFF]"
                   placeholder="Announcement title (5-100 characters)"
                   maxLength={100}
                   value={createForm.title}
@@ -131,10 +131,10 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600" htmlFor="create-content">Content</label>
+                <label className="block text-xs font-medium text-[#101312]/75" htmlFor="create-content">Content</label>
                 <textarea
                   id="create-content"
-                  className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500"
+                  className="mt-1 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-[#876DFF]"
                   rows={4}
                   placeholder="Announcement content (20-500 characters)"
                   maxLength={500}
@@ -145,10 +145,10 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-600" htmlFor="create-priority">Priority</label>
+                <label className="block text-xs font-medium text-[#101312]/75" htmlFor="create-priority">Priority</label>
                 <select
                   id="create-priority"
-                  className="mt-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500"
+                  className="mt-1 rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#876DFF]"
                   value={createForm.priority}
                   onChange={(e) => setCreateForm({ ...createForm, priority: e.target.value })}
                 >
@@ -170,7 +170,7 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
               </button>
               <button
                 type="button"
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50"
+                className="rounded-lg border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312]/80 transition hover:bg-emerald-50"
                 onClick={() => { setShowCreate(false); setCreateForm({ ...emptyForm }) }}
               >
                 Cancel
@@ -192,16 +192,16 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
           return (
             <div
               key={itemId}
-              className={`rounded-2xl border ${style.border} ${style.bg} p-5 transition ${!item.isActive ? 'opacity-50' : ''}`}
+              className={`rounded-2xl border border-[#101312]/10 border-l-4 ${style.border} ${style.bg} p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)] transition ${!item.isActive ? 'opacity-50' : ''}`}
             >
               {isEditing ? (
                 // Inline edit form
                 <div className="space-y-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-600">Title</label>
+                    <label className="block text-xs font-medium text-[#101312]/75">Title</label>
                     <input
                       type="text"
-                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500"
+                      className="mt-1 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#876DFF]"
                       maxLength={100}
                       value={editForm.title}
                       onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
@@ -209,9 +209,9 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
                     <p className="mt-0.5 text-xs text-slate-400">{editForm.title.length}/100</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600">Content</label>
+                    <label className="block text-xs font-medium text-[#101312]/75">Content</label>
                     <textarea
-                      className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500"
+                      className="mt-1 w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#876DFF]"
                       rows={4}
                       maxLength={500}
                       value={editForm.content}
@@ -220,9 +220,9 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
                     <p className="mt-0.5 text-xs text-slate-400">{editForm.content.length}/500</p>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-600">Priority</label>
+                    <label className="block text-xs font-medium text-[#101312]/75">Priority</label>
                     <select
-                      className="mt-1 rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500"
+                      className="mt-1 rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-[#876DFF]"
                       value={editForm.priority}
                       onChange={(e) => setEditForm({ ...editForm, priority: e.target.value })}
                     >
@@ -242,7 +242,7 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
                     </button>
                     <button
                       type="button"
-                      className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50"
+                      className="rounded-lg border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312]/80 transition hover:bg-emerald-50"
                       onClick={cancelEdit}
                     >
                       Cancel
@@ -255,13 +255,13 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <h3 className="text-sm font-semibold text-slate-950">{item.title}</h3>
+                        <h3 className="text-sm font-semibold text-[#101312]">{item.title}</h3>
                         <AnnouncementPriorityBadge priority={item.priority} />
                         {!item.isActive && (
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-500">Inactive</span>
                         )}
                       </div>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.content}</p>
+                      <p className="mt-2 text-sm leading-relaxed text-[#101312]/75">{item.content}</p>
                       <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
                         <span>{formatDate(item.createdAt)}</span>
                         {item.createdBy && <span>By {typeof item.createdBy === 'object' ? item.createdBy.fullName : item.createdBy}</span>}
@@ -272,7 +272,7 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
                     <div className="flex shrink-0 gap-2">
                       <button
                         type="button"
-                        className="rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-xs text-slate-700 transition hover:bg-emerald-50"
+                        className="rounded-lg border border-[#101312]/15 bg-white px-2.5 py-1 text-xs text-[#101312]/80 transition hover:bg-emerald-50"
                         onClick={() => startEdit(item)}
                       >
                         Edit
@@ -281,7 +281,7 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
                         type="button"
                         className={`rounded-lg border px-2.5 py-1 text-xs transition ${
                           item.isActive
-                            ? 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'
+                            ? 'border-[#101312]/15 bg-white text-[#101312]/80 hover:bg-slate-50'
                             : 'border-emerald-400 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
                         }`}
                         onClick={() => onToggle(itemId)}
@@ -306,13 +306,13 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
         {/* Delete confirmation dialog */}
         {deleteConfirm && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setDeleteConfirm(null)}>
-            <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-              <h3 className="text-sm font-semibold text-slate-950">Delete Announcement</h3>
-              <p className="mt-2 text-sm text-slate-600">Are you sure you want to delete this announcement? This action cannot be undone.</p>
+            <div className="w-full max-w-sm rounded-2xl border border-[#101312]/10 bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+              <h3 className="text-sm font-semibold text-[#101312]">Delete Announcement</h3>
+              <p className="mt-2 text-sm text-[#101312]/75">Are you sure you want to delete this announcement? This action cannot be undone.</p>
               <div className="mt-5 flex justify-end gap-2">
                 <button
                   type="button"
-                  className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50"
+                  className="rounded-lg border border-[#101312]/15 bg-white px-3 py-1.5 text-xs text-[#101312]/80 transition hover:bg-emerald-50"
                   onClick={() => setDeleteConfirm(null)}
                 >
                   Cancel
@@ -346,14 +346,14 @@ function Announcements({ announcements = [], userRole, onCreate, onUpdate, onDel
         return (
           <article
             key={itemId}
-            className={`rounded-2xl border ${style.border} ${style.bg} p-5`}
+            className={`rounded-2xl border border-[#101312]/10 border-l-4 ${style.border} ${style.bg} p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]`}
           >
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-semibold text-slate-950">{item.title}</h3>
+              <h3 className="text-sm font-semibold text-[#101312]">{item.title}</h3>
               <AnnouncementPriorityBadge priority={item.priority} />
             </div>
-            <p className="mt-2 text-sm leading-relaxed text-slate-600">{item.content}</p>
-            <div className="mt-3 flex items-center gap-3 text-xs text-slate-500">
+            <p className="mt-2 text-sm leading-relaxed text-[#101312]/75">{item.content}</p>
+            <div className="mt-3 flex items-center gap-3 text-xs text-[#101312]/75">
               <span>{formatDate(item.createdAt)}</span>
               {item.createdBy && <span>Posted by {typeof item.createdBy === 'object' ? item.createdBy.fullName : item.createdBy}</span>}
             </div>
