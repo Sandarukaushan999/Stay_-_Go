@@ -1,12 +1,12 @@
 import TopNavbar from './TopNavbar'
 import SystemFooter from './SystemFooter'
 
-export default function MainLayout({ children }) {
+export default function MainLayout({ children, showFooter = true }) {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#E2FF99] via-[#f5ffda] to-[#FFFFFF]">
       <TopNavbar />
       <main className="flex-1 px-4 pb-8 pt-5 sm:px-6 lg:px-8">{children}</main>
-      <SystemFooter />
+      {showFooter ? <SystemFooter /> : null}
     </div>
   )
 }

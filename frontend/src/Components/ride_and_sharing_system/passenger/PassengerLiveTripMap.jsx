@@ -126,67 +126,73 @@ export default function PassengerLiveTripMap() {
   ].filter(Boolean)
 
   return (
-    <section className="rounded-2xl border border-slate-300 bg-white p-5 shadow-sm">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-lg font-semibold text-slate-950">Live Trip</div>
-          {trip ? (
-            <div className="mt-1 text-xs text-slate-600">
-              Status: {trip.status} - Trip ID <span className="font-mono">{String(trip._id)}</span>
+    <section className="overflow-hidden rounded-3xl border border-[#101312]/15 bg-white shadow-[0_10px_30px_rgba(16,19,18,0.08)]">
+      <div className="border-b border-[#101312]/10 p-4 sm:p-5">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="text-base font-semibold text-[#101312] sm:text-lg">Live Trip</div>
+              {trip ? (
+                <span className="rounded-full border border-[#101312]/15 bg-[#E2FF99] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#101312]">
+                  {trip.status?.replace(/_/g, ' ')}
+                </span>
+              ) : (
+                <span className="rounded-full border border-[#101312]/15 bg-[#f6f8ef] px-2 py-1 text-[10px] font-semibold uppercase tracking-wide text-[#101312]/70">
+                  No active trip
+                </span>
+              )}
             </div>
-          ) : (
-            <div className="mt-1 text-xs text-slate-600">No active trip yet. Use Ride Request below.</div>
-          )}
-          {trip?.riderId ? (
-            <div className="mt-2 text-xs text-slate-700">
-              Rider: <span className="font-medium">{trip.riderId.fullName ?? '--'}</span> -{' '}
-              <span className="font-mono">{trip.riderId.phone ?? '--'}</span> - {trip.riderId.vehicleType ?? 'vehicle'}{' '}
-              {trip.riderId.vehicleNumber ? `(${trip.riderId.vehicleNumber})` : ''}
-            </div>
-          ) : null}
+
+            {trip ? (
+              <div className="mt-2 flex flex-wrap gap-2 text-[11px]">
+                <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 font-mono text-[#101312]/75">
+                  {String(trip._id).slice(-12)}
+                </span>
+                {trip?.riderId?.fullName ? (
+                  <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 text-[#101312]/75">
+                    {trip.riderId.fullName}
+                  </span>
+                ) : null}
+                {trip?.riderId?.phone ? (
+                  <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 font-mono text-[#101312]/75">
+                    {trip.riderId.phone}
+                  </span>
+                ) : null}
+                <span className="rounded-full border border-[#101312]/15 bg-white px-2 py-1 text-[#101312]/75">
+                  {trip?.riderId?.vehicleType ?? 'vehicle'} {trip?.riderId?.vehicleNumber ? `(${trip.riderId.vehicleNumber})` : ''}
+                </span>
+              </div>
+            ) : (
+              <div className="mt-2 text-xs text-[#101312]/65">Create a request below to start live tracking.</div>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={load}
+            className="w-full rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99] sm:w-auto"
+          >
+            Refresh
+          </button>
         </div>
 
-        <button
-          type="button"
-          onClick={load}
-          className="rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100"
-        >
-          Refresh
-        </button>
+        <div className="mt-3 flex flex-wrap gap-2 text-[11px] text-[#101312]/72">
+          {status === 'to_pickup' ? (
+            <span className="rounded-full border border-[#876DFF]/35 bg-[#876DFF]/10 px-2 py-1 font-medium text-[#4a35b6]">
+              Rider to pickup route
+              {typeof etaToPickup === 'number' ? ` • ETA ${Math.max(1, Math.round(etaToPickup / 60))} min` : ''}
+            </span>
+          ) : null}
+          {status === 'to_university' || status === 'to_pickup' || status === 'overdue' ? (
+            <span className="rounded-full border border-[#BAF91A]/45 bg-[#E2FF99] px-2 py-1 font-medium text-[#101312]">
+              Pickup to SLIIT route
+              {typeof etaToCampus === 'number' ? ` • ETA ${Math.max(1, Math.round(etaToCampus / 60))} min` : ''}
+            </span>
+          ) : null}
+        </div>
       </div>
 
-      <div className="mt-3 text-xs text-slate-600">
-        {status === 'to_pickup' ? (
-          <div>
-            Rider to your pickup route (violet){' '}
-            {typeof etaToPickup === 'number' ? <span>- ETA {Math.max(1, Math.round(etaToPickup / 60))} min</span> : null}
-          </div>
-        ) : null}
-        {status === 'to_university' ? (
-          <div>
-            Pickup to SLIIT route (lime){' '}
-            {typeof etaToCampus === 'number' ? <span>- ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
-          </div>
-        ) : null}
-        {status === 'to_pickup' || status === 'overdue' ? (
-          <div>
-            Pickup to SLIIT route (lime){' '}
-            {typeof etaToCampus === 'number' ? <span>- ETA {Math.max(1, Math.round(etaToCampus / 60))} min</span> : null}
-          </div>
-        ) : null}
-      </div>
-
-      {trip && ['to_pickup', 'to_university', 'overdue'].includes(trip.status) ? (
-        <PassengerSafetyCountdown
-          tripId={String(trip._id)}
-          tripStatus={trip.status}
-          etaToPickupSec={etaToPickup}
-          etaToCampusSec={etaToCampus}
-          pickupLocation={pickup?.lat != null && pickup?.lng != null ? pickup : null}
-        />
-      ) : null}
-
-      <div className="mt-3">
+      <div className="p-3 sm:p-5">
         <MapPicker
           value={(pickup?.lat && pickup?.lng ? pickup : requestPickup ?? fallbackPickup) ?? null}
           onChange={(v) => setRequestPickup(v)}
@@ -194,41 +200,54 @@ export default function PassengerLiveTripMap() {
           polylines={polylines}
           markers={markers}
           valueIconKind="pickup"
-          height={360}
+          height={340}
         />
       </div>
 
-      <div className="mt-4 rounded-xl border border-slate-300 bg-slate-50 p-4">
-        <div className="text-sm font-semibold text-slate-900">Ride Request</div>
-        <div className="mt-1 text-xs text-slate-600">Single map mode: select pickup on the map above, destination is SLIIT.</div>
+      {trip && ['to_pickup', 'to_university', 'overdue'].includes(trip.status) ? (
+        <div className="px-3 pb-3 sm:px-5 sm:pb-5">
+          <PassengerSafetyCountdown
+            tripId={String(trip._id)}
+            tripStatus={trip.status}
+            etaToPickupSec={etaToPickup}
+            etaToCampusSec={etaToCampus}
+            pickupLocation={pickup?.lat != null && pickup?.lng != null ? pickup : null}
+          />
+        </div>
+      ) : null}
+
+      <div className="border-t border-[#101312]/10 bg-[#f9fce9] p-4 sm:p-5">
+        <div className="text-sm font-semibold text-[#101312]">Ride Request</div>
+        <div className="mt-1 text-xs text-[#101312]/65">Select your pickup on map. Destination is fixed to SLIIT.</div>
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <label className="grid gap-1 text-sm">
-            <span className="text-slate-700">Seats</span>
+            <span className="text-[#101312]/80">Seats</span>
             <input
               type="number"
               min="1"
               max="4"
               value={requestSeatCount}
               onChange={(e) => setRequestSeatCount(Number(e.target.value))}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+              className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
             />
           </label>
-          <label className="flex items-center gap-2 text-sm text-slate-800 sm:mt-6">
+          <label className="flex items-center gap-2 rounded-xl border border-[#101312]/15 bg-white px-3 py-2 text-sm text-[#101312] sm:self-end">
             <input
               type="checkbox"
               checked={requestFemaleOnly}
               onChange={(e) => setRequestFemaleOnly(e.target.checked)}
+              className="h-4 w-4 accent-[#876DFF]"
             />
             Female only
           </label>
         </div>
 
-        <div className="mt-3 flex flex-wrap gap-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
           <button
             type="button"
             onClick={previewRequestRoute}
-            className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 transition hover:bg-emerald-100 disabled:opacity-60"
+            className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99] disabled:opacity-60"
             disabled={!requestPickup && !fallbackPickup}
           >
             Preview Route
@@ -236,7 +255,7 @@ export default function PassengerLiveTripMap() {
           <button
             type="button"
             onClick={submitRequest}
-            className="rounded-xl bg-emerald-500 px-4 py-2 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:opacity-60"
+            className="rounded-xl bg-[#BAF91A] px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:opacity-60"
             disabled={!requestPickup && !fallbackPickup}
           >
             Request Ride
@@ -244,12 +263,14 @@ export default function PassengerLiveTripMap() {
         </div>
 
         {requestPreview ? (
-          <div className="mt-2 text-sm text-slate-700">
-            Distance {(requestPreview.distanceMeters / 1000).toFixed(2)} km - ETA{' '}
+          <div className="mt-2 rounded-lg border border-[#101312]/10 bg-white p-2.5 text-sm text-[#101312]/75">
+            Distance {(requestPreview.distanceMeters / 1000).toFixed(2)} km • ETA{' '}
             {Math.max(1, Math.round((requestPreview.expectedDurationSeconds ?? 0) / 60))} min
           </div>
         ) : null}
-        {requestMessage ? <div className="mt-2 text-sm text-slate-700">{requestMessage}</div> : null}
+        {requestMessage ? (
+          <div className="mt-2 rounded-lg border border-[#101312]/10 bg-white p-2.5 text-sm text-[#101312]/75">{requestMessage}</div>
+        ) : null}
       </div>
     </section>
   )
