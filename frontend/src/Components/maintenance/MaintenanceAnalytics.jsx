@@ -46,10 +46,10 @@ function MaintenanceAnalytics({ tickets }) {
   // ============================================
   const priorities = ['low', 'medium', 'high', 'emergency']
   const priorityColors = {
-    low: 'bg-slate-500',
-    medium: 'bg-blue-500',
-    high: 'bg-amber-500',
-    emergency: 'bg-red-500',
+    low: 'bg-slate-400',
+    medium: 'bg-violet-400',
+    high: 'bg-emerald-500',
+    emergency: 'bg-violet-600',
   }
   const priorityCounts = {}
   priorities.forEach((p) => {
@@ -70,12 +70,12 @@ function MaintenanceAnalytics({ tickets }) {
     rejected: 'Rejected',
   }
   const statusColors = {
-    submitted: 'bg-slate-500',
-    assigned: 'bg-violet-500',
-    in_progress: 'bg-amber-500',
-    resolved: 'bg-emerald-500',
-    closed: 'bg-slate-600',
-    rejected: 'bg-red-500',
+    submitted: 'bg-slate-400',
+    assigned: 'bg-violet-400',
+    in_progress: 'bg-emerald-500',
+    resolved: 'bg-emerald-600',
+    closed: 'bg-slate-300',
+    rejected: 'bg-violet-500',
   }
   const statusCounts = {}
   statuses.forEach((s) => {
@@ -139,34 +139,34 @@ function MaintenanceAnalytics({ tickets }) {
     <div className="space-y-6">
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KPICard label="Total Tickets" value={totalTickets} accent="text-violet-400" />
-        <KPICard label="Open Tickets" value={openTickets} accent="text-amber-400" />
-        <KPICard label="Avg Resolution" value={`${avgResolution}h`} accent="text-emerald-400" />
+        <KPICard label="Total Tickets" value={totalTickets} accent="text-violet-600" />
+        <KPICard label="Open Tickets" value={openTickets} accent="text-violet-600" />
+        <KPICard label="Avg Resolution" value={`${avgResolution}h`} accent="text-emerald-700" />
         <KPICard
           label="Satisfaction"
           value={avgRating === '—' ? '—' : `${avgRating}/5`}
-          accent="text-violet-400"
+          accent="text-emerald-700"
         />
       </div>
 
       {/* Charts Row */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Priority Breakdown */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-300">Priority Breakdown</h3>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h3 className="mb-4 text-sm font-semibold text-slate-950">Priority Breakdown</h3>
           <div className="space-y-3">
             {priorities.map((p) => (
               <div key={p} className="flex items-center gap-3">
-                <span className="w-20 text-xs capitalize text-slate-400">{p}</span>
+                <span className="w-20 text-xs capitalize text-slate-600">{p}</span>
                 <div className="flex-1">
-                  <div className="h-5 rounded-full bg-slate-800">
+                  <div className="h-5 rounded-full bg-slate-100">
                     <div
                       className={`h-5 rounded-full ${priorityColors[p]} transition-all duration-500`}
                       style={{ width: `${(priorityCounts[p] / maxPriority) * 100}%`, minWidth: priorityCounts[p] > 0 ? '1.5rem' : 0 }}
                     />
                   </div>
                 </div>
-                <span className="w-8 text-right text-xs font-medium text-slate-300">
+                <span className="w-8 text-right text-xs font-medium text-slate-950">
                   {priorityCounts[p]}
                 </span>
               </div>
@@ -175,21 +175,21 @@ function MaintenanceAnalytics({ tickets }) {
         </div>
 
         {/* Status Breakdown */}
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-300">Status Breakdown</h3>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h3 className="mb-4 text-sm font-semibold text-slate-950">Status Breakdown</h3>
           <div className="space-y-3">
             {statuses.map((s) => (
               <div key={s} className="flex items-center gap-3">
-                <span className="w-20 text-xs text-slate-400">{statusLabels[s]}</span>
+                <span className="w-20 text-xs text-slate-600">{statusLabels[s]}</span>
                 <div className="flex-1">
-                  <div className="h-5 rounded-full bg-slate-800">
+                  <div className="h-5 rounded-full bg-slate-100">
                     <div
                       className={`h-5 rounded-full ${statusColors[s]} transition-all duration-500`}
                       style={{ width: `${(statusCounts[s] / maxStatus) * 100}%`, minWidth: statusCounts[s] > 0 ? '1.5rem' : 0 }}
                     />
                   </div>
                 </div>
-                <span className="w-8 text-right text-xs font-medium text-slate-300">
+                <span className="w-8 text-right text-xs font-medium text-slate-950">
                   {statusCounts[s]}
                 </span>
               </div>
@@ -199,21 +199,21 @@ function MaintenanceAnalytics({ tickets }) {
       </div>
 
       {/* Tickets by Hostel Block */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-        <h3 className="mb-4 text-sm font-semibold text-slate-300">Tickets by Hostel Block</h3>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <h3 className="mb-4 text-sm font-semibold text-slate-950">Tickets by Hostel Block</h3>
         <div className="space-y-3">
           {blocks.map((b) => (
             <div key={b} className="flex items-center gap-3">
-              <span className="w-16 text-xs font-medium text-slate-400">Block {b}</span>
+              <span className="w-16 text-xs font-medium text-slate-600">Block {b}</span>
               <div className="flex-1">
-                <div className="h-6 rounded-full bg-slate-800">
+                <div className="h-6 rounded-full bg-slate-100">
                   <div
-                    className="h-6 rounded-full bg-violet-600 transition-all duration-500"
+                    className="h-6 rounded-full bg-emerald-500 transition-all duration-500"
                     style={{ width: `${(blockCounts[b] / maxBlock) * 100}%`, minWidth: blockCounts[b] > 0 ? '1.5rem' : 0 }}
                   />
                 </div>
               </div>
-              <span className="w-8 text-right text-xs font-medium text-slate-300">
+              <span className="w-8 text-right text-xs font-medium text-slate-950">
                 {blockCounts[b]}
               </span>
             </div>
@@ -222,32 +222,32 @@ function MaintenanceAnalytics({ tickets }) {
       </div>
 
       {/* Technician Performance Table */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-        <h3 className="mb-4 text-sm font-semibold text-slate-300">Technician Performance</h3>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <h3 className="mb-4 text-sm font-semibold text-slate-950">Technician Performance</h3>
         {techPerformance.length === 0 ? (
           <p className="text-sm text-slate-500">No technician data available.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-800 text-xs text-slate-500">
+                <tr className="border-b border-slate-200 text-xs text-slate-500">
                   <th className="pb-2 pr-4 font-medium">Technician</th>
                   <th className="pb-2 pr-4 font-medium">Assigned</th>
                   <th className="pb-2 pr-4 font-medium">Resolved</th>
                   <th className="pb-2 font-medium">Avg Rating</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-100">
                 {techPerformance.map((tech) => (
-                  <tr key={tech.name} className="text-slate-300">
-                    <td className="py-2.5 pr-4 font-medium text-slate-200">{tech.name}</td>
+                  <tr key={tech.name} className="text-slate-600 hover:bg-emerald-50/50">
+                    <td className="py-2.5 pr-4 font-medium text-slate-950">{tech.name}</td>
                     <td className="py-2.5 pr-4">{tech.assigned}</td>
                     <td className="py-2.5 pr-4">{tech.resolved}</td>
                     <td className="py-2.5">
                       {tech.avgRating === '—' ? (
-                        <span className="text-slate-500">—</span>
+                        <span className="text-slate-400">—</span>
                       ) : (
-                        <span className="text-amber-400">{tech.avgRating}/5</span>
+                        <span className="text-emerald-700">{tech.avgRating}/5</span>
                       )}
                     </td>
                   </tr>
@@ -266,7 +266,7 @@ function MaintenanceAnalytics({ tickets }) {
 // ============================================
 function KPICard({ label, value, accent }) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4">
       <p className="text-xs text-slate-500">{label}</p>
       <p className={`mt-1 text-2xl font-bold ${accent}`}>{value}</p>
     </div>

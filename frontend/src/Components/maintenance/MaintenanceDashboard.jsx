@@ -131,11 +131,13 @@ function MaintenanceDashboard() {
   // ============================================
   async function handleSubmitTicket(formData) {
     try {
-      await maintenanceApi.createTicket(formData)
+      const result = await maintenanceApi.createTicket(formData)
       await loadData()
-      setActiveScreen('myTickets')
+      // Return the ticket data so SubmitComplaint can show the success screen with ticketId
+      return result
     } catch (err) {
       setError('Failed to submit ticket. Please try again.')
+      throw err
     }
   }
 
@@ -310,65 +312,53 @@ function MaintenanceDashboard() {
   // MAIN RENDER
   // ============================================
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-6 text-slate-100 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        {/* Error Banner */}
-        {error && (
-          <div className="mb-4 rounded-xl border border-amber-800/50 bg-amber-900/20 px-4 py-3 text-sm text-amber-300">
-            <div className="flex items-center justify-between">
-              <span>{error}</span>
-              <button
-                onClick={() => setError(null)}
-                className="ml-3 text-amber-400 hover:text-amber-200"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-slate-100">Maintenance Workspace</h1>
-              <p className="mt-1 text-sm text-slate-500">
-                Manage hostel maintenance requests and track resolutions
-              </p>
-            </div>
-            {user && (
-              <div className="text-right text-sm">
-                <p className="font-medium text-slate-300">{user.fullName}</p>
-                <p className="text-xs capitalize text-slate-500">{role.replace('_', ' ')}</p>
-              </div>
-            )}
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-3">
-              <p className="text-xs text-slate-500">Total</p>
-              <p className="text-lg font-bold text-violet-400">{totalTickets}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-3">
-              <p className="text-xs text-slate-500">Open</p>
-              <p className="text-lg font-bold text-amber-400">{openTickets}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-3">
-              <p className="text-xs text-slate-500">Resolved</p>
-              <p className="text-lg font-bold text-emerald-400">{resolvedTickets}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-3">
-              <p className="text-xs text-slate-500">Avg Rating</p>
-              <p className="text-lg font-bold text-violet-400">
-                {avgRating === '—' ? '—' : `${avgRating}/5`}
-              </p>
-            </div>
+    <div className="-mx-4 -mt-5 min-h-screen bg-[#fafafa] px-4 pb-10 pt-6 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+    <div className="mx-auto max-w-6xl text-[#101312]">
+      {/* Error Banner */}
+      {error && (
+        <div className="mb-4 rounded-xl border border-[#e53e3e]/20 bg-[#e53e3e]/5 px-4 py-3 text-sm text-[#e53e3e]">
+          <div className="flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={() => setError(null)} className="ml-3 hover:opacity-70">Dismiss</button>
           </div>
         </div>
+      )}
 
-        {/* Sub-navigation Tabs */}
-        <div className="mb-6 flex gap-1 overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/30 p-1">
+      {/* Page Header — compact bar */}
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-[#101312]">Maintenance</h1>
+          <p className="mt-1 text-sm text-[#101312]/75">
+            Track and manage hostel maintenance requests
+          </p>
+        </div>
+        {/* Quick Stats */}
+        <div className="flex items-center gap-4 text-sm">
+          <div className="text-center">
+            <p className="text-xl font-bold text-[#101312]">{totalTickets}</p>
+            <p className="text-[10px] uppercase tracking-wide text-[#101312]/75">Total</p>
+          </div>
+          <div className="h-8 w-px bg-[#101312]/10" />
+          <div className="text-center">
+            <p className="text-xl font-bold text-[#876DFF]">{openTickets}</p>
+            <p className="text-[10px] uppercase tracking-wide text-[#101312]/75">Open</p>
+          </div>
+          <div className="h-8 w-px bg-[#101312]/10" />
+          <div className="text-center">
+            <p className="text-xl font-bold text-[#16a34a]">{resolvedTickets}</p>
+            <p className="text-[10px] uppercase tracking-wide text-[#101312]/75">Resolved</p>
+          </div>
+          <div className="h-8 w-px bg-[#101312]/10" />
+          <div className="text-center">
+            <p className="text-xl font-bold text-[#101312]">{avgRating === '—' ? '—' : avgRating}</p>
+            <p className="text-[10px] uppercase tracking-wide text-[#101312]/75">Rating</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tab Navigation — clean tab bar */}
+      <div className="mb-6 border-b border-[#101312]/10">
+        <div className="flex gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -376,28 +366,32 @@ function MaintenanceDashboard() {
                 setActiveScreen(tab.key)
                 setSelectedTicket(null)
               }}
-              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-medium transition ${
+              className={`relative px-4 py-2.5 text-sm font-medium transition ${
                 activeScreen === tab.key
-                  ? 'bg-violet-600 text-white shadow-lg shadow-violet-600/20'
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
+                  ? 'text-[#101312]'
+                  : 'text-[#101312]/80 hover:text-[#101312]/80'
               }`}
             >
               {tab.label}
+              {/* Active indicator line */}
+              {activeScreen === tab.key && (
+                <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-[#BAF91A]" />
+              )}
             </button>
           ))}
         </div>
-
-        {/* Loading State */}
-        {isLoading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-700 border-t-violet-500" />
-            <span className="ml-3 text-sm text-slate-500">Loading maintenance data...</span>
-          </div>
-        ) : (
-          /* Active Screen Content */
-          renderScreen()
-        )}
       </div>
+
+      {/* Content */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#101312]/10 border-t-[#BAF91A]" />
+          <span className="ml-3 text-sm text-[#101312]/75">Loading...</span>
+        </div>
+      ) : (
+        renderScreen()
+      )}
+    </div>
     </div>
   )
 }

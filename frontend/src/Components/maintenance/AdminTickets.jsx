@@ -124,8 +124,8 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
             type="button"
             className={`rounded-xl border px-3 py-1.5 text-xs font-medium transition ${
               filters.status === status
-                ? 'border-violet-500 bg-violet-900/40 text-violet-200'
-                : 'border-slate-800 bg-slate-900/40 text-slate-400 hover:border-slate-700'
+                ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
             }`}
             onClick={() => handleFilterChange({ ...filters, status: filters.status === status ? '' : status })}
           >
@@ -147,10 +147,10 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
       />
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/40">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
         <table className="w-full text-left text-sm">
           <thead>
-            <tr className="border-b border-slate-800 text-xs text-slate-500">
+            <tr className="border-b border-slate-200 text-xs text-slate-500">
               <th className="px-4 py-3 font-medium">Ticket ID</th>
               <th className="px-4 py-3 font-medium">Title</th>
               <th className="px-4 py-3 font-medium">Category</th>
@@ -172,29 +172,29 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
             {paged.map((ticket) => (
               <tr
                 key={ticket.ticketId || ticket._id}
-                className="cursor-pointer border-b border-slate-800/60 transition hover:bg-slate-800/40"
+                className="cursor-pointer border-b border-slate-100 transition hover:bg-emerald-50/50"
                 onClick={() => onSelectTicket(ticket)}
               >
-                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-400">{ticket.ticketId}</td>
-                <td className="max-w-[200px] truncate px-4 py-3 text-slate-200">{ticket.title}</td>
-                <td className="px-4 py-3 text-xs text-slate-400">{categoryLabels[ticket.category] || ticket.category}</td>
+                <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-slate-600">{ticket.ticketId}</td>
+                <td className="max-w-[200px] truncate px-4 py-3 text-slate-950">{ticket.title}</td>
+                <td className="px-4 py-3 text-xs text-slate-600">{categoryLabels[ticket.category] || ticket.category}</td>
                 <td className="px-4 py-3"><PriorityBadge priority={ticket.priority} /></td>
                 <td className="px-4 py-3"><StatusBadge status={ticket.status} /></td>
-                <td className="px-4 py-3 text-xs text-slate-400">{typeof ticket.submittedBy === 'object' ? ticket.submittedBy?.fullName : ticket.submittedBy}</td>
+                <td className="px-4 py-3 text-xs text-slate-600">{typeof ticket.submittedBy === 'object' ? ticket.submittedBy?.fullName : ticket.submittedBy}</td>
                 <td className="whitespace-nowrap px-4 py-3 text-xs text-slate-500">{formatDate(ticket.createdAt)}</td>
                 <td className="px-4 py-3">
                   {ticket.status === 'submitted' && (
                     <div className="flex gap-2">
                       <button
                         type="button"
-                        className="rounded-lg bg-violet-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-violet-500"
+                        className="rounded-lg bg-[#BAF91A] px-2.5 py-1 text-xs font-medium text-[#101312] transition hover:bg-[#a9ea00]"
                         onClick={(e) => openAssignModal(e, ticket._id || ticket.ticketId)}
                       >
                         Assign
                       </button>
                       <button
                         type="button"
-                        className="rounded-lg bg-red-900/60 px-2.5 py-1 text-xs font-medium text-red-200 transition hover:bg-red-800/60"
+                        className="rounded-lg bg-violet-600 px-2.5 py-1 text-xs font-medium text-white transition hover:bg-violet-500"
                         onClick={(e) => openRejectModal(e, ticket._id || ticket.ticketId)}
                       >
                         Reject
@@ -210,10 +210,10 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between rounded-2xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+        <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white px-4 py-3">
           <button
             type="button"
-            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50 disabled:opacity-40 disabled:hover:bg-white"
             disabled={currentPage <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
           >
@@ -224,7 +224,7 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
           </span>
           <button
             type="button"
-            className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-transparent"
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50 disabled:opacity-40 disabled:hover:bg-white"
             disabled={currentPage >= totalPages}
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
           >
@@ -235,13 +235,13 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
 
       {/* Assign Modal */}
       {assignModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setAssignModal({ open: false, ticketId: null })}>
-          <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold text-slate-100">Assign Technician</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setAssignModal({ open: false, ticketId: null })}>
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-slate-950">Assign Technician</h3>
             <p className="mt-1 text-xs text-slate-500">Select a technician for ticket {assignModal.ticketId}</p>
 
             <select
-              className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500"
+              className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500"
               value={selectedTechId}
               onChange={(e) => setSelectedTechId(e.target.value)}
               aria-label="Select technician"
@@ -257,14 +257,14 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
-                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50"
                 onClick={() => setAssignModal({ open: false, ticketId: null })}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-violet-600 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-violet-500 disabled:opacity-40"
+                className="rounded-lg bg-[#BAF91A] px-4 py-1.5 text-xs font-medium text-[#101312] transition hover:bg-[#a9ea00] disabled:opacity-40"
                 disabled={!selectedTechId}
                 onClick={confirmAssign}
               >
@@ -277,13 +277,13 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
 
       {/* Reject Modal */}
       {rejectModal.open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setRejectModal({ open: false, ticketId: null })}>
-          <div className="w-full max-w-sm rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold text-slate-100">Reject Ticket</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setRejectModal({ open: false, ticketId: null })}>
+          <div className="w-full max-w-sm rounded-2xl border border-slate-200 bg-white p-6 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-slate-950">Reject Ticket</h3>
             <p className="mt-1 text-xs text-slate-500">Provide a reason for rejecting ticket {rejectModal.ticketId}</p>
 
             <textarea
-              className="mt-4 w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 placeholder-slate-500 outline-none focus:border-violet-500"
+              className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none focus:border-emerald-500"
               rows={4}
               placeholder="Reason for rejection (min 10 characters)..."
               value={rejectReason}
@@ -291,20 +291,20 @@ function AdminTickets({ tickets = [], technicians = [], onSelectTicket, onAssign
               aria-label="Rejection reason"
             />
             {rejectReason.length > 0 && rejectReason.length < 10 && (
-              <p className="mt-1 text-xs text-red-400">{10 - rejectReason.length} more characters required</p>
+              <p className="mt-1 text-xs text-violet-600">{10 - rejectReason.length} more characters required</p>
             )}
 
             <div className="mt-5 flex justify-end gap-2">
               <button
                 type="button"
-                className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 transition hover:bg-slate-800"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 transition hover:bg-emerald-50"
                 onClick={() => setRejectModal({ open: false, ticketId: null })}
               >
                 Cancel
               </button>
               <button
                 type="button"
-                className="rounded-lg bg-red-600 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-red-500 disabled:opacity-40"
+                className="rounded-lg bg-violet-600 px-4 py-1.5 text-xs font-medium text-white transition hover:bg-violet-500 disabled:opacity-40"
                 disabled={rejectReason.length < 10}
                 onClick={confirmReject}
               >

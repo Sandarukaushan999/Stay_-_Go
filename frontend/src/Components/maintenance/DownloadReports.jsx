@@ -82,8 +82,8 @@ function DownloadReports({ tickets }) {
   return (
     <div className="space-y-6">
       {/* Filters Card */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-        <h3 className="mb-4 text-sm font-semibold text-slate-300">Report Filters</h3>
+      <div className="rounded-2xl border border-slate-200 bg-white p-5">
+        <h3 className="mb-4 text-sm font-semibold text-slate-950">Report Filters</h3>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {/* Date From */}
@@ -93,7 +93,7 @@ function DownloadReports({ tickets }) {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
             />
           </div>
 
@@ -104,7 +104,7 @@ function DownloadReports({ tickets }) {
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
             />
           </div>
 
@@ -114,7 +114,7 @@ function DownloadReports({ tickets }) {
             <select
               value={blockFilter}
               onChange={(e) => setBlockFilter(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
             >
               {hostelBlocks.map((b) => (
                 <option key={b} value={b}>
@@ -130,7 +130,7 @@ function DownloadReports({ tickets }) {
             <select
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
             >
               {priorityOptions.map((p) => (
                 <option key={p} value={p}>
@@ -146,7 +146,7 @@ function DownloadReports({ tickets }) {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 outline-none focus:border-violet-500 focus:ring-1 focus:ring-violet-500"
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
             >
               {statusOptions.map((s) => (
                 <option key={s} value={s}>
@@ -161,14 +161,14 @@ function DownloadReports({ tickets }) {
         <div className="mt-5 flex flex-wrap gap-3">
           <button
             onClick={handleGenerate}
-            className="rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white transition hover:bg-violet-500"
+            className="rounded-lg bg-[#BAF91A] px-5 py-2 text-sm font-medium text-[#101312] transition hover:bg-[#a9ea00]"
           >
             Generate Report
           </button>
           {showPreview && (
             <button
               onClick={handleDownloadPDF}
-              className="rounded-lg border border-slate-700 bg-slate-800 px-5 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-700"
+              className="rounded-lg bg-[#BAF91A] px-5 py-2 text-sm font-medium text-[#101312] transition hover:bg-[#a9ea00]"
             >
               Download PDF
             </button>
@@ -178,44 +178,44 @@ function DownloadReports({ tickets }) {
 
       {/* Summary Stats */}
       {showPreview && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5">
-          <h3 className="mb-4 text-sm font-semibold text-slate-300">Report Summary</h3>
+        <div className="rounded-2xl border border-slate-200 bg-white p-5">
+          <h3 className="mb-4 text-sm font-semibold text-slate-950">Report Summary</h3>
 
           <div className="grid gap-4 sm:grid-cols-3">
             {/* Total */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
               <p className="text-xs text-slate-500">Total Filtered</p>
-              <p className="mt-1 text-xl font-bold text-violet-400">{summary.total}</p>
+              <p className="mt-1 text-xl font-bold text-violet-600">{summary.total}</p>
             </div>
 
             {/* By Priority */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
               <p className="mb-2 text-xs text-slate-500">By Priority</p>
               <div className="space-y-1">
                 {Object.entries(summary.byPriority).map(([key, count]) => (
                   <div key={key} className="flex items-center justify-between text-xs">
-                    <span className="capitalize text-slate-400">{key}</span>
-                    <span className="font-medium text-slate-300">{count}</span>
+                    <span className="capitalize text-slate-600">{key}</span>
+                    <span className="font-medium text-slate-950">{count}</span>
                   </div>
                 ))}
                 {Object.keys(summary.byPriority).length === 0 && (
-                  <span className="text-xs text-slate-600">None</span>
+                  <span className="text-xs text-slate-400">None</span>
                 )}
               </div>
             </div>
 
             {/* By Status */}
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
               <p className="mb-2 text-xs text-slate-500">By Status</p>
               <div className="space-y-1">
                 {Object.entries(summary.byStatus).map(([key, count]) => (
                   <div key={key} className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400">{statusLabels[key] || key}</span>
-                    <span className="font-medium text-slate-300">{count}</span>
+                    <span className="text-slate-600">{statusLabels[key] || key}</span>
+                    <span className="font-medium text-slate-950">{count}</span>
                   </div>
                 ))}
                 {Object.keys(summary.byStatus).length === 0 && (
-                  <span className="text-xs text-slate-600">None</span>
+                  <span className="text-xs text-slate-400">None</span>
                 )}
               </div>
             </div>
@@ -225,8 +225,8 @@ function DownloadReports({ tickets }) {
 
       {/* Preview Table */}
       {showPreview && (
-        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-5 print:border-none print:bg-white print:p-0">
-          <h3 className="mb-4 text-sm font-semibold text-slate-300 print:text-black">
+        <div className="rounded-2xl border border-slate-200 bg-white p-5 print:border-none print:bg-white print:p-0">
+          <h3 className="mb-4 text-sm font-semibold text-slate-950 print:text-black">
             Filtered Tickets ({filteredTickets.length})
           </h3>
 
@@ -236,7 +236,7 @@ function DownloadReports({ tickets }) {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-800 text-xs text-slate-500 print:border-gray-300 print:text-gray-600">
+                  <tr className="border-b border-slate-200 text-xs text-slate-500 print:border-gray-300 print:text-gray-600">
                     <th className="pb-2 pr-3 font-medium">Ticket ID</th>
                     <th className="pb-2 pr-3 font-medium">Title</th>
                     <th className="pb-2 pr-3 font-medium">Block</th>
@@ -245,9 +245,9 @@ function DownloadReports({ tickets }) {
                     <th className="pb-2 font-medium">Date</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 print:divide-gray-200">
+                <tbody className="divide-y divide-slate-100 print:divide-gray-200">
                   {filteredTickets.map((t) => (
-                    <tr key={t._id} className="text-slate-300 print:text-gray-800">
+                    <tr key={t._id} className="text-slate-600 hover:bg-emerald-50/50 print:text-gray-800">
                       <td className="py-2 pr-3 font-mono text-xs">{t.ticketId}</td>
                       <td className="py-2 pr-3 max-w-[200px] truncate">{t.title}</td>
                       <td className="py-2 pr-3">{t.hostelBlock}</td>
