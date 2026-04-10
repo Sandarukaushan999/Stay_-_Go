@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
+import axios from 'axios'
+
 import Footer from '../Components/landing/footer'
 import Header from '../Components/landing/header'
-import { useAuthStore } from '../app/store/authStore'
-import axios from 'axios'
 import MapPicker from '../Components/shared/maps/MapPicker'
+import { useAuthStore } from '../app/store/authStore'
 
 const authContent = {
   login: {
@@ -56,7 +57,7 @@ export default function AuthPage({
   const [studentId, setStudentId] = useState('')
   const [campusId, setCampusId] = useState('')
   const [emergencyContact, setEmergencyContact] = useState('')
-  const [accountType, setAccountType] = useState('student') // student | technician | admin
+  const [accountType, setAccountType] = useState('student')
   const [hasVehicle, setHasVehicle] = useState(false)
   const [vehicleType, setVehicleType] = useState('bike')
   const [vehicleNumber, setVehicleNumber] = useState('')
@@ -103,6 +104,7 @@ export default function AuthPage({
         setToken(data.token)
         authedUser = await hydrateMe()
       }
+
       const roleAfter = authedUser?.role ?? user?.role
       if (roleAfter === 'admin' || roleAfter === 'super_admin') {
         window.location.href = '/admin'
@@ -115,22 +117,17 @@ export default function AuthPage({
       const status = e?.response?.status
       const message = e?.response?.data?.message
 
-      if (status === 409) {
-        setError(message ?? 'Email already registered. Try logging in.')
-      } else if (status === 401) {
-        setError(message ?? 'Invalid email or password.')
-      } else if (status === 403) {
-        setError(message ?? 'Account blocked or not allowed.')
-      } else {
-        setError('Authentication failed. Check credentials and server.')
-      }
+      if (status === 409) setError(message ?? 'Email already registered. Try logging in.')
+      else if (status === 401) setError(message ?? 'Invalid email or password.')
+      else if (status === 403) setError(message ?? 'Account blocked or not allowed.')
+      else setError('Authentication failed. Check credentials and server.')
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]" style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}>
       <Header
         navItems={headerNavItems}
         actionItems={actionItems}
@@ -138,42 +135,42 @@ export default function AuthPage({
         navAriaLabel="Authentication navigation"
       />
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-10 lg:grid-cols-2">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-          <p className="text-xs uppercase tracking-wide text-violet-200">{content.eyebrow}</p>
-          <h1 className="mt-2 text-3xl font-semibold">{content.title}</h1>
-          <p className="mt-3 text-slate-400">{content.copy}</p>
+      <main className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section className="rounded-3xl border border-[#101312]/15 bg-gradient-to-br from-[#E2FF99] via-[#f4ffd8] to-[#FFFFFF] p-5 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#876DFF]">{content.eyebrow}</p>
+            <h1 className="mt-2 text-2xl font-semibold leading-tight text-[#101312] sm:text-3xl">{content.title}</h1>
+            <p className="mt-3 text-sm leading-relaxed text-[#101312]/75">{content.copy}</p>
 
-          <div className="mt-6 grid gap-3">
-            {authSignals.map((item) => (
-              <div key={item} className="flex items-start gap-3 rounded-xl border border-slate-800 bg-slate-950 p-3">
-                <span className="grid h-7 w-7 place-items-center rounded-lg bg-violet-600/20 text-violet-200">
-                  +
-                </span>
-                <p className="text-sm text-slate-200">{item}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+            <div className="mt-6 grid gap-3">
+              {authSignals.map((item) => (
+                <div key={item} className="flex items-start gap-3 rounded-xl border border-[#101312]/12 bg-white p-3">
+                  <span className="grid h-7 w-7 place-items-center rounded-lg bg-[#BAF91A] text-base font-semibold text-[#101312]">
+                    +
+                  </span>
+                  <p className="text-sm text-[#101312]/80">{item}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-slate-400">{content.primaryLabel}</p>
-            <h2 className="mt-2 text-2xl font-semibold">{content.primaryLabel} to STAY & GO</h2>
-            <p className="mt-2 text-sm text-slate-400">
-              {mode === 'login'
-                ? 'Use your verified campus account to continue.'
-                : 'Start with the details needed for verification and secure onboarding.'}
-            </p>
-          </div>
+          <section className="rounded-3xl border border-[#101312]/15 bg-white p-5 shadow-[0_10px_30px_rgba(16,19,18,0.08)] sm:p-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#876DFF]">{content.primaryLabel}</p>
+              <h2 className="mt-2 text-2xl font-semibold text-[#101312]">{content.primaryLabel} to STAY &amp; GO</h2>
+              <p className="mt-2 text-sm text-[#101312]/70">
+                {mode === 'login'
+                  ? 'Use your verified campus account to continue.'
+                  : 'Start with the details needed for verification and secure onboarding.'}
+              </p>
+            </div>
 
-          <form className="mt-6 grid gap-3" onSubmit={onSubmit}>
-            {mode === 'register' ? (
-              <>
+            <form className="mt-6 grid gap-3" onSubmit={onSubmit}>
+              {mode === 'register' ? (
                 <label className="grid gap-1 text-sm">
-                  <span className="text-slate-300">Full name</span>
+                  <span className="text-[#101312]/80">Full name</span>
                   <input
-                    className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                    className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
                     type="text"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
@@ -181,189 +178,185 @@ export default function AuthPage({
                     required
                   />
                 </label>
-              </>
-            ) : null}
+              ) : null}
 
-            <label className="grid gap-1 text-sm">
-              <span className="text-slate-300">University email</span>
-              <input
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@university.edu"
-                required
-              />
-            </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-[#101312]/80">University email</span>
+                <input
+                  className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@university.edu"
+                  required
+                />
+              </label>
 
-            <label className="grid gap-1 text-sm">
-              <span className="text-slate-300">Password</span>
-              <input
-                className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
-            </label>
+              <label className="grid gap-1 text-sm">
+                <span className="text-[#101312]/80">Password</span>
+                <input
+                  className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  required
+                />
+              </label>
 
-            {mode === 'register' ? (
-              <>
-                <label className="grid gap-1 text-sm">
-                  <span className="text-slate-300">Account type</span>
-                  <select
-                    className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                    value={accountType}
-                    onChange={(e) => {
-                      const next = e.target.value
-                      setAccountType(next)
-                      if (next !== 'student') setHasVehicle(false)
-                    }}
-                  >
-                    <option value="student">Student</option>
-                    <option value="technician">Technician / Staff</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </label>
+              {mode === 'register' ? (
+                <>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-[#101312]/80">Account type</span>
+                    <select
+                      className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                      value={accountType}
+                      onChange={(e) => {
+                        const next = e.target.value
+                        setAccountType(next)
+                        if (next !== 'student') setHasVehicle(false)
+                      }}
+                    >
+                      <option value="student">Student</option>
+                      <option value="technician">Technician / Staff</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </label>
 
-                <label className="grid gap-1 text-sm">
-                  <span className="text-slate-300">Phone</span>
-                  <input
-                    className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+94..."
-                  />
-                </label>
+                  <label className="grid gap-1 text-sm">
+                    <span className="text-[#101312]/80">Phone</span>
+                    <input
+                      className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+94..."
+                    />
+                  </label>
 
-                {accountType === 'student' ? (
-                  <>
-                    <label className="grid gap-1 text-sm">
-                      <span className="text-slate-300">Student ID</span>
-                      <input
-                        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                        value={studentId}
-                        onChange={(e) => setStudentId(e.target.value)}
-                      />
-                    </label>
+                  {accountType === 'student' ? (
+                    <>
+                      <label className="grid gap-1 text-sm">
+                        <span className="text-[#101312]/80">Student ID</span>
+                        <input
+                          className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          value={studentId}
+                          onChange={(e) => setStudentId(e.target.value)}
+                        />
+                      </label>
 
-                    <label className="grid gap-1 text-sm">
-                      <span className="text-slate-300">University / Campus ID</span>
-                      <input
-                        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                        value={campusId}
-                        onChange={(e) => setCampusId(e.target.value)}
-                        placeholder="e.g. uoc-main"
-                        required
-                      />
-                    </label>
+                      <label className="grid gap-1 text-sm">
+                        <span className="text-[#101312]/80">University / Campus ID</span>
+                        <input
+                          className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          value={campusId}
+                          onChange={(e) => setCampusId(e.target.value)}
+                          placeholder="e.g. uoc-main"
+                          required
+                        />
+                      </label>
 
-                    <label className="grid gap-1 text-sm">
-                      <span className="text-slate-300">Emergency contact</span>
-                      <input
-                        className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                        value={emergencyContact}
-                        onChange={(e) => setEmergencyContact(e.target.value)}
-                      />
-                    </label>
-                  </>
-                ) : null}
+                      <label className="grid gap-1 text-sm">
+                        <span className="text-[#101312]/80">Emergency contact</span>
+                        <input
+                          className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          value={emergencyContact}
+                          onChange={(e) => setEmergencyContact(e.target.value)}
+                        />
+                      </label>
+                    </>
+                  ) : null}
 
-                {accountType === 'student' ? (
-                  <div className="rounded-2xl border border-slate-800 bg-slate-950 p-4">
-                    <label className="flex items-center gap-2 text-sm text-slate-200">
-                      <input
-                        type="checkbox"
-                        checked={hasVehicle}
-                        onChange={(e) => setHasVehicle(e.target.checked)}
-                      />
-                      I own a vehicle (Rider-candidate)
-                    </label>
-                    <p className="mt-2 text-xs text-slate-400">
-                      You will remain a student until admin approves you as a rider.
-                    </p>
+                  {accountType === 'student' ? (
+                    <div className="rounded-2xl border border-[#101312]/12 bg-[#f9fce9] p-4">
+                      <label className="flex items-center gap-2 text-sm text-[#101312]">
+                        <input type="checkbox" checked={hasVehicle} onChange={(e) => setHasVehicle(e.target.checked)} />
+                        I own a vehicle (Rider-candidate)
+                      </label>
+                      <p className="mt-2 text-xs text-[#101312]/65">
+                        You will remain a student until admin approves you as a rider.
+                      </p>
 
-                    {hasVehicle ? (
-                      <div className="mt-4 grid gap-3">
-                        <label className="grid gap-1 text-sm">
-                          <span className="text-slate-300">Vehicle type</span>
-                          <select
-                            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                            value={vehicleType}
-                            onChange={(e) => setVehicleType(e.target.value)}
-                          >
-                            <option value="bike">Bike (1 passenger)</option>
-                            <option value="car">Car (3 passengers)</option>
-                            <option value="van">Van (7 passengers)</option>
-                          </select>
-                        </label>
+                      {hasVehicle ? (
+                        <div className="mt-4 grid gap-3">
+                          <label className="grid gap-1 text-sm">
+                            <span className="text-[#101312]/80">Vehicle type</span>
+                            <select
+                              className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                              value={vehicleType}
+                              onChange={(e) => setVehicleType(e.target.value)}
+                            >
+                              <option value="bike">Bike (1 passenger)</option>
+                              <option value="car">Car (3 passengers)</option>
+                              <option value="van">Van (7 passengers)</option>
+                            </select>
+                          </label>
 
-                        <label className="grid gap-1 text-sm">
-                          <span className="text-slate-300">Vehicle number</span>
-                          <input
-                            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
-                            value={vehicleNumber}
-                            onChange={(e) => setVehicleNumber(e.target.value)}
-                            required
-                          />
-                        </label>
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
+                          <label className="grid gap-1 text-sm">
+                            <span className="text-[#101312]/80">Vehicle number</span>
+                            <input
+                              className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                              value={vehicleNumber}
+                              onChange={(e) => setVehicleNumber(e.target.value)}
+                              required
+                            />
+                          </label>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
 
-                {accountType === 'student' && !hasVehicle ? (
-                  <div>
-                    <div className="text-sm text-slate-300 mb-2">Your residence location (pickup default)</div>
-                    <MapPicker value={residenceLocation} onChange={setResidenceLocation} height={240} />
-                  </div>
-                ) : null}
+                  {accountType === 'student' && !hasVehicle ? (
+                    <div>
+                      <div className="mb-2 text-sm text-[#101312]/80">Your residence location (pickup default)</div>
+                      <MapPicker value={residenceLocation} onChange={setResidenceLocation} height={240} />
+                    </div>
+                  ) : null}
 
-                {accountType === 'student' && hasVehicle ? (
-                  <div>
-                    <div className="text-sm text-slate-300 mb-2">Vehicle origin / start location</div>
-                    <MapPicker value={vehicleOriginLocation} onChange={setVehicleOriginLocation} height={240} />
-                  </div>
-                ) : null}
-              </>
-            ) : null}
+                  {accountType === 'student' && hasVehicle ? (
+                    <div>
+                      <div className="mb-2 text-sm text-[#101312]/80">Vehicle origin / start location</div>
+                      <MapPicker value={vehicleOriginLocation} onChange={setVehicleOriginLocation} height={240} />
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
 
-            {error ? (
-              <div className="rounded-xl border border-red-900/50 bg-red-950/30 px-3 py-2 text-sm text-red-200">
-                {error}
+              {error ? (
+                <div className="rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                  {error}
+                </div>
+              ) : null}
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                <button
+                  className="rounded-xl bg-[#BAF91A] px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:opacity-60"
+                  disabled={loading}
+                  type="submit"
+                >
+                  {loading ? 'Please wait...' : content.primaryLabel}
+                </button>
+                <button
+                  className="rounded-xl border border-[#101312]/20 bg-white px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+                  type="button"
+                  onClick={() => onNavigateToPage('privacy')}
+                >
+                  Review privacy
+                </button>
               </div>
-            ) : null}
+            </form>
 
-            <div className="mt-2 flex flex-wrap gap-2">
+            <div className="mt-6 flex items-center justify-between gap-3 text-sm text-[#101312]/70">
+              <p>{content.secondaryText}</p>
               <button
-                className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-500 disabled:opacity-60"
-                disabled={loading}
-                type="submit"
-              >
-                {loading ? 'Please wait…' : content.primaryLabel}
-              </button>
-              <button
-                className="rounded-xl border border-slate-800 px-4 py-2 text-sm text-slate-200 hover:bg-slate-900"
+                className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
                 type="button"
-                onClick={() => onNavigateToPage('privacy')}
+                onClick={() => onNavigateToAuth(content.secondaryAction)}
               >
-                Review privacy
+                {content.secondaryLabel}
               </button>
             </div>
-          </form>
-
-          <div className="mt-6 flex items-center justify-between gap-3 text-sm text-slate-400">
-            <p>{content.secondaryText}</p>
-            <button
-              className="rounded-xl border border-slate-800 px-3 py-2 text-sm text-slate-200 hover:bg-slate-900"
-              type="button"
-              onClick={() => onNavigateToAuth(content.secondaryAction)}
-            >
-              {content.secondaryLabel}
-            </button>
-          </div>
-        </section>
+          </section>
+        </div>
       </main>
 
       <Footer onNavigateToPage={onNavigateToPage} />
