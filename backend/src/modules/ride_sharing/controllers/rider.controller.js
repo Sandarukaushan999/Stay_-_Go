@@ -14,13 +14,24 @@ export const openRequests = asyncHandler(async (req, res) => {
   }).lean()
   const used = activeTrips.reduce((sum, t) => sum + Number(t.seatCount ?? 1), 0)
   const remainingSeats = Math.max(0, capacityPassengers - used)
+  const isOnline = rider?.availability === 'online'
 
-  const items = await inboxService.listOpenRequests({ campusId: req.user.campusId ?? req.query?.campusId })
-  const withAccept = items.map((r) => ({
-    ...r,
-    canAccept: isApprovedRider && Number(r.seatCount ?? 1) <= remainingSeats,
-    remainingSeats,
-  }))
+  const items = await inboxService.listOpenRequests({
+    campusId: rider?.campusId ?? req.user.campusId ?? req.query?.campusId ?? null,
+  })
+  const withAccept = items.map((r) => {
+    const need = Number(r.seatCount ?? 1)
+    const canAccept =
+      isApprovedRider && isOnline && need <= remainingSeats && capacityPassengers > 0
+    let acceptBlockedReason = null
+    if (!canAccept) {
+      if (!isApprovedRider) acceptBlockedReason = 'pending_approval'
+      else if (!isOnline) acceptBlockedReason = 'offline'
+      else if (capacityPassengers <= 0) acceptBlockedReason = 'no_capacity'
+      else if (need > remainingSeats) acceptBlockedReason = 'not_enough_seats'
+    }
+    return { ...r, canAccept, remainingSeats, acceptBlockedReason }
+  })
   res.json({ success: true, data: withAccept })
 })
 

@@ -11,9 +11,20 @@ import { errorMiddleware } from './common/middlewares/error.middleware.js'
 export function createApp() {
   const app = express()
 
+  // JSON APIs must not use conditional GET (304): browsers/XHR often deliver an empty body for 304,
+  // which breaks axios clients that expect JSON (e.g. /auth/me wiping the session).
+  app.set('etag', false)
+
   app.use(helmet())
   const allowedOrigins = Array.from(
-    new Set([env.CLIENT_URL, ...(env.CLIENT_URLS ?? []), 'http://localhost:5173', 'http://localhost:5174'])
+    new Set([
+      env.CLIENT_URL,
+      ...(env.CLIENT_URLS ?? []),
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+    ])
   )
   app.use(
     cors({
@@ -30,7 +41,17 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true }))
   app.use(cookieParser())
 
-  app.use('/api', apiRouter)
+  app.use(
+    '/api',
+    (req, res, next) => {
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+        Pragma: 'no-cache',
+      })
+      next()
+    },
+    apiRouter
+  )
 
   app.use(errorMiddleware)
 

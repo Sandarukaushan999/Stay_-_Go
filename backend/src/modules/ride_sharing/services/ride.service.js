@@ -5,6 +5,10 @@ import { Trip } from '../models/Trip.js'
 import { User } from '../../users/user.model.js'
 import { env } from '../../../config/env.js'
 
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
 export async function getRiderDashboard({ riderUserId, campusId }) {
   const riderOid = new mongoose.Types.ObjectId(riderUserId)
 
@@ -54,7 +58,11 @@ export async function getRiderDashboard({ riderUserId, campusId }) {
 
   let openCampusQueue = 0
   if (campusId) {
-    openCampusQueue = await RideRequest.countDocuments({ status: 'requested', campusId })
+    const c = String(campusId).trim()
+    openCampusQueue = await RideRequest.countDocuments({
+      status: 'requested',
+      campusId: { $regex: new RegExp(`^${escapeRegex(c)}$`, 'i') },
+    })
   }
 
   const usedSeats = activeTrips.reduce((sum, t) => sum + Number(t.seatCount ?? 1), 0)
@@ -85,9 +93,10 @@ export async function getRiderDashboard({ riderUserId, campusId }) {
 }
 
 export async function requestRide({ passengerId, campusId, origin, destination, seatCount, femaleOnly }) {
+  const campusNorm = campusId != null ? String(campusId).trim().toLowerCase() : null
   const rr = await RideRequest.create({
     passengerId,
-    campusId: campusId ?? null,
+    campusId: campusNorm,
     origin,
     destination,
     seatCount: seatCount ?? 1,
@@ -123,7 +132,10 @@ export async function nearbyRiders({ campusId, pickup }) {
     isVerified: true,
     availability: 'online',
   }
-  if (campusId) filter.campusId = campusId
+  if (campusId) {
+    const c = String(campusId).trim()
+    filter.campusId = { $regex: new RegExp(`^${escapeRegex(c)}$`, 'i') }
+  }
 
   const riders = await User.find(filter).limit(50).lean()
 

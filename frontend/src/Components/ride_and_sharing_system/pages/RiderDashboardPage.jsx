@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuthStore } from '../../../app/store/authStore'
+import { describeApiUnreachable, isApiUnreachable } from '../../../lib/axios'
 import { rideApi } from '../services/rideApi'
 import IncomingRideRequests from '../rider/IncomingRideRequests'
 
@@ -36,6 +37,7 @@ function formatDateTime(value) {
 }
 
 export default function RiderDashboardPage() {
+  const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const hydrateMe = useAuthStore((s) => s.hydrateMe)
   const [dash, setDash] = useState(null)
@@ -51,15 +53,27 @@ export default function RiderDashboardPage() {
       setDash(res.data.data ?? null)
     } catch (err) {
       setDash(null)
-      setError(err?.response?.data?.message ?? 'Could not load rider dashboard data.')
+      setError(
+        isApiUnreachable(err)
+          ? describeApiUnreachable()
+          : err?.response?.data?.message ?? 'Could not load rider dashboard data.'
+      )
     } finally {
       setLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    loadDashboard()
-  }, [loadDashboard, user?.id])
+    if (status !== 'authed' || !user?.id) return
+
+    let cancelled = false
+    ;(async () => {
+      if (!cancelled) await loadDashboard()
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [status, user?.id, loadDashboard])
 
   async function onConfirmPickup(tripId) {
     if (!tripId || user?.role !== 'rider') return
@@ -103,9 +117,9 @@ export default function RiderDashboardPage() {
           <h2 className="text-lg font-semibold text-[#101312] sm:text-xl">Rider Workspace</h2>
           <button
             type="button"
-            onClick={() => {
-              hydrateMe()
-              loadDashboard()
+            onClick={async () => {
+              await hydrateMe({ force: true })
+              await loadDashboard()
             }}
             className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
           >

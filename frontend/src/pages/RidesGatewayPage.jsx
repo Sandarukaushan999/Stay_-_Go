@@ -7,9 +7,17 @@ import MainLayout from '../Components/shared/layout/MainLayout'
 export default function RidesGatewayPage() {
   const [searchParams] = useSearchParams()
   const user = useAuthStore((s) => s.user)
+  const status = useAuthStore((s) => s.status)
 
-  // If user is somehow missing (race), let ProtectedRoute handle it, but keep safe.
-  if (!user) return <Navigate to="/auth/login" replace />
+  if (status === 'loading') {
+    return (
+      <MainLayout showFooter={false}>
+        <div className="mx-auto max-w-7xl p-8 text-center text-sm text-[#101312]/70">Loading your ride workspace...</div>
+      </MainLayout>
+    )
+  }
+
+  if (status !== 'authed' || !user) return <Navigate to="/auth/login" replace />
 
   if (user.role === 'admin' || user.role === 'super_admin') return <Navigate to="/admin" replace />
   if (user.role === 'technician') return <Navigate to="/technician/dashboard" replace />

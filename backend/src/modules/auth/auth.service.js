@@ -41,7 +41,7 @@ export async function register(payload) {
 
     phone: payload.phone ?? null,
     studentId: payload.studentId ?? null,
-    campusId: payload.campusId ?? null,
+    campusId: payload.campusId != null ? String(payload.campusId).trim().toLowerCase() : null,
     emergencyContact: payload.emergencyContact ?? null,
 
     hasVehicle: wantsRider,

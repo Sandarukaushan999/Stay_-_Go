@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import api from '../../../lib/axios'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import api, { describeApiUnreachable, isApiUnreachable } from '../../../lib/axios'
 import { useAuthStore } from '../../../app/store/authStore'
 import { rideApi } from '../services/rideApi'
 import MapPicker from '../../shared/maps/MapPicker'
@@ -13,6 +13,13 @@ function DashChip({ children }) {
   )
 }
 
+const acceptHint = {
+  pending_approval: 'Admin must approve you as a rider before you can accept.',
+  offline: 'Set availability to Online to accept requests.',
+  no_capacity: 'Your profile has no passenger seats configured.',
+  not_enough_seats: 'Not enough free seats for this request.',
+}
+
 export default function IncomingRideRequests({ onWorkspaceRefresh }) {
   const user = useAuthStore((s) => s.user)
   const [items, setItems] = useState([])
@@ -24,31 +31,69 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
   const [availability, setAvailabilityValue] = useState(user?.availability ?? 'offline')
   const [availabilityLoading, setAvailabilityLoading] = useState(false)
   const [error, setError] = useState(null)
+  const unreachableRef = useRef(false)
+  const loadPromiseRef = useRef(null)
 
   useEffect(() => {
     setAvailabilityValue(user?.availability ?? 'offline')
   }, [user?.availability])
 
-  async function load() {
-    setLoading(true)
-    setError(null)
-    try {
-      const res = await api.get('/ride-sharing/rides/open-requests')
-      setItems(res.data.data || [])
-    } catch (err) {
-      setItems([])
-      setError(err?.response?.data?.message ?? 'Could not load open requests.')
-    } finally {
-      setLoading(false)
+  const load = useCallback(async ({ silent } = {}) => {
+    if (loadPromiseRef.current) {
+      return loadPromiseRef.current
     }
-  }
+    const run = (async () => {
+      if (!silent) {
+        setLoading(true)
+        setError(null)
+      }
+      try {
+        const res = await api.get('/ride-sharing/rides/open-requests')
+        setItems(Array.isArray(res?.data?.data) ? res.data.data : [])
+        unreachableRef.current = false
+        if (silent) setError(null)
+      } catch (err) {
+        setItems([])
+        const unreachable = isApiUnreachable(err)
+        unreachableRef.current = unreachable
+        const msg = unreachable
+          ? describeApiUnreachable()
+          : err?.response?.data?.message ?? 'Could not load open requests.'
+        if (!silent || unreachable) setError(msg)
+      } finally {
+        if (!silent) setLoading(false)
+      }
+    })()
+    loadPromiseRef.current = run.finally(() => {
+      loadPromiseRef.current = null
+    })
+    return loadPromiseRef.current
+  }, [])
 
   useEffect(() => {
     load()
-  }, [user?.campusId])
+  }, [load, user?.campusId, user?.role, user?.availability])
+
+  useEffect(() => {
+    let cancelled = false
+    let timerId = 0
+
+    const loop = async () => {
+      if (cancelled) return
+      await load({ silent: true })
+      if (cancelled) return
+      const delay = unreachableRef.current ? 60000 : 15000
+      timerId = window.setTimeout(loop, delay)
+    }
+
+    timerId = window.setTimeout(loop, 15000)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timerId)
+    }
+  }, [load])
 
   async function accept(id) {
-    if (user?.role !== 'rider') return
     setError(null)
     try {
       const res = await rideApi.acceptRide(id)
@@ -57,7 +102,7 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
         setActive(payload.rideRequest)
         await selectRequest(payload.rideRequest)
       }
-      await load()
+      await load({ silent: true })
       onWorkspaceRefresh?.()
     } catch (err) {
       setError(err?.response?.data?.message ?? 'Could not accept this request.')
@@ -142,7 +187,9 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-[#101312]">Incoming Ride Requests</h3>
-          <p className="text-xs text-[#101312]/65">Open requests from your campus with route preview and passenger detail.</p>
+          <p className="text-xs text-[#101312]/65">
+          Open requests for your campus (matched case-insensitively). List refreshes every ~12s.
+        </p>
         </div>
         <button
           type="button"
@@ -224,7 +271,12 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
                   <button
                     type="button"
                     onClick={() => accept(r._id)}
-                    disabled={user?.role !== 'rider' || r.canAccept === false}
+                    disabled={r.canAccept !== true}
+                    title={
+                      r.canAccept
+                        ? 'Accept this ride'
+                        : acceptHint[r.acceptBlockedReason] ?? 'Cannot accept this request.'
+                    }
                     className="rounded-xl bg-[#BAF91A] px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00] disabled:opacity-60"
                   >
                     Accept
@@ -237,6 +289,12 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
                 <DashChip>Remaining: {r.remainingSeats ?? '-'}</DashChip>
                 <DashChip>Female only: {r.femaleOnly ? 'yes' : 'no'}</DashChip>
               </div>
+
+              {r.canAccept === false && r.acceptBlockedReason ? (
+                <p className="mt-2 text-xs font-medium text-amber-800">
+                  {acceptHint[r.acceptBlockedReason] ?? 'You cannot accept this request yet.'}
+                </p>
+              ) : null}
 
               {r.passengerId ? (
                 <div className="mt-3 rounded-lg border border-[#101312]/10 bg-white p-3 text-xs text-[#101312]/75">
