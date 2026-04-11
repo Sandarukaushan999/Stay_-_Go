@@ -14,9 +14,14 @@ export const useAuthStore = create((set, get) => ({
     set({ token })
   },
 
+  isLogoutModalOpen: false,
+
+  openLogoutModal: () => set({ isLogoutModalOpen: true }),
+  closeLogoutModal: () => set({ isLogoutModalOpen: false }),
+
   logout: () => {
     setStoredToken(null)
-    set({ token: null, user: null, status: 'guest', error: null })
+    set({ token: null, user: null, status: 'guest', error: null, isLogoutModalOpen: false })
   },
 
   login: async ({ email, password }) => {

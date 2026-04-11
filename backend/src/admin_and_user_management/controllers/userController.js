@@ -80,6 +80,36 @@ export const updateMyAccountProfile = asyncHandler(async (req, res) => {
       }
     }
   }
+  
+  if (updates.ridePreferences) {
+    const ridePrefs = updates.ridePreferences
+    delete updates.ridePreferences
+    for (const key in ridePrefs) {
+      if (Object.prototype.hasOwnProperty.call(ridePrefs, key)) {
+        updates[`ridePreferences.${key}`] = ridePrefs[key]
+      }
+    }
+  }
+
+  if (updates.privacySettings) {
+    const privSet = updates.privacySettings
+    delete updates.privacySettings
+    for (const key in privSet) {
+      if (Object.prototype.hasOwnProperty.call(privSet, key)) {
+        updates[`privacySettings.${key}`] = privSet[key]
+      }
+    }
+  }
+
+  if (updates.sessionManagement) {
+    const sessSet = updates.sessionManagement
+    delete updates.sessionManagement
+    for (const key in sessSet) {
+      if (Object.prototype.hasOwnProperty.call(sessSet, key)) {
+        updates[`sessionManagement.${key}`] = sessSet[key]
+      }
+    }
+  }
 
   const user = await User.findByIdAndUpdate(
     req.user.id,
@@ -96,6 +126,31 @@ export const updateMyAccountProfile = asyncHandler(async (req, res) => {
   delete user._id
 
   res.json({ success: true, message: 'Profile updated successfully', user })
+})
+
+export const uploadAvatar = asyncHandler(async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No image provided.' })
+  }
+
+  const avatarUrl = `/uploads/profiles/${req.file.filename}`
+
+  const user = await User.findById(req.user.id)
+  if (!user) {
+    return res.status(404).json({ success: false, message: 'User not found' })
+  }
+
+  user.profileImage = avatarUrl
+  await user.save()
+
+  // Track action slightly if admin, though typically for standard users it's ignored
+  const safeUser = user.toObject()
+  delete safeUser.passwordHash
+  delete safeUser.__v
+  safeUser.id = safeUser._id.toString()
+  delete safeUser._id
+
+  res.json({ success: true, message: 'Avatar updated successfully', profileImage: avatarUrl, user: safeUser })
 })
 
 import { hashPassword, verifyPassword } from '../../common/utils/password.js'

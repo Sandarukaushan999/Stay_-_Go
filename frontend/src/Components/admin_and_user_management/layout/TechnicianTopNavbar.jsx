@@ -3,7 +3,7 @@ import { useAuthStore } from '../../../app/store/authStore'
 
 export default function TechnicianTopNavbar() {
   const user = useAuthStore((s) => s.user)
-  const logout = useAuthStore((s) => s.logout)
+  const openLogoutModal = useAuthStore((s) => s.openLogoutModal)
   const [q, setQ] = useState('')
 
   return (
@@ -31,7 +31,7 @@ export default function TechnicianTopNavbar() {
         </button>
         <div className="text-sm font-semibold text-slate-300">{user?.fullName}</div>
         <button
-          onClick={logout}
+          onClick={openLogoutModal}
           className="rounded-xl border border-slate-800 px-3 py-1.5 text-sm hover:bg-slate-900 text-rose-400 border-rose-900/30"
           type="button"
         >

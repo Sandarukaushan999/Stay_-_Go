@@ -1,9 +1,22 @@
+import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 import { CircleMarker, MapContainer, Marker, Polyline, TileLayer, Tooltip, useMapEvents } from 'react-leaflet'
 
 import bikeUrl from '../../ride_and_sharing_system/assets/bike.png'
 import locationUrl from '../../ride_and_sharing_system/assets/location.png'
 import uniUrl from '../../ride_and_sharing_system/assets/uni.png'
+
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
+import markerIcon from 'leaflet/dist/images/marker-icon.png'
+import markerShadow from 'leaflet/dist/images/marker-shadow.png'
+
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 
 const ICON_PX = 42
 const DEFAULT_ROUTE_COLOR = '#876DFF'
@@ -34,7 +47,7 @@ function ClickHandler({ value, onChange, readonly, valueIconKind }) {
 
   if (!value) return null
   const icon = valueIconKind && RIDE_MAP_ICONS[valueIconKind] ? RIDE_MAP_ICONS[valueIconKind] : undefined
-  return <Marker position={[value.lat, value.lng]} icon={icon} />
+  return icon ? <Marker position={[value.lat, value.lng]} icon={icon} /> : <Marker position={[value.lat, value.lng]} />
 }
 
 export default function MapPicker({
@@ -62,6 +75,10 @@ export default function MapPicker({
         <TileLayer
           attribution='&copy; OpenStreetMap contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          maxZoom={19}
+          maxNativeZoom={18}
+          updateWhenIdle={true}
+          keepBuffer={1}
         />
         {Array.isArray(polylines) && polylines.length
           ? polylines

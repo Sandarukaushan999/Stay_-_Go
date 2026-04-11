@@ -108,8 +108,12 @@ export default function AuthPage({
       const roleAfter = authedUser?.role ?? user?.role
       if (roleAfter === 'admin' || roleAfter === 'super_admin') {
         window.location.href = '/admin'
-      } else if (roleAfter === 'student' || roleAfter === 'rider' || roleAfter === 'technician') {
-        window.location.href = '/rides/workspace'
+      } else if (roleAfter === 'student') {
+        window.location.href = '/student/dashboard'
+      } else if (roleAfter === 'rider') {
+        window.location.href = '/rider/dashboard'
+      } else if (roleAfter === 'technician') {
+        window.location.href = '/technician/dashboard'
       } else {
         afterAuthRedirect?.()
       }
@@ -227,9 +231,10 @@ export default function AuthPage({
                     <span className="text-[#101312]/80">Phone</span>
                     <input
                       className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                      type="tel"
                       value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+94..."
+                      onChange={(e) => setPhone(e.target.value.replace(/[^\d+\s-]/g, ''))}
+                      placeholder="+94 77 123 4567"
                     />
                   </label>
 
@@ -259,8 +264,10 @@ export default function AuthPage({
                         <span className="text-[#101312]/80">Emergency contact</span>
                         <input
                           className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 outline-none focus:ring-2 focus:ring-[#876DFF]"
+                          type="tel"
                           value={emergencyContact}
-                          onChange={(e) => setEmergencyContact(e.target.value)}
+                          onChange={(e) => setEmergencyContact(e.target.value.replace(/[^\d+\s-]/g, ''))}
+                          placeholder="Parent/Guardian Number"
                         />
                       </label>
                     </>

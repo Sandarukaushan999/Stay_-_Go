@@ -3,17 +3,39 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../../../app/store/authStore'
 import { api } from '../../../lib/apiClient'
 import MainLayout from '../../shared/layout/MainLayout'
-import { User, Bell, Car, Home } from 'lucide-react'
+import { User, Bell, Car, Home, CheckCircle, Users } from 'lucide-react'
 
 export default function StudentDashboard() {
   const user = useAuthStore((s) => s.user)
   const navigate = useNavigate()
   const [stats, setStats] = useState(null)
+  const [roommateStats, setRoommateStats] = useState({
+    profileCompleted: false,
+    roomPrefCompleted: false,
+    isLocked: false,
+    hasPair: false,
+  })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/users/dashboard-stats')
-      .then(res => setStats(res.data.stats))
+    Promise.all([
+      api.get('/users/dashboard-stats').catch(() => ({ data: { stats: {} } })),
+      api.get('/roommate/students/profile/me').catch(() => ({ data: { data: null } })),
+      api.get('/roommate/matching/me').catch(() => ({ data: { data: null } }))
+    ])
+      .then(([statsRes, profileRes, matchRes]) => {
+        setStats(statsRes.data?.stats)
+        
+        const pData = profileRes.data?.data
+        const mData = matchRes.data?.data
+        
+        setRoommateStats({
+          profileCompleted: pData?.profileCompleted || false,
+          roomPrefCompleted: pData?.roomPreferenceCompleted || false,
+          isLocked: pData?.finalLockCompleted || false,
+          hasPair: !!mData,
+        })
+      })
       .catch(console.error)
       .finally(() => setLoading(false))
   }, [])
@@ -29,23 +51,27 @@ export default function StudentDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard 
             icon={<User />} title="Profile Status" 
-            value={user?.isVerified ? 'Verified' : 'Pending'} 
-            color="bg-blue-50 text-blue-600" 
+            value={loading ? '...' : roommateStats.profileCompleted ? 'Completed' : 'Pending Setup'} 
+            color={roommateStats.profileCompleted ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600"} 
+            onClick={() => navigate('/roommate/profile')}
           />
           <StatCard 
-            icon={<Bell />} title="Unread Notifications" 
-            value={loading ? '...' : stats?.unreadNotifications || 0} 
-            color="bg-orange-50 text-orange-600" 
+            icon={<CheckCircle />} title="Room Preference" 
+            value={loading ? '...' : roommateStats.roomPrefCompleted ? 'Completed' : 'Pending Setup'} 
+            color={roommateStats.roomPrefCompleted ? "bg-emerald-50 text-emerald-600" : "bg-purple-50 text-purple-600"} 
+            onClick={() => navigate('/roommate/preferences')}
+          />
+          <StatCard 
+            icon={<Users />} title="Roommate Pair" 
+            value={loading ? '...' : roommateStats.isLocked ? 'Locked & Confirmed' : roommateStats.hasPair ? 'Pending Lock' : 'No Pair Yet'} 
+            color={roommateStats.hasPair ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"} 
+            onClick={() => navigate(roommateStats.isLocked ? '/roommate/final-result' : '/roommate/matches')}
           />
           <StatCard 
             icon={<Car />} title="Active Ride Requests" 
             value={loading ? '...' : stats?.activeRidesJoined || 0} 
-            color="bg-emerald-50 text-emerald-600" 
-          />
-          <StatCard 
-            icon={<Home />} title="Hostel Block" 
-            value={user?.hostelBlock || 'Unassigned'} 
-            color="bg-purple-50 text-purple-600" 
+            color="bg-orange-50 text-orange-600" 
+            onClick={() => navigate('/rides')}
           />
         </div>
 
@@ -85,9 +111,12 @@ export default function StudentDashboard() {
   )
 }
 
-function StatCard({ icon, title, value, color }) {
+function StatCard({ icon, title, value, color, onClick }) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all">
+    <div 
+      className={`bg-white rounded-2xl p-6 shadow-sm border border-slate-200 transition-all ${onClick ? 'cursor-pointer hover:shadow-md hover:-translate-y-0.5' : ''}`}
+      onClick={onClick}
+    >
       <div className="flex justify-between items-start mb-4">
         <div className={`p-3 rounded-xl ${color}`}>
           {icon}

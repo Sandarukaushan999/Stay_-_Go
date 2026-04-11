@@ -1,6 +1,7 @@
 import api from './axios';
 
 export const getSuggestions = () => api.get('/roommate/matching/suggestions');
+export const getAllCompleteStudents = () => api.get('/roommate/matching/all-complete');
 export const sendRequest = (receiverStudentId) => api.post(`/roommate/matching/requests/${receiverStudentId}`);
 export const getSentRequests = () => api.get('/roommate/matching/requests/sent');
 export const getReceivedRequests = () => api.get('/roommate/matching/requests/received');

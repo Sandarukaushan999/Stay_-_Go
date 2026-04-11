@@ -3,7 +3,7 @@ import { useAuthStore } from '../../../app/store/authStore'
 
 export default function AdminTopNavbar() {
   const user = useAuthStore((s) => s.user)
-  const logout = useAuthStore((s) => s.logout)
+  const openLogoutModal = useAuthStore((s) => s.openLogoutModal)
   const [q, setQ] = useState('')
 
   return (
@@ -29,9 +29,25 @@ export default function AdminTopNavbar() {
         <button className="rounded-xl border border-slate-800 px-3 py-1.5 text-sm hover:bg-slate-900" type="button">
           Notifications
         </button>
-        <div className="text-sm text-slate-400">{user?.fullName}</div>
+        <div className="flex items-center gap-3 px-2 border-l border-slate-800 ml-1 pl-4">
+          {user?.profileImage ? (
+            <img 
+              src={user.profileImage.startsWith('http') ? user.profileImage : (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace('/api', '') + user.profileImage} 
+              alt="Avatar" 
+              className="w-8 h-8 rounded-full object-cover border border-slate-700 shadow-sm" 
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center font-bold text-xs border border-fuchsia-500/30">
+              {user?.fullName?.charAt(0) || 'A'}
+            </div>
+          )}
+          <div className="flex flex-col">
+              <span className="text-sm font-medium text-slate-200 leading-tight">{user?.fullName}</span>
+              <span className="text-[10px] text-fuchsia-400 uppercase tracking-widest font-bold leading-tight">{(user?.role || 'admin').replace('_', ' ')}</span>
+          </div>
+        </div>
         <button
-          onClick={logout}
+          onClick={openLogoutModal}
           className="rounded-xl border border-slate-800 px-3 py-1.5 text-sm hover:bg-slate-900"
           type="button"
         >

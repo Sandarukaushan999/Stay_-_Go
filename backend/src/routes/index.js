@@ -21,6 +21,9 @@ import { issueRouter }        from '../roommate/routes/issueRoutes.js'
 import { roomRouter }         from '../roommate/routes/roomRoutes.js'
 import { notificationRouter } from '../roommate/routes/roommateNotificationRoutes.js'
 
+// ── Dev / Seed (remove before production) ───────────────────────────────────
+import { seedRouter } from './seedRoutes.js'
+
 export const apiRouter = Router()
 
 apiRouter.get('/health', (req, res) => {
@@ -47,3 +50,6 @@ apiRouter.use('/roommate/matching',      matchingRouter)
 apiRouter.use('/roommate/issues',        issueRouter)
 apiRouter.use('/roommate/rooms',         roomRouter)
 apiRouter.use('/roommate/notifications', notificationRouter)
+
+// Seed (dev only)
+apiRouter.use('/seed', seedRouter)

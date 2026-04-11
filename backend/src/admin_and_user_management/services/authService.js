@@ -22,7 +22,8 @@ export async function register(payload) {
     }
   }
 
-  const existing = await User.findOne({ email: payload.email }).lean()
+  const emailNormalized = payload.email.toLowerCase().trim()
+  const existing = await User.findOne({ email: emailNormalized }).lean()
   if (existing) throw new ApiError(409, 'Email already registered')
 
   if (normalizedRole === 'student') {
@@ -63,7 +64,7 @@ export async function register(payload) {
 }
 
 export async function login({ email, password }) {
-  const user = await User.findOne({ email })
+  const user = await User.findOne({ email: email.toLowerCase().trim() })
   if (!user) throw new ApiError(401, 'Invalid email or password')
   if (user.isBlocked) throw new ApiError(403, 'User is blocked')
 

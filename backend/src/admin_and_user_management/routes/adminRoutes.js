@@ -3,12 +3,14 @@ import * as adminController from '../controllers/adminController.js'
 import * as rideAdminController from '../controllers/rideAdminController.js'
 import * as safetyController from '../controllers/safetyController.js'
 import * as adminRoommateController from '../controllers/adminRoommateController.js'
+import * as analyticsController from '../controllers/analyticsController.js'
 import { requireAuth } from '../../common/middlewares/auth.middleware.js'
 
 export const adminRouter = Router()
 
 adminRouter.use(requireAuth)
 
+adminRouter.get('/analytics', analyticsController.getAnalytics)
 adminRouter.get('/dashboard', adminController.dashboard)
 adminRouter.get('/users', adminController.listUsers)
 adminRouter.post('/users', adminController.createUser)

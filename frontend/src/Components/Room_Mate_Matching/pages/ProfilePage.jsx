@@ -6,45 +6,30 @@ import { useAuthStore } from '../../../app/store/authStore';
 import { api } from '../../../lib/apiClient';
 import { createProfile, updateMyProfile } from '../api/studentApi';
 import { SLEEP_SCHEDULE, SOCIAL_HABITS, STUDY_HABITS, GENDER_OPTIONS } from '../constants/enums';
-import { User, Phone, Mail, MapPin, Hash, Activity, Lock, ChevronRight, Check, Shield, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Hash, Activity, Lock, ChevronRight, Check } from 'lucide-react';
 
 const InputWrap = ({ label, icon: Icon, children }) => (
     <div className="space-y-1.5 flex-1 w-full">
-        <label className="flex items-center text-sm font-semibold text-slate-700">
-            {Icon && <Icon className="w-4 h-4 mr-1.5 text-slate-400" />}
+        <label className="flex items-center text-sm font-bold text-slate-900">
+            {Icon && <Icon className="w-4 h-4 mr-1.5 text-slate-600" />}
             {label}
         </label>
         {children}
     </div>
 );
 
-const inputClasses = "w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-emerald-500 focus:border-emerald-500 block p-3 transition-colors md:min-w-0";
+const inputClasses = "w-full bg-white border-2 border-slate-300 text-slate-900 text-sm font-medium rounded-xl focus:ring-emerald-600 focus:border-emerald-600 block p-3 transition-colors md:min-w-0 placeholder-slate-500 shadow-sm";
 
 export default function ProfilePage() {
     const { profile, isLocked, refreshProfile } = useIdentity();
-    const { user, hydrateMe } = useAuthStore(); // Grab user for 2FA status
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
     const [form, setForm] = useState({
         firstName: '', lastName: '', address: '', email: '', whatsApp: '',
         gender: '', age: '', sleepSchedule: '', cleanliness: 3,
-        socialHabits: '', studyHabits: '',
+        studyHabits: '',
     });
-
-    // 2FA States
-    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-    const [twoFALoading, setTwoFALoading] = useState(false);
-    const [showOtpInput, setShowOtpInput] = useState(false);
-    const [otp, setOtp] = useState('');
-    const [disableMode, setDisableMode] = useState(false);
-    const [password, setPassword] = useState('');
-
-    useEffect(() => {
-        if (user) {
-            setIs2FAEnabled(Boolean(user.is2FAEnabled));
-        }
-    }, [user]);
 
     useEffect(() => {
         if (profile) {
@@ -103,60 +88,6 @@ export default function ProfilePage() {
         } finally { setLoading(false); }
     };
 
-    // 2FA Endpoints Logic
-    const handleEnable2FA = async () => {
-        setTwoFALoading(true);
-        try {
-            const res = await api.post('/2fa/enable');
-            toast.success(res.data.message || 'OTP sent to your email');
-            setShowOtpInput(true);
-            setDisableMode(false);
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to initiate 2FA');
-        } finally {
-            setTwoFALoading(false);
-        }
-    };
-
-    const handleVerifyOTP = async () => {
-        if (!otp) return toast.error('Please enter the OTP');
-        setTwoFALoading(true);
-        try {
-            const res = await api.post('/2fa/verify-enable', { otp });
-            toast.success(res.data.message || '2FA enabled successfully');
-            setShowOtpInput(false);
-            setOtp('');
-            setIs2FAEnabled(true);
-            hydrateMe(); // Refresh global user object
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Invalid OTP');
-        } finally {
-            setTwoFALoading(false);
-        }
-    };
-
-    const handleDisable2FA = async () => {
-        if (!disableMode) {
-            setDisableMode(true);
-            return;
-        }
-
-        if (!password) return toast.error('Password is required to disable 2FA');
-        setTwoFALoading(true);
-        try {
-            const res = await api.post('/2fa/disable', { password });
-            toast.success(res.data.message || '2FA disabled successfully');
-            setDisableMode(false);
-            setPassword('');
-            setIs2FAEnabled(false);
-            hydrateMe(); // Refresh global user object
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Invalid password');
-        } finally {
-            setTwoFALoading(false);
-        }
-    };
-
     return (
         <div className="max-w-5xl mx-auto p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-8">
@@ -194,7 +125,10 @@ export default function ProfilePage() {
                         </InputWrap>
 
                         <InputWrap label="Phone / WhatsApp *" icon={Phone}>
-                            <input className={inputClasses} value={form.whatsApp} onChange={set('whatsApp')} placeholder="+94 77 123 4567" disabled={isLocked} />
+                            <input type="tel" className={inputClasses} value={form.whatsApp} onChange={(e) => {
+                                const val = e.target.value.replace(/[^\d+\s-]/g, '');
+                                set('whatsApp')({ target: { value: val } });
+                            }} placeholder="+94 77 123 4567" disabled={isLocked} />
                         </InputWrap>
 
                         <div className="flex gap-4 w-full">
@@ -237,7 +171,7 @@ export default function ProfilePage() {
                                     onChange={(e) => setForm((prev) => ({ ...prev, cleanliness: e.target.value }))} 
                                     className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600" 
                                     disabled={isLocked} />
-                                <div className="flex justify-between text-xs text-slate-400 font-semibold px-1">
+                                <div className="flex justify-between text-xs text-slate-600 font-bold px-1 mt-1">
                                     <span>Messy</span>
                                     <span>Average</span>
                                     <span>Very Neat</span>
@@ -259,104 +193,6 @@ export default function ProfilePage() {
                             </select>
                         </InputWrap>
                     </div>
-                </div>
-
-                {/* 2FA Security Settings Section */}
-                <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
-                    <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-violet-500" />
-                        Security Settings
-                    </h3>
-                    <p className="text-slate-500 text-sm mb-6">Manage Two-Factor Authentication to keep your account secure.</p>
-                    
-                    <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                            <div className={`p-3 rounded-full ${is2FAEnabled ? 'bg-emerald-100/50 text-emerald-600' : 'bg-slate-200 text-slate-500'}`}>
-                                {is2FAEnabled ? <ShieldCheck className="w-6 h-6" /> : <ShieldAlert className="w-6 h-6" />}
-                            </div>
-                            <div>
-                                <h4 className="font-bold text-slate-900 text-lg">Two-Factor Authentication</h4>
-                                <p className={`font-semibold text-sm ${is2FAEnabled ? 'text-emerald-600' : 'text-slate-500'}`}>
-                                    Status: {is2FAEnabled ? 'Enabled' : 'Disabled'}
-                                </p>
-                            </div>
-                        </div>
-
-                        <div>
-                            {!is2FAEnabled ? (
-                                <button
-                                    type="button"
-                                    onClick={handleEnable2FA}
-                                    disabled={twoFALoading || showOtpInput}
-                                    className="bg-violet-600 hover:bg-violet-700 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-sm disabled:opacity-50 inline-flex"
-                                >
-                                    Enable 2FA
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={() => setDisableMode(true)}
-                                    disabled={twoFALoading || disableMode}
-                                    className="bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 px-5 py-2.5 rounded-xl font-semibold transition-colors disabled:opacity-50"
-                                >
-                                    Disable 2FA
-                                </button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Inline OTP Input Modal/Section for Enabling */}
-                    {showOtpInput && !is2FAEnabled && (
-                        <div className="mt-4 bg-violet-50 border border-violet-100 p-5 rounded-2xl flex flex-col gap-3">
-                            <h4 className="font-bold text-violet-900 text-sm">Verify your 2FA OTP</h4>
-                            <p className="text-xs text-violet-700">We've sent a 6-digit verification code to your email. Enter it below to confirm activation.</p>
-                            <div className="flex max-w-sm gap-2">
-                                <input
-                                    type="text"
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value)}
-                                    placeholder="123456"
-                                    maxLength={6}
-                                    className="flex-1 bg-white border border-violet-200 text-violet-900 font-mono tracking-widest text-center focus:ring-violet-500 rounded-xl px-4 py-2"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleVerifyOTP}
-                                    disabled={twoFALoading}
-                                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-semibold shadow-sm disabled:opacity-50"
-                                >
-                                    Verify
-                                </button>
-                            </div>
-                            <button type="button" onClick={() => setShowOtpInput(false)} className="text-left text-xs font-semibold text-violet-600 hover:text-violet-800">Cancel Setup</button>
-                        </div>
-                    )}
-
-                    {/* Inline Section for Disabling */}
-                    {disableMode && is2FAEnabled && (
-                        <div className="mt-4 bg-slate-100 border border-slate-200 p-5 rounded-2xl flex flex-col gap-3">
-                            <h4 className="font-bold text-slate-900 text-sm">Disable Two-Factor Authentication</h4>
-                            <p className="text-xs text-slate-600">Please confirm your current password to disable 2FA security.</p>
-                            <div className="flex max-w-sm gap-2">
-                                <input
-                                    type="password"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Your Password"
-                                    className="flex-1 bg-white border border-slate-300 text-slate-900 focus:ring-rose-500 rounded-xl px-4 py-2"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleDisable2FA}
-                                    disabled={twoFALoading}
-                                    className="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-xl font-semibold shadow-sm disabled:opacity-50"
-                                >
-                                    Confirm
-                                </button>
-                            </div>
-                            <button type="button" onClick={() => { setDisableMode(false); setPassword(''); }} className="text-left text-xs font-semibold text-slate-500 hover:text-slate-700">Cancel</button>
-                        </div>
-                    )}
                 </div>
 
                 <div className="flex flex-col-reverse md:flex-row justify-end gap-3 pb-10">

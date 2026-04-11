@@ -11,7 +11,9 @@ import { errorMiddleware } from './common/middlewares/error.middleware.js'
 export function createApp() {
   const app = express()
 
-  app.use(helmet())
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }))
   const allowedOrigins = Array.from(
     new Set([env.CLIENT_URL, ...(env.CLIENT_URLS ?? []), 'http://localhost:5173', 'http://localhost:5174'])
   )
@@ -31,6 +33,7 @@ export function createApp() {
   app.use(cookieParser())
 
   app.use('/api', apiRouter)
+  app.use('/uploads', express.static('uploads'))
 
   app.use(errorMiddleware)
 

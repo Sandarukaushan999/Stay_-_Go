@@ -24,8 +24,10 @@ const UserSchema = new mongoose.Schema(
 
     hasVehicle: { type: Boolean, default: false, index: true },
     vehicleNumber: { type: String, default: null },
+    vehicleModel: { type: String, default: null },
     vehicleType: { type: String, default: null },
     seatCount: { type: Number, default: 0 },
+    driverLicenseUrl: { type: String, default: null },
     availability: { type: String, default: 'offline' },
     rating: { type: Number, default: 5 },
     complaintCount: { type: Number, default: 0 },
@@ -55,6 +57,63 @@ const UserSchema = new mongoose.Schema(
       sosAlerts: { type: Boolean, default: true },
       systemUpdates: { type: Boolean, default: true },
       twoFactorEnabled: { type: Boolean, default: false },
+      rideRequestAlerts: { type: Boolean, default: true },
+      messages: { type: Boolean, default: true },
+      maintenanceUpdates: { type: Boolean, default: true },
+      promotionsToggle: { type: Boolean, default: false },
+    },
+
+    adminNotes: { type: String, default: '' },
+    permissions: [{ type: String }],
+    adminStats: {
+      systemAudits: { type: Number, default: 0 },
+      usersBanned: { type: Number, default: 0 },
+      criticalResolutions: { type: Number, default: 0 },
+    },
+    loginHistory: [{
+      timestamp: { type: Date, default: Date.now },
+      ipAddress: String,
+      device: String
+    }],
+    sessionManagement: {
+      maxConcurrentSessions: { type: Number, default: 3 },
+      sessionTimeoutMinutes: { type: Number, default: 60 },
+    },
+    emergencyClearance: {
+      type: String,
+      default: 'Standard',
+      enum: ['Standard', 'Elevated', 'Maximum'],
+    },
+
+    bio: { type: String, default: '' },
+
+    ridePreferences: {
+      preferredRole: { type: String, default: 'Both', enum: ['Driver', 'Passenger', 'Both'] },
+      usualTravelTime: { type: String, default: 'Morning (7AM - 10AM)' },
+      preferredPickupLocations: { type: String, default: 'Main Campus Gate' },
+      music: { type: String, default: 'Any' },
+      ac: { type: String, default: 'Any' },
+      smoking: { type: String, default: 'No Smoking' },
+      genderPreference: { type: String, default: 'Any' },
+    },
+
+    privacySettings: {
+      profileVisibility: { type: String, default: 'public', enum: ['public', 'campus_only', 'matches_only', 'private'] },
+      phoneVisibility: { type: String, default: 'matches_only', enum: ['public', 'campus_only', 'matches_only', 'private'] },
+      emailVisibility: { type: String, default: 'matches_only', enum: ['public', 'campus_only', 'matches_only', 'private'] },
+    },
+
+    verifications: {
+      email: { type: Boolean, default: false },
+      phone: { type: Boolean, default: false },
+      student: { type: Boolean, default: false },
+      license: { type: Boolean, default: false },
+    },
+
+    activityStats: {
+      tripsJoined: { type: Number, default: 0 },
+      tripsOffered: { type: Number, default: 0 },
+      completedTrips: { type: Number, default: 0 },
     },
 
     is2FAEnabled: { type: Boolean, default: false },
