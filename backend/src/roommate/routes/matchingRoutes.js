@@ -8,6 +8,7 @@ import {
   rejectRequest,
   cancelRequest,
   getMyPair,
+  getAllCompleteStudents,
 } from '../controllers/matchingController.js'
 import { requireAuth } from '../../common/middlewares/auth.middleware.js'
 
@@ -16,7 +17,9 @@ export const matchingRouter = Router()
 // All routes require authentication
 matchingRouter.use(requireAuth)
 
+matchingRouter.get('/all-complete', getAllCompleteStudents)
 matchingRouter.get('/suggestions', getSuggestions)
+matchingRouter.get('/me', getMyPair)                          // alias used by StudentDashboard
 matchingRouter.post('/requests/:receiverStudentId', sendRequest)
 matchingRouter.get('/requests/sent', getSentRequests)
 matchingRouter.get('/requests/received', getReceivedRequests)

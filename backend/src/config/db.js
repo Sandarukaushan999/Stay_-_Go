@@ -11,6 +11,7 @@ export async function connectDb() {
   for (const uri of urisToTry) {
     try {
       await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 })
+      console.log('[DB] Connected to MongoDB')
       return
     } catch (err) {
       // try next
@@ -20,8 +21,11 @@ export async function connectDb() {
   const isDev = (env.NODE_ENV ?? 'development') !== 'production'
   if (!isDev) throw new Error('Failed to connect to MongoDB (and no dev fallback allowed).')
 
-  // Dev-only fallback for when neither Atlas nor local Mongo is reachable.
+  // Dev-only fallback: in-memory MongoDB
+  console.warn('[DB] No local MongoDB found. Using in-memory fallback (data resets on restart).')
+  console.warn('[DB] FIX: Set MONGO_URI in .env to a MongoDB Atlas connection string.')
   memoryServer = await MongoMemoryServer.create()
   await mongoose.connect(memoryServer.getUri())
+  console.log('[DB] Connected to in-memory MongoDB (ephemeral)')
 }
 

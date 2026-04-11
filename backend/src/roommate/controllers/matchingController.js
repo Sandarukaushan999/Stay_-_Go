@@ -1,6 +1,7 @@
 import { StudentProfile } from '../models/StudentProfile.js'
 import { MatchRequest } from '../models/MatchRequest.js'
 import { MatchPair } from '../models/MatchPair.js'
+import { RoomPreference } from '../models/RoomPreference.js'
 import { getSuggestions as gSuggestions, validateCompatibility } from '../services/matchingService.js'
 import { createNotification } from '../services/roommateNotificationService.js'
 import { MATCH_REQUEST_STATUS, NOTIFICATION_TYPE } from '../constants/enums.js'
@@ -276,6 +277,68 @@ export const getMyPair = async (req, res, next) => {
     }
 
     res.json({ success: true, message: 'Roommate pair retrieved', data: pair })
+  } catch (err) {
+    next(err)
+  }
+}
+// ── GET /api/roommate/matching/all-complete ──
+// Returns ALL students who have completed profile + room preference
+export const getAllCompleteStudents = async (req, res, next) => {
+  try {
+    const myProfile = await StudentProfile.findOne({ userId: req.user.id })
+
+    // Get all completed students except self
+    const students = await StudentProfile.find({
+      ...(myProfile ? { _id: { $ne: myProfile._id } } : {}),
+      profileCompleted: true,
+      roomPreferenceCompleted: true,
+    }).populate('userId', 'fullName email')
+
+    const studentIds = students.map((s) => s._id)
+    const prefs = await RoomPreference.find({ studentId: { $in: studentIds } })
+    const prefMap = {}
+    prefs.forEach((p) => { prefMap[p.studentId.toString()] = p })
+
+    // Get existing requests involving the current user to show request status
+    let sentRequestMap = {}
+    if (myProfile) {
+      const sentRequests = await MatchRequest.find({
+        senderStudentId: myProfile._id,
+        status: MATCH_REQUEST_STATUS.PENDING,
+      })
+      sentRequests.forEach((r) => {
+        sentRequestMap[r.receiverStudentId.toString()] = r._id
+      })
+    }
+
+    const result = students.map((s) => {
+      const pref = prefMap[s._id.toString()]
+      return {
+        studentId: s._id,
+        fullName: s.userId?.fullName || `${s.firstName} ${s.lastName}`,
+        email: s.userId?.email || s.email,
+        firstName: s.firstName,
+        lastName: s.lastName,
+        gender: s.gender,
+        age: s.age,
+        address: s.address,
+        sleepSchedule: s.sleepSchedule,
+        cleanliness: s.cleanliness,
+        socialHabits: s.socialHabits,
+        studyHabits: s.studyHabits,
+        isLocked: s.finalLockCompleted,
+        roomPreference: pref ? {
+          block: pref.block,
+          floor: pref.floor,
+          acType: pref.acType,
+          roomPosition: pref.roomPosition,
+          capacity: pref.capacity,
+        } : null,
+        requestSent: !!sentRequestMap[s._id.toString()],
+      }
+    })
+
+    res.json({ success: true, message: 'Completed students retrieved', data: result })
   } catch (err) {
     next(err)
   }

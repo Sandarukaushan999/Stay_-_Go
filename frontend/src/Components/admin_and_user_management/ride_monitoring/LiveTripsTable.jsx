@@ -343,6 +343,10 @@ export default function LiveTripsTable() {
             <TileLayer
               attribution='&copy; OpenStreetMap contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={19}
+              maxNativeZoom={18}
+              updateWhenIdle={true}
+              keepBuffer={1}
             />
             <MapFitToTrips points={fitPoints} fitVersion={fitVersion} />
 

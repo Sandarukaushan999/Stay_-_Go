@@ -11,11 +11,17 @@ import { errorMiddleware } from './common/middlewares/error.middleware.js'
 export function createApp() {
   const app = express()
 
+<<<<<<< HEAD
   // JSON APIs must not use conditional GET (304): browsers/XHR often deliver an empty body for 304,
   // which breaks axios clients that expect JSON (e.g. /auth/me wiping the session).
   app.set('etag', false)
 
   app.use(helmet())
+=======
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+  }))
+>>>>>>> 461d32b321f3780c45ad6f481ab155cffd87c2b3
   const allowedOrigins = Array.from(
     new Set([
       env.CLIENT_URL,
@@ -41,6 +47,7 @@ export function createApp() {
   app.use(express.urlencoded({ extended: true }))
   app.use(cookieParser())
 
+<<<<<<< HEAD
   app.use(
     '/api',
     (req, res, next) => {
@@ -52,6 +59,10 @@ export function createApp() {
     },
     apiRouter
   )
+=======
+  app.use('/api', apiRouter)
+  app.use('/uploads', express.static('uploads'))
+>>>>>>> 461d32b321f3780c45ad6f481ab155cffd87c2b3
 
   app.use(errorMiddleware)
 

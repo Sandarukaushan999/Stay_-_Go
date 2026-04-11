@@ -19,21 +19,49 @@ export const useAuthStore = create((set, get) => ({
     set({ token })
   },
 
+  isLogoutModalOpen: false,
+
+  openLogoutModal: () => set({ isLogoutModalOpen: true }),
+  closeLogoutModal: () => set({ isLogoutModalOpen: false }),
+
   logout: () => {
     useSocketStore.getState().disconnect()
     setStoredToken(null)
-    set({ token: null, user: null, status: 'guest', error: null })
+    set({ token: null, user: null, status: 'guest', error: null, isLogoutModalOpen: false })
   },
 
   login: async ({ email, password }) => {
     set({ status: 'loading', error: null })
     const { data } = await api.post('/auth/login', { email, password })
+
+    if (data.twoFactorRequired) {
+      set({ status: 'guest' }) // user needs to input OTP, not yet authed
+      return data // { twoFactorRequired: true, userId }
+    }
+
     setStoredToken(data.token)
     set({ token: data.token, user: data.user, status: 'authed' })
     return data
   },
 
+<<<<<<< HEAD
   hydrateMe: async ({ force = false } = {}) => {
+=======
+  verifyOtp: async (userId, otp) => {
+    set({ status: 'loading', error: null })
+    try {
+      const { data } = await api.post('/auth/verify-otp', { userId, otp })
+      setStoredToken(data.token)
+      set({ token: data.token, user: data.user, status: 'authed' })
+      return data
+    } catch (err) {
+      set({ status: 'guest', error: 'Invalid or expired OTP' })
+      throw err
+    }
+  },
+
+  hydrateMe: async () => {
+>>>>>>> 461d32b321f3780c45ad6f481ab155cffd87c2b3
     const token = get().token
     if (!token) {
       set({ status: 'guest', user: null, error: null })
@@ -80,4 +108,3 @@ export const useAuthStore = create((set, get) => ({
     return hydrateMePromise
   },
 }))
-

@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const base =
-  'block rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition hover:border-[#101312]/20 hover:bg-[#E2FF99] hover:text-[#101312]'
+  'block rounded-xl px-3 py-2 text-sm transition border border-transparent hover:bg-slate-900 hover:border-slate-800'
 
 function Item({ to, children, end }) {
   return (
@@ -9,9 +9,7 @@ function Item({ to, children, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `${base} ${
-          isActive ? 'border-[#101312]/20 bg-white text-[#101312] shadow-[0_2px_10px_rgba(16,19,18,0.06)]' : 'text-[#101312]/78'
-        }`
+        `${base} ${isActive ? 'bg-slate-900 border-slate-800 text-white' : 'text-slate-300'}`
       }
     >
       {children}
@@ -21,17 +19,26 @@ function Item({ to, children, end }) {
 
 export default function AdminSidebar() {
   return (
-    <aside className="hidden h-screen w-72 shrink-0 border-r border-[#101312]/15 bg-white/90 p-4 backdrop-blur lg:block">
-      <div className="mb-4 rounded-2xl border border-[#101312]/12 bg-gradient-to-br from-[#E2FF99] to-white p-3">
-        <div className="text-lg font-semibold text-[#101312]">STAY &amp; GO</div>
-        <div className="text-xs text-[#101312]/70">Admin Control Center</div>
+    <aside className="w-72 shrink-0 border-r border-slate-800 bg-slate-950 flex flex-col h-screen sticky top-0">
+      <div className="p-4 shrink-0 border-b border-slate-800/50">
+        <div className="text-lg font-semibold text-white">Stay & Go</div>
+        <div className="text-xs text-slate-400">Admin Control Center</div>
       </div>
 
+<<<<<<< HEAD
       <div className="h-[calc(100vh-112px)] space-y-1 overflow-y-auto pr-1">
         <Section title="System" className="pt-2" />
         <Item to="/admin/profile">Admin Profile</Item>
         <Item to="/admin/access-settings">Access Settings</Item>
         <Item to="/admin/dashboard-settings">Dashboard Settings</Item>
+=======
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 pb-16 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-700 transition-colors">
+        <Section title="Overview" />
+        <Item to="/admin" end>
+          Dashboard Home
+        </Item>
+        <Item to="/admin/campus-summary">Campus Summary</Item>
+>>>>>>> 461d32b321f3780c45ad6f481ab155cffd87c2b3
 
         <Section title="User Management" />
         <Item to="/admin/users">All Users</Item>
@@ -47,15 +54,28 @@ export default function AdminSidebar() {
         <Item to="/admin/ride-requests">Ride Requests</Item>
         <Item to="/admin/active-riders">Active Riders</Item>
         <Item to="/admin/sos-alerts">SOS Alerts</Item>
+        <Item to="/admin/safety-alerts">Safety Alerts</Item>
+        <Item to="/admin/incidents">Incidents & Crashes</Item>
+        <Item to="/admin/route-monitoring">Route Monitoring</Item>
+        <Item to="/admin/ride-analytics">Ride Analytics</Item>
 
         <Section title="Roommate Workspace" />
         <Item to="/admin/roommate-dashboard">Roommate Dashboard</Item>
         <Item to="/admin/match-profiles">Match Profiles</Item>
-        <Item to="/admin/roommate-reports">Reports &amp; Blocks</Item>
+        <Item to="/admin/roommate-reports">Report Handling</Item>
         <Item to="/admin/match-analytics">Match Analytics</Item>
 
         <Section title="Maintenance Workspace" />
         <Item to="/admin/maintenance">Maintenance Dashboard</Item>
+<<<<<<< HEAD
+=======
+        <Item to="/admin/maintenance-new">New Requests</Item>
+        <Item to="/admin/maintenance-pending">Pending Tickets</Item>
+        <Item to="/admin/maintenance-assigned">Assigned Tickets</Item>
+        <Item to="/admin/maintenance-critical">Critical Issues</Item>
+        <Item to="/admin/maintenance-completed">Completed Tickets</Item>
+        <Item to="/admin/technician-performance">Technician Performance</Item>
+>>>>>>> 461d32b321f3780c45ad6f481ab155cffd87c2b3
 
         <Section title="Communication" />
         <Item to="/admin/notifications">Notifications</Item>
@@ -66,6 +86,7 @@ export default function AdminSidebar() {
   )
 }
 
+<<<<<<< HEAD
 function Section({ title, className = '' }) {
   return (
     <div
@@ -73,5 +94,11 @@ function Section({ title, className = '' }) {
     >
       {title}
     </div>
+=======
+function Section({ title }) {
+  return (
+    <div className="px-2 pt-4 text-[11px] uppercase tracking-wide text-slate-500">{title}</div>
+>>>>>>> 461d32b321f3780c45ad6f481ab155cffd87c2b3
   )
 }
+
