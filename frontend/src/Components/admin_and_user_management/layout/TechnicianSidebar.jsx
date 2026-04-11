@@ -48,6 +48,9 @@ export default function TechnicianSidebar() {
         <Item to="/technician/tasks/tracking">Live Job Tracking</Item>
         <Item to="/technician/tasks/requests">Job Requests</Item>
 
+        <Section title="Hostel Maintenance" />
+        <Item to="/technician/maintenance">Maintenance Tickets</Item>
+
         <Section title="Availability" />
         <Item to="/technician/availability">Set Availability</Item>
         <Item to="/technician/schedule">Working Hours</Item>

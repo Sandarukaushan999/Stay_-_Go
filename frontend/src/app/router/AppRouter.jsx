@@ -23,6 +23,7 @@ import StudentDashboard from '../../Components/admin_and_user_management/dashboa
 import RiderDashboard from '../../Components/admin_and_user_management/dashboard/RiderDashboard'
 import TechnicianDashboard from '../../Components/admin_and_user_management/dashboard/TechnicianDashboard'
 import TechnicianJobs from '../../Components/admin_and_user_management/technician/TechnicianJobs'
+import TechnicianLayout from '../../Components/admin_and_user_management/layout/TechnicianLayout'
 import RoommateDashboard from '../../Components/admin_and_user_management/roommate/RoommateDashboard'
 import MatchProfiles from '../../Components/admin_and_user_management/roommate/MatchProfiles'
 import RoommateReports from '../../Components/admin_and_user_management/roommate/RoommateReports'
@@ -133,6 +134,7 @@ export default function AppRouter() {
           <Route path="/technician/jobs/*" element={<TechnicianJobs />} />
           <Route path="/technician/performance" element={<TechnicianDashboard />} />
           <Route path="/technician/tasks/*" element={<TechnicianJobs />} />
+          <Route path="/technician/maintenance" element={<TechnicianLayout><MaintenanceDashboard /></TechnicianLayout>} />
         </Route>
 
         <Route element={<RoleRoute allow={['student', 'rider', 'technician', 'admin', 'super_admin']} />}>

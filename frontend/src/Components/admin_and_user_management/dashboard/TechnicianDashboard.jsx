@@ -40,19 +40,19 @@ export default function TechnicianDashboard() {
         </div>
 
         <div className="grid grid-cols-1 gap-8">
-          <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800 transition-all hover:border-slate-700 cursor-pointer flex flex-col md:flex-row gap-6 items-center" onClick={() => navigate('/admin')}>
+          <div className="bg-slate-900 rounded-2xl p-8 border border-slate-800 transition-all hover:border-slate-700 cursor-pointer flex flex-col md:flex-row gap-6 items-center" onClick={() => navigate('/technician/maintenance')}>
             <div className="p-4 bg-orange-500/10 text-orange-500 rounded-xl flex items-center justify-center shrink-0 border border-orange-500/20">
               <Wrench className="w-10 h-10" />
             </div>
             <div className="flex-1 text-center md:text-left">
-              <h3 className="text-xl font-bold text-white mb-2">Manage Room Maintenance Requests</h3>
+              <h3 className="text-xl font-bold text-white mb-2">Hostel Maintenance Tickets</h3>
               <p className="text-slate-400">
-                View all pending student issues from the roommate matching tables. Resolve facility, safety, or room condition reports directly.
+                View tickets assigned to you, start work, and mark issues as resolved. Track the full ticket lifecycle from submission to closure.
               </p>
             </div>
             <div className="w-full md:w-auto mt-4 md:mt-0">
-              <button className="w-full md:w-auto whitespace-nowrap bg-slate-800 hover:bg-slate-700 border border-slate-700 text-white px-8 py-3 rounded-lg font-medium transition-colors">
-                View Maintenance Log
+              <button className="w-full md:w-auto whitespace-nowrap bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] px-8 py-3 rounded-lg font-semibold transition-colors">
+                Open Maintenance
               </button>
             </div>
           </div>
