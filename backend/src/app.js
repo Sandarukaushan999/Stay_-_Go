@@ -17,7 +17,14 @@ export function createApp() {
 
   app.use(helmet())
   const allowedOrigins = Array.from(
-    new Set([env.CLIENT_URL, ...(env.CLIENT_URLS ?? []), 'http://localhost:5173', 'http://localhost:5174'])
+    new Set([
+      env.CLIENT_URL,
+      ...(env.CLIENT_URLS ?? []),
+      'http://localhost:5173',
+      'http://localhost:5174',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:5174',
+    ])
   )
   app.use(
     cors({

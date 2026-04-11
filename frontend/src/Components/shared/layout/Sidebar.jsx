@@ -42,11 +42,10 @@ export default function Sidebar() {
             <div className="px-2 pt-4 text-[11px] uppercase tracking-wide text-slate-500">Admin</div>
             <Item to="/admin">Admin Dashboard</Item>
             <Item to="/admin/users">User Management</Item>
-            <Item to="/admin/ride-monitoring">Ride Monitoring</Item>
+            <Item to="/admin/ride-dashboard">Ride Monitoring</Item>
           </>
         ) : null}
       </div>
     </aside>
   )
 }
-

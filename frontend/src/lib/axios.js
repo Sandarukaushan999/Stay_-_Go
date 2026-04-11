@@ -1,21 +1,52 @@
 import axios from 'axios'
 import { STORAGE_KEYS } from './constants'
 
+function normalizeBaseUrl(value) {
+  return String(value ?? '').trim().replace(/\/$/, '')
+}
+
 /**
  * Resolved API root (no trailing slash).
  * Dev default talks straight to the Node server (same as backend CORS for localhost:5173).
  * Set VITE_API_BASE_URL if the API is not on 127.0.0.1:5000.
  */
 export function getApiBaseURL() {
-  const env = import.meta.env.VITE_API_BASE_URL
-  if (typeof env === 'string' && env.trim() !== '') {
-    return env.trim().replace(/\/$/, '')
+  const env = normalizeBaseUrl(import.meta.env.VITE_API_BASE_URL)
+  if (env) {
+    return env
   }
   if (import.meta.env.DEV) {
     const port = String(import.meta.env.VITE_API_PORT ?? '5000').trim() || '5000'
     return `http://127.0.0.1:${port}/api`
   }
   return 'http://127.0.0.1:5000/api'
+}
+
+export function getSocketURL() {
+  const explicit = normalizeBaseUrl(import.meta.env.VITE_SOCKET_URL)
+  if (explicit) return explicit
+
+  const apiBase = getApiBaseURL()
+  if (/^https?:\/\//i.test(apiBase)) {
+    try {
+      return new URL(apiBase).origin
+    } catch {
+      // fall through
+    }
+  }
+
+  if (apiBase.startsWith('/')) {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin
+    }
+  }
+
+  if (import.meta.env.DEV) {
+    const port = String(import.meta.env.VITE_API_PORT ?? '5000').trim() || '5000'
+    return `http://127.0.0.1:${port}`
+  }
+
+  return 'http://127.0.0.1:5000'
 }
 
 /** True when the browser could not reach the API (backend down, wrong port, or proxy upstream missing). */

@@ -5,7 +5,7 @@ export function ProtectedRoute() {
   const status = useAuthStore((s) => s.status)
   const location = useLocation()
 
-  if (status === 'loading' || status === 'idle') {
+  if (status === 'loading') {
     return (
       <div className="min-h-screen grid place-items-center text-slate-300">
         Loading...
@@ -19,4 +19,3 @@ export function ProtectedRoute() {
 
   return <Outlet />
 }
-

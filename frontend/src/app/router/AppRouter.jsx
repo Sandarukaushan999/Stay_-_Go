@@ -53,6 +53,8 @@ export default function AppRouter() {
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
+      <Route path="/login" element={<Navigate to="/auth/login" replace />} />
+      <Route path="/register" element={<Navigate to="/auth/register" replace />} />
       <Route
         path="/auth/login"
         element={
@@ -101,6 +103,7 @@ export default function AppRouter() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/maintenance" element={<AdminLayout><MaintenanceDashboard /></AdminLayout>} />
           <Route path="/admin/users" element={<UserList />} />
+          <Route path="/admin/ride-monitoring" element={<Navigate to="/admin/ride-dashboard" replace />} />
           <Route path="/admin/rider-approvals" element={<RiderApprovalsTable />} />
           <Route path="/admin/live-trips" element={<LiveTripsTable />} />
           <Route path="/admin/ride-dashboard" element={<RideDashboardPage />} />

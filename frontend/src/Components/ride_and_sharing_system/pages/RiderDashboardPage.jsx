@@ -37,6 +37,7 @@ function formatDateTime(value) {
 }
 
 export default function RiderDashboardPage() {
+  const status = useAuthStore((s) => s.status)
   const user = useAuthStore((s) => s.user)
   const hydrateMe = useAuthStore((s) => s.hydrateMe)
   const [dash, setDash] = useState(null)
@@ -63,15 +64,16 @@ export default function RiderDashboardPage() {
   }, [])
 
   useEffect(() => {
+    if (status !== 'authed' || !user?.id) return
+
     let cancelled = false
     ;(async () => {
-      await hydrateMe()
       if (!cancelled) await loadDashboard()
     })()
     return () => {
       cancelled = true
     }
-  }, [hydrateMe, loadDashboard])
+  }, [status, user?.id, loadDashboard])
 
   async function onConfirmPickup(tripId) {
     if (!tripId || user?.role !== 'rider') return
@@ -115,9 +117,9 @@ export default function RiderDashboardPage() {
           <h2 className="text-lg font-semibold text-[#101312] sm:text-xl">Rider Workspace</h2>
           <button
             type="button"
-            onClick={() => {
-              hydrateMe()
-              loadDashboard()
+            onClick={async () => {
+              await hydrateMe({ force: true })
+              await loadDashboard()
             }}
             className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
           >
