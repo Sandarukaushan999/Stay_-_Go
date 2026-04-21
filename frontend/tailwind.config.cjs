@@ -43,6 +43,7 @@ const violetScale = {
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
+  darkMode: 'selector',
   theme: {
     extend: {
       colors: {
@@ -68,6 +69,20 @@ module.exports = {
         cyan: { ...violetScale },
         indigo: { ...violetScale },
         sky: { ...violetScale },
+        
+        // Semantic Theme Colors (matches palette: #FFFFFF/#101312/#BAF91A/#E2FF99/#876DFF)
+        theme: {
+          bg: 'var(--theme-bg)',
+          'bg-secondary': 'var(--theme-bg-secondary)',
+          card: 'var(--theme-card)',
+          border: 'var(--theme-border)',
+          accent: 'var(--theme-accent)',
+          'accent-hover': 'var(--theme-accent-hover)',
+          'accent-soft': 'var(--theme-accent-soft)',
+          highlight: 'var(--theme-highlight)',
+          text: 'var(--theme-text)',
+          'text-muted': 'var(--theme-text-muted)',
+        }
       },
     },
   },

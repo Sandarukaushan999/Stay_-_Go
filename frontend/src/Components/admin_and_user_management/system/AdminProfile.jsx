@@ -3,20 +3,9 @@ import { api } from '../../../lib/apiClient'
 import { useAuthStore } from '../../../app/store/authStore'
 import AdminLayout from '../layout/AdminLayout'
 import {
-  Loader2,
-  User,
-  Phone,
-  Shield,
-  Lock,
-  Bell,
-  Activity,
-  Save,
-  Upload,
-  Settings,
-  Smartphone,
-  Mail,
-  XCircle,
-  LogOut,
+  Loader2, User, Phone, Shield, Lock, Bell, Activity,
+  Save, Upload, Settings, Smartphone, Mail, XCircle, LogOut,
+  Eye, EyeOff, CheckCircle2,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
@@ -40,12 +29,31 @@ export default function AdminProfile() {
   const [logs, setLogs] = useState([])
 
   const [form, setForm] = useState({ fullName: '', phone: '', emergencyContact: '' })
+  const [formErrors, setFormErrors] = useState({})
   const [settings, setSettings] = useState({ ...defaultSettings })
   const [avatarDataUrl, setAvatarDataUrl] = useState(null)
   const fileInputRef = useRef(null)
 
   const [passForm, setPassForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
+  const [passErrors, setPassErrors] = useState({})
   const [passLoading, setPassLoading] = useState(false)
+  const [showPass, setShowPass] = useState({ current: false, new: false, confirm: false })
+
+  // Password strength
+  const newPass = passForm.newPassword
+  const passReqs = [
+    { label: 'At least 8 characters', met: newPass.length >= 8 },
+    { label: 'One uppercase letter', met: /[A-Z]/.test(newPass) },
+    { label: 'One lowercase letter', met: /[a-z]/.test(newPass) },
+    { label: 'One number', met: /\d/.test(newPass) },
+    { label: 'One special character', met: /[^A-Za-z0-9]/.test(newPass) },
+  ]
+  const metCount = passReqs.filter(r => r.met).length
+  const strength = newPass.length === 0 ? 0 : metCount <= 2 ? 1 : metCount <= 4 ? 2 : 3
+  const strengthLabel = ['', 'Weak', 'Good', 'Strong'][strength]
+  const strengthColor = ['', 'bg-rose-400', 'bg-amber-400', 'bg-[#BAF91A]'][strength]
+  const isPassValid = strength >= 2
+  const isConfirmValid = newPass === passForm.confirmPassword && passForm.confirmPassword.length > 0
 
   useEffect(() => {
     fetchProfileData()
@@ -113,9 +121,18 @@ export default function AdminProfile() {
     reader.readAsDataURL(f)
   }
 
+  const validateForm = () => {
+    const errs = {}
+    if (!form.fullName.trim()) errs.fullName = 'Full name is required'
+    if (form.phone && !/^\+?[\d\s\-()]{7,15}$/.test(form.phone)) errs.phone = 'Enter a valid phone number'
+    if (form.emergencyContact && !/^\+?[\d\s\-()]{7,15}$/.test(form.emergencyContact)) errs.emergencyContact = 'Enter a valid phone number'
+    setFormErrors(errs)
+    return Object.keys(errs).length === 0
+  }
+
   const handleSaveProfile = async (e) => {
     if (e) e.preventDefault()
-    if (!form.fullName?.trim()) return toast.error('Full name is required.')
+    if (!validateForm()) return
     setSaving(true)
     try {
       const body = { ...form, systemSettings: settings }
@@ -133,12 +150,12 @@ export default function AdminProfile() {
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault()
-    if (passForm.newPassword !== passForm.confirmPassword) {
-      return toast.error('New passwords do not match')
-    }
-    if (passForm.newPassword.length < 6) {
-      return toast.error('Password must be at least 6 characters')
-    }
+    const errs = {}
+    if (!passForm.currentPassword) errs.currentPassword = 'Current password is required'
+    if (!isPassValid) errs.newPassword = 'Password does not meet requirements'
+    if (!isConfirmValid) errs.confirmPassword = 'Passwords do not match'
+    setPassErrors(errs)
+    if (Object.keys(errs).length > 0) return
 
     setPassLoading(true)
     try {
@@ -146,8 +163,9 @@ export default function AdminProfile() {
         currentPassword: passForm.currentPassword,
         newPassword: passForm.newPassword,
       })
-      toast.success('Password updated')
+      toast.success('Password updated successfully!')
       setPassForm({ currentPassword: '', newPassword: '', confirmPassword: '' })
+      setPassErrors({})
       const logRes = await api.get('/admin/logs')
       if (logRes.data?.success && Array.isArray(logRes.data.logs)) setLogs(logRes.data.logs)
     } catch (err) {
@@ -254,40 +272,46 @@ export default function AdminProfile() {
                       type="text"
                       name="fullName"
                       value={form.fullName}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-[#101312]/18 bg-[#fafdf4] py-2.5 pl-10 pr-4 text-sm text-[#101312] outline-none transition focus:border-[#BAF91A] focus:ring-2 focus:ring-[#BAF91A]/35"
+                      onChange={e => { handleChange(e); setFormErrors(p=>({...p,fullName:''})) }}
+                      className={`w-full rounded-xl border py-2.5 pl-10 pr-4 text-sm text-[#101312] outline-none transition bg-[#fafdf4] focus:ring-2 ${
+                        formErrors.fullName ? 'border-rose-400 focus:border-rose-400 focus:ring-rose-200' : 'border-[#101312]/18 focus:border-[#BAF91A] focus:ring-[#BAF91A]/35'
+                      }`}
                     />
+                  {formErrors.fullName && <p className="mt-1 text-xs text-rose-500">{formErrors.fullName}</p>}
                   </div>
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">
-                    Mobile contact
-                  </label>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">Mobile contact</label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#101312]/40" />
                     <input
                       type="text"
                       name="phone"
                       value={form.phone}
-                      onChange={handleChange}
-                      placeholder="+94 …"
-                      className="w-full rounded-xl border border-[#101312]/18 bg-[#fafdf4] py-2.5 pl-10 pr-4 text-sm text-[#101312] outline-none transition focus:border-[#876DFF]/50 focus:ring-2 focus:ring-[#876DFF]/25"
+                      onChange={e => { handleChange(e); setFormErrors(p=>({...p,phone:''})) }}
+                      placeholder="+94 7X XXX XXXX"
+                      className={`w-full rounded-xl border py-2.5 pl-10 pr-4 text-sm text-[#101312] outline-none transition bg-[#fafdf4] focus:ring-2 ${
+                        formErrors.phone ? 'border-rose-400 focus:border-rose-400 focus:ring-rose-200' : 'border-[#101312]/18 focus:border-[#876DFF]/50 focus:ring-[#876DFF]/25'
+                      }`}
                     />
+                  {formErrors.phone && <p className="mt-1 text-xs text-rose-500">{formErrors.phone}</p>}
                   </div>
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">
-                    Emergency contact
-                  </label>
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">Emergency contact</label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#876DFF]/50" />
                     <input
                       type="text"
                       name="emergencyContact"
                       value={form.emergencyContact}
-                      onChange={handleChange}
-                      className="w-full rounded-xl border border-[#101312]/18 bg-[#fafdf4] py-2.5 pl-10 pr-4 text-sm text-[#101312] outline-none transition focus:border-[#876DFF]/50 focus:ring-2 focus:ring-[#876DFF]/20"
+                      onChange={e => { handleChange(e); setFormErrors(p=>({...p,emergencyContact:''})) }}
+                      placeholder="+94 7X XXX XXXX"
+                      className={`w-full rounded-xl border py-2.5 pl-10 pr-4 text-sm text-[#101312] outline-none transition bg-[#fafdf4] focus:ring-2 ${
+                        formErrors.emergencyContact ? 'border-rose-400 focus:border-rose-400 focus:ring-rose-200' : 'border-[#101312]/18 focus:border-[#876DFF]/50 focus:ring-[#876DFF]/20'
+                      }`}
                     />
+                  {formErrors.emergencyContact && <p className="mt-1 text-xs text-rose-500">{formErrors.emergencyContact}</p>}
                   </div>
                 </div>
               </div>
@@ -301,81 +325,105 @@ export default function AdminProfile() {
                 Security
               </h3>
 
-              <form
-                onSubmit={handlePasswordUpdate}
-                className="mb-6 grid grid-cols-1 gap-5 border-b border-[#101312]/10 pb-6 sm:grid-cols-2"
-              >
+              <form onSubmit={handlePasswordUpdate} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {/* Current password */}
                 <div className="sm:col-span-2">
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">
-                    Current password
-                  </label>
-                  <input
-                    type="password"
-                    name="currentPassword"
-                    placeholder="••••••••"
-                    value={passForm.currentPassword}
-                    onChange={handlePassChange}
-                    className="w-full rounded-xl border border-[#101312]/18 bg-[#fafdf4] px-4 py-2.5 text-sm text-[#101312] outline-none transition focus:border-[#101312]/35 focus:ring-2 focus:ring-[#BAF91A]/35"
-                  />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">Current Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#101312]/35" />
+                    <input
+                      type={showPass.current ? 'text' : 'password'}
+                      name="currentPassword"
+                      placeholder="••••••••"
+                      value={passForm.currentPassword}
+                      onChange={e => { handlePassChange(e); setPassErrors(p=>({...p,currentPassword:''})) }}
+                      className={`w-full rounded-xl border py-2.5 pl-10 pr-11 text-sm text-[#101312] outline-none transition bg-[#fafdf4] focus:ring-2 ${
+                        passErrors.currentPassword ? 'border-rose-400 focus:ring-rose-200' : 'border-[#101312]/18 focus:border-[#BAF91A] focus:ring-[#BAF91A]/35'
+                      }`}
+                    />
+                    <button type="button" onClick={() => setShowPass(p=>({...p,current:!p.current}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#101312]/40 hover:text-[#101312]">
+                      {showPass.current ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {passErrors.currentPassword && <p className="mt-1 text-xs text-rose-500">{passErrors.currentPassword}</p>}
                 </div>
+
+                {/* New password */}
                 <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">
-                    New password
-                  </label>
-                  <input
-                    type="password"
-                    name="newPassword"
-                    placeholder="••••••••"
-                    value={passForm.newPassword}
-                    onChange={handlePassChange}
-                    className="w-full rounded-xl border border-[#101312]/18 bg-[#fafdf4] px-4 py-2.5 text-sm text-[#101312] outline-none transition focus:border-[#101312]/35 focus:ring-2 focus:ring-[#BAF91A]/35"
-                  />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">New Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#101312]/35" />
+                    <input
+                      type={showPass.new ? 'text' : 'password'}
+                      name="newPassword"
+                      placeholder="••••••••"
+                      value={passForm.newPassword}
+                      onChange={e => { handlePassChange(e); setPassErrors(p=>({...p,newPassword:''})) }}
+                      className={`w-full rounded-xl border py-2.5 pl-10 pr-11 text-sm text-[#101312] outline-none transition bg-[#fafdf4] focus:ring-2 ${
+                        passErrors.newPassword ? 'border-rose-400 focus:ring-rose-200' : 'border-[#101312]/18 focus:border-[#BAF91A] focus:ring-[#BAF91A]/35'
+                      }`}
+                    />
+                    <button type="button" onClick={() => setShowPass(p=>({...p,new:!p.new}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#101312]/40 hover:text-[#101312]">
+                      {showPass.new ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {/* Strength bar */}
+                  {newPass.length > 0 && (
+                    <div className="mt-2">
+                      <div className="flex gap-1">
+                        {[1,2,3].map(i => <div key={i} className={`h-1.5 flex-1 rounded-full transition-all ${i <= strength ? strengthColor : 'bg-[#101312]/10'}`} />)}
+                      </div>
+                      <p className={`mt-1 text-[11px] font-semibold ${ strength===1?'text-rose-500':strength===2?'text-amber-500':'text-[#4a7c00]' }`}>{strengthLabel}</p>
+                    </div>
+                  )}
+                  {passErrors.newPassword && <p className="mt-1 text-xs text-rose-500">{passErrors.newPassword}</p>}
                 </div>
+
+                {/* Confirm password */}
                 <div>
-                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">
-                    Confirm new password
-                  </label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    placeholder="••••••••"
-                    value={passForm.confirmPassword}
-                    onChange={handlePassChange}
-                    className="w-full rounded-xl border border-[#101312]/18 bg-[#fafdf4] px-4 py-2.5 text-sm text-[#101312] outline-none transition focus:border-[#101312]/35 focus:ring-2 focus:ring-[#BAF91A]/35"
-                  />
+                  <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#101312]/55">Confirm New Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-[#101312]/35" />
+                    <input
+                      type={showPass.confirm ? 'text' : 'password'}
+                      name="confirmPassword"
+                      placeholder="••••••••"
+                      value={passForm.confirmPassword}
+                      onChange={e => { handlePassChange(e); setPassErrors(p=>({...p,confirmPassword:''})) }}
+                      className={`w-full rounded-xl border py-2.5 pl-10 pr-11 text-sm text-[#101312] outline-none transition bg-[#fafdf4] focus:ring-2 ${
+                        passErrors.confirmPassword ? 'border-rose-400 focus:ring-rose-200' : isConfirmValid ? 'border-[#BAF91A] focus:ring-[#BAF91A]/35' : 'border-[#101312]/18 focus:border-[#BAF91A] focus:ring-[#BAF91A]/35'
+                      }`}
+                    />
+                    <button type="button" onClick={() => setShowPass(p=>({...p,confirm:!p.confirm}))} className="absolute right-3 top-1/2 -translate-y-1/2 text-[#101312]/40 hover:text-[#101312]">
+                      {showPass.confirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  {passErrors.confirmPassword && <p className="mt-1 text-xs text-rose-500">{passErrors.confirmPassword}</p>}
                 </div>
-                <div className="pt-1 sm:col-span-2">
+
+                {/* Requirements + submit */}
+                <div className="sm:col-span-2">
+                  <div className="mb-4 grid grid-cols-1 gap-1 sm:grid-cols-2">
+                    {passReqs.map(r => (
+                      <div key={r.label} className={`flex items-center gap-1.5 text-xs ${ r.met ? 'text-[#4a7c00]' : 'text-[#101312]/40' }`}>
+                        <CheckCircle2 className={`h-3.5 w-3.5 ${ r.met ? 'text-[#4a7c00]' : 'text-[#101312]/25' }`} />
+                        {r.label}
+                      </div>
+                    ))}
+                  </div>
                   <button
                     type="submit"
-                    disabled={passLoading || !passForm.newPassword || !passForm.currentPassword}
-                    className="rounded-xl border border-[#101312]/15 bg-[#101312] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1a211f] disabled:cursor-not-allowed disabled:opacity-50"
+                    disabled={passLoading}
+                    className="rounded-xl bg-[#101312] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#1a211f] disabled:opacity-50"
                   >
-                    {passLoading ? 'Updating…' : 'Change password'}
+                    {passLoading ? 'Updating…' : 'Change Password'}
                   </button>
                 </div>
               </form>
-
-              <div className="flex items-center justify-between gap-4 rounded-xl bg-[#f9fce9] p-4">
-                <div className="pr-4">
-                  <div className="font-semibold text-[#101312]">Two-factor preference</div>
-                  <div className="mt-1 text-sm text-[#101312]/65">
-                    Use <strong className="text-[#101312]">Commit identity changes</strong> below to save with your
-                    other toggles.
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleToggle('twoFactorEnabled')}
-                  className={`relative h-6 w-12 shrink-0 rounded-full transition-colors ${settings.twoFactorEnabled ? 'bg-[#BAF91A]' : 'bg-[#101312]/15'}`}
-                >
-                  <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${settings.twoFactorEnabled ? 'translate-x-6' : 'translate-x-0.5'}`}
-                  />
-                </button>
-              </div>
             </div>
           </div>
 
+          {/* ── RIGHT COLUMN ── */}
           <div className="space-y-6">
             <div className="rounded-2xl border border-[#101312]/12 bg-white p-6 shadow-[0_10px_30px_rgba(16,19,18,0.06)]">
               <h3 className="mb-6 flex items-center gap-2 text-lg font-semibold text-[#101312]">
@@ -498,16 +546,37 @@ function ToggleRow({ icon, label, checked, onChange }) {
         <div className="shrink-0 rounded-lg bg-[#E2FF99]/90 p-2 text-[#101312]">{icon}</div>
         <div className="text-sm font-medium text-[#101312]/85">{label}</div>
       </div>
+
+      {/* Toggle track — w-12 = 48px, h-6 = 24px */}
       <button
         type="button"
         onClick={onChange}
-        className={`relative ml-2 h-5 w-10 shrink-0 rounded-full transition-colors ${checked ? 'bg-[#BAF91A]' : 'bg-[#101312]/12'}`}
+        role="switch"
+        aria-checked={checked}
+        style={{ position: 'relative', width: 48, height: 24, borderRadius: 999, flexShrink: 0,
+          backgroundColor: checked ? '#BAF91A' : 'rgba(16,19,18,0.2)',
+          boxShadow: checked ? '0 0 10px rgba(186,249,26,0.5)' : 'none',
+          transition: 'background-color 0.2s ease, box-shadow 0.2s ease',
+          border: 'none', cursor: 'pointer',
+        }}
       >
+        {/* Knob — 20px × 20px, 2px padding each side */}
         <span
-          className="absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform"
-          style={{ transform: checked ? 'translateX(22px)' : 'translateX(2px)' }}
+          style={{
+            position: 'absolute',
+            top: 2,
+            left: 2,
+            width: 20,
+            height: 20,
+            borderRadius: '50%',
+            backgroundColor: '#ffffff',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.25)',
+            transform: checked ? 'translateX(24px)' : 'translateX(0px)',
+            transition: 'transform 0.2s ease',
+          }}
         />
       </button>
     </div>
   )
 }
+

@@ -2,6 +2,7 @@ import { asyncHandler } from '../../common/utils/asyncHandler.js'
 import { ApiError } from '../../common/utils/ApiError.js'
 import { hashPassword, verifyPassword } from '../../common/utils/password.js'
 import { User } from './user.model.js'
+import fs from 'fs'
 import { StudentProfile } from '../../roommate/models/StudentProfile.js'
 import { RoommateNotification } from '../../roommate/models/RoommateNotification.js'
 import { IssueReport } from '../../roommate/models/IssueReport.js'
@@ -47,8 +48,11 @@ export const getMyDashboardStats = asyncHandler(async (req, res) => {
 })
 
 export const getMyAccountProfile = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.user.id).select('-passwordHash -__v').lean()
+  const user = await User.findById(req.user.id).select('-__v').lean()
   if (!user) throw new ApiError(404, 'User not found')
+
+  user.hasPassword = user.passwordHash !== 'GOOGLE_OAUTH_NO_PASSWORD'
+  delete user.passwordHash
 
   user.id = user._id.toString()
   delete user._id
@@ -89,15 +93,63 @@ export const updateMyAccountProfile = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'Profile updated successfully', user })
 })
 
+export const uploadProfileImage = asyncHandler(async (req, res) => {
+  if (!req.file) throw new ApiError(400, 'No image file provided')
+  const user = await User.findById(req.user.id)
+  if (!user) throw new ApiError(404, 'User not found')
+
+  if (user.profileImage && !user.profileImage.startsWith('http')) {
+    try {
+      if (fs.existsSync(user.profileImage)) fs.unlinkSync(user.profileImage)
+    } catch { /* ignore error */ }
+  }
+
+  const imagePath = req.file.path.replace(/\\/g, '/')
+  user.profileImage = imagePath
+  await user.save()
+
+  // Return fresh sanitized object to update frontend immediately
+  const freshUser = await User.findById(req.user.id).select('-passwordHash -__v').lean()
+  freshUser.id = freshUser._id.toString()
+  delete freshUser._id
+  res.json({ success: true, message: 'Profile picture updated', user: freshUser })
+})
+
+export const deleteProfileImage = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user.id)
+  if (!user) throw new ApiError(404, 'User not found')
+  if (!user.profileImage) throw new ApiError(400, 'No profile picture to remove')
+
+  if (!user.profileImage.startsWith('http')) {
+    try {
+      if (fs.existsSync(user.profileImage)) fs.unlinkSync(user.profileImage)
+    } catch { /* ignore error */ }
+  }
+
+  // Restore Google ID image if present, else null
+  // We can default back to googleId picture if we check Google or we can just null it out.
+  user.profileImage = null
+  await user.save()
+
+  const freshUser = await User.findById(req.user.id).select('-passwordHash -__v').lean()
+  freshUser.id = freshUser._id.toString()
+  delete freshUser._id
+
+  res.json({ success: true, message: 'Profile picture removed', user: freshUser })
+})
+
 export const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body
-  if (!currentPassword || !newPassword) throw new ApiError(400, 'Both current and new passwords are required')
+  if (!newPassword) throw new ApiError(400, 'New password is required')
 
   const user = await User.findById(req.user.id)
   if (!user) throw new ApiError(404, 'User not found')
 
-  const valid = await verifyPassword(currentPassword, user.passwordHash)
-  if (!valid) throw new ApiError(401, 'Incorrect current password')
+  if (user.passwordHash !== 'GOOGLE_OAUTH_NO_PASSWORD') {
+    if (!currentPassword) throw new ApiError(400, 'Current password is required')
+    const valid = await verifyPassword(currentPassword, user.passwordHash)
+    if (!valid) throw new ApiError(401, 'Incorrect current password')
+  }
 
   user.passwordHash = await hashPassword(newPassword)
   await user.save()

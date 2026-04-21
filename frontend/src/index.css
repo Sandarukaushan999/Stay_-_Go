@@ -2,77 +2,198 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-primary: #ffffff;
-  --color-secondary: #101312;
-  --color-third: #baf91a;
-  --color-gradient: #e2ff99;
+/* ═══════════════════════════════════════════════════════════════
+   LIGHT MODE  (default)
+   Palette: #FFFFFF · #101312 · #BAF91A · #E2FF99 · #876DFF
+═══════════════════════════════════════════════════════════════ */
+:root,
+[data-theme="light"] {
+  /* Legacy tokens (kept for backward-compatibility) */
+  --color-primary:    #ffffff;
+  --color-secondary:  #101312;
+  --color-third:      #baf91a;
+  --color-gradient:   #e2ff99;
   --color-additional: #876dff;
+
+  /* Admin-layout tokens */
+  --admin-bg:          linear-gradient(to bottom, #E2FF99, #f4ffd7, #FFFFFF);
+  --admin-surface:     #ffffff;
+  --admin-surface-2:   #fafdf4;
+  --admin-border:      rgba(16,19,18,0.12);
+  --admin-text:        #101312;
+  --admin-text-muted:  rgba(16,19,18,0.55);
+  --admin-sidebar-bg:  #101312;
+  --admin-sidebar-text:#ffffff;
+  --admin-input-bg:    #fafdf4;
+  --admin-card-shadow: 0 10px 30px rgba(16,19,18,0.06);
+
+  /* ─── Semantic UI tokens ─── */
+  --theme-bg:           #FFFFFF;
+  --theme-bg-secondary: #F5F5F5;
+  --theme-card:         #FFFFFF;
+  --theme-border:       rgba(16,19,18,0.12);
+  --theme-accent:       #BAF91A;
+  --theme-accent-hover: #a9ea00;
+  --theme-accent-soft:  #E2FF99;
+  --theme-highlight:    #876DFF;
+  --theme-text:         #101312;
+  --theme-text-muted:   rgba(16,19,18,0.55);
 }
 
-html,
-body,
-#root {
+/* ═══════════════════════════════════════════════════════════════
+   DARK MODE
+   Bg: #101312 / #1A1F1D · Accent: #BAF91A · Text: #e8efe8
+═══════════════════════════════════════════════════════════════ */
+[data-theme="dark"] {
+  /* Legacy tokens */
+  --color-primary:    #101312;
+  --color-secondary:  #e8efe8;
+  --color-third:      #baf91a;
+  --color-gradient:   #1a2a1a;
+  --color-additional: #a08cff;
+
+  /* Admin-layout tokens */
+  --admin-bg:          linear-gradient(to bottom, #0d1210, #111a10, #0f1a0e);
+  --admin-surface:     #1a2118;
+  --admin-surface-2:   #1f2a1e;
+  --admin-border:      rgba(186,249,26,0.12);
+  --admin-text:        #e8efe8;
+  --admin-text-muted:  rgba(232,239,232,0.55);
+  --admin-sidebar-bg:  #0d1210;
+  --admin-sidebar-text:#e8efe8;
+  --admin-input-bg:    #1f2a1e;
+  --admin-card-shadow: 0 10px 30px rgba(0,0,0,0.35);
+
+  /* ─── Semantic UI tokens ─── */
+  --theme-bg:           #101312;
+  --theme-bg-secondary: #1A1F1D;
+  --theme-card:         #1A1F1D;
+  --theme-border:       rgba(186,249,26,0.15);
+  --theme-accent:       #BAF91A;
+  --theme-accent-hover: #a9ea00;
+  --theme-accent-soft:  rgba(186,249,26,0.15);
+  --theme-highlight:    #876DFF;
+  --theme-text:         #e8efe8;
+  --theme-text-muted:   rgba(232,239,232,0.55);
+}
+
+/* ─── Smooth theme transitions ─── */
+*, *::before, *::after {
+  transition: background-color 0.3s ease, border-color 0.3s ease,
+              color 0.3s ease, box-shadow 0.3s ease;
+}
+.no-theme-transition,
+.no-theme-transition * {
+  transition: none !important;
+}
+
+html, body, #root {
   height: 100%;
 }
 
 body {
-  @apply bg-white text-slate-950;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
 }
 
+/* ─── Text selection ─── */
 @layer base {
   ::selection {
-    background: color-mix(in srgb, var(--color-third) 65%, var(--color-primary) 35%);
-    color: var(--color-secondary);
+    background: #BAF91A;
+    color: #101312;
   }
 }
 
+/* ─── Reusable component classes ─── */
 @layer components {
   .theme-card {
-    @apply rounded-2xl border border-slate-200 bg-white;
+    @apply rounded-2xl border border-[#E5E7EB] bg-white;
   }
-
+  .dark .theme-card {
+    @apply border-[rgba(186,249,26,0.12)] bg-[#1A1F1D];
+  }
   .theme-accent-btn {
     @apply rounded-xl bg-[#BAF91A] px-4 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00];
   }
-
   .theme-outline-btn {
     @apply rounded-xl border border-[#101312]/20 bg-white px-4 py-2 text-sm text-[#101312] transition hover:bg-[#E2FF99];
   }
 }
 
-/* Print styles — only show report content */
+/* ══════════════════════════════════════════════════════════════
+   DARK MODE — Override hardcoded Tailwind color classes
+══════════════════════════════════════════════════════════════ */
+
+/* Backgrounds */
+.dark .bg-white              { background-color: var(--admin-surface)   !important; }
+.dark .bg-\[\#fafdf4\]       { background-color: var(--admin-surface-2) !important; }
+.dark .bg-\[\#f9fce9\]       { background-color: var(--admin-surface-2) !important; }
+.dark .bg-\[\#f4ffd7\]       { background-color: #1a2a18                !important; }
+.dark .bg-\[\#E2FF99\]       { background-color: rgba(186,249,26,0.15)  !important; }
+.dark .bg-\[\#E2FF99\]\/80   { background-color: rgba(186,249,26,0.12)  !important; }
+
+/* Text */
+.dark .text-\[\#101312\]     { color: var(--admin-text)         !important; }
+.dark .text-\[\#101312\]\/70 { color: var(--admin-text-muted)   !important; }
+.dark .text-\[\#101312\]\/65 { color: var(--admin-text-muted)   !important; }
+.dark .text-\[\#101312\]\/55 { color: rgba(232,239,232,0.55)    !important; }
+.dark .text-\[\#101312\]\/50 { color: rgba(232,239,232,0.50)    !important; }
+.dark .text-\[\#101312\]\/45 { color: rgba(232,239,232,0.45)    !important; }
+.dark .text-\[\#101312\]\/40 { color: rgba(232,239,232,0.40)    !important; }
+.dark .text-\[\#101312\]\/35 { color: rgba(232,239,232,0.35)    !important; }
+.dark .text-\[\#101312\]\/85 { color: rgba(232,239,232,0.85)    !important; }
+
+/* Borders */
+.dark .border-\[\#101312\]\/12 { border-color: rgba(186,249,26,0.12) !important; }
+.dark .border-\[\#101312\]\/10 { border-color: rgba(186,249,26,0.10) !important; }
+.dark .border-\[\#101312\]\/15 { border-color: rgba(186,249,26,0.15) !important; }
+.dark .border-\[\#101312\]\/18 { border-color: rgba(186,249,26,0.12) !important; }
+.dark .border-\[\#101312\]\/08 { border-color: rgba(186,249,26,0.08) !important; }
+.dark .border-\[\#101312\]\/20 { border-color: rgba(186,249,26,0.18) !important; }
+
+/* Shadows */
+.dark .shadow-\[0_10px_30px_rgba\(16\,19\,18\,0\.06\)\] { box-shadow: 0 10px 30px rgba(0,0,0,0.4) !important; }
+.dark .shadow-\[0_10px_30px_rgba\(16\,19\,18\,0\.08\)\] { box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; }
+.dark .shadow-\[0_16px_40px_rgba\(16\,19\,18\,0\.04\)\] { box-shadow: 0 16px 40px rgba(0,0,0,0.4) !important; }
+
+/* Inputs */
+.dark input:not([type="file"]):not([type="checkbox"]):not([type="radio"]),
+.dark textarea,
+.dark select {
+  background-color: var(--admin-input-bg)  !important;
+  color:            var(--admin-text)      !important;
+  border-color:     var(--admin-border)    !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--admin-text-muted) !important;
+}
+
+/* Sidebar is always dark (#101312 in both modes) */
+.dark .bg-\[\#101312\] { background-color: #0a0f0d !important; }
+
+/* #BAF91A buttons always keep dark text */
+.dark .bg-\[\#BAF91A\]   { color: #101312 !important; }
+.dark .bg-\[\#BAF91A\] * { color: #101312 !important; }
+
+
+/* ──────────────────────────────────────────────────────────────
+   PRINT STYLES
+────────────────────────────────────────────────────────────── */
 @media print {
-  /* Hide EVERYTHING by default */
-  body * {
-    visibility: hidden;
-  }
+  body * { visibility: hidden; }
 
-  /* Only show elements marked for printing */
-  [data-print-show], [data-print-show] * {
-    visibility: visible;
-  }
+  [data-print-show],
+  [data-print-show] * { visibility: visible; }
 
-  /* Position the printable area at top */
   [data-print-show] {
     position: absolute;
-    left: 0;
-    top: 0;
+    left: 0; top: 0;
     width: 100%;
   }
 
-  /* Hide elements explicitly marked to hide */
-  [data-print-hide="true"] {
-    display: none !important;
-  }
+  [data-print-hide="true"] { display: none !important; }
 
-  /* Clean background */
-  body, html {
-    background: white !important;
-  }
-
-  /* Remove shadows */
-  * {
-    box-shadow: none !important;
-  }
+  body, html { background: white !important; }
+  * { box-shadow: none !important; }
 }

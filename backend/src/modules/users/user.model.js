@@ -60,6 +60,12 @@ const UserSchema = new mongoose.Schema(
     is2FAEnabled: { type: Boolean, default: false },
     otp: { type: String, default: null },
     otpExpires: { type: Date, default: null },
+
+    // ── Google OAuth ──
+    googleId:      { type: String, default: null, sparse: true, index: true },
+    googleEmail:   { type: String, default: null },
+    googleName:    { type: String, default: null },
+    googlePicture: { type: String, default: null },
   },
   { timestamps: true }
 )

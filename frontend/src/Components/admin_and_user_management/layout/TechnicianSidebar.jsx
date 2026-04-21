@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const base =
-  'block rounded-xl px-3 py-2 text-sm transition border border-transparent hover:bg-slate-900 hover:border-slate-800'
+  'block rounded-xl px-3 py-2 text-sm transition-all duration-300 border border-transparent'
 
 function Item({ to, children, end }) {
   return (
@@ -9,8 +9,11 @@ function Item({ to, children, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `${base} ${isActive ? 'bg-slate-900 border-slate-800 text-white' : 'text-slate-300'}`
+        `${base} ${isActive ? 'bg-[var(--admin-surface-hover)] border-[var(--admin-border)]' : ''}`
       }
+      style={({ isActive }) => ({
+        color: isActive ? 'var(--admin-text)' : 'var(--admin-text-muted)'
+      })}
     >
       {children}
     </NavLink>
@@ -19,16 +22,16 @@ function Item({ to, children, end }) {
 
 function Section({ title }) {
   return (
-    <div className="px-2 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wide text-slate-500">{title}</div>
+    <div className="px-2 pt-4 pb-1 text-[11px] font-bold uppercase tracking-wide transition-colors duration-300" style={{ color: 'var(--admin-text-muted)' }}>{title}</div>
   )
 }
 
 export default function TechnicianSidebar() {
   return (
-    <aside className="w-72 shrink-0 border-r border-slate-800 bg-slate-950 flex flex-col h-screen sticky top-0">
-      <div className="p-4 shrink-0 border-b border-slate-800/50">
-        <div className="text-lg font-bold text-white">Technician Portal</div>
-        <div className="text-xs font-semibold text-slate-400">Maintenance & Technical</div>
+    <aside className="w-72 shrink-0 border-r flex flex-col h-screen sticky top-0 transition-colors duration-300" style={{ background: 'var(--admin-surface-2)', borderColor: 'var(--admin-border)' }}>
+      <div className="p-4 shrink-0 border-b transition-colors duration-300" style={{ borderColor: 'var(--admin-border)' }}>
+        <div className="text-lg font-bold transition-colors duration-300" style={{ color: 'var(--admin-text)' }}>Technician Portal</div>
+        <div className="text-xs font-semibold transition-colors duration-300" style={{ color: 'var(--admin-text-muted)' }}>Maintenance & Technical</div>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1 pb-16 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-slate-800 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-700 transition-colors">
@@ -60,6 +63,7 @@ export default function TechnicianSidebar() {
         <Item to="/technician/verification">Documents & Verification</Item>
         <Item to="/technician/notifications">Notifications</Item>
         <Item to="/technician/security">Security Settings</Item>
+        <Item to="/technician/appearance">Appearance Settings</Item>
 
       </div>
     </aside>

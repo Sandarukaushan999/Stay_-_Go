@@ -78,9 +78,13 @@ export async function login({ email, password }) {
 
 export function sanitizeUser(userDoc) {
   const u = userDoc.toObject ? userDoc.toObject() : userDoc
+  const passwordCheck = u.passwordHash
   // eslint-disable-next-line no-unused-vars
   const { passwordHash, __v, ...safe } = u
   safe.id = safe._id?.toString?.() ?? safe._id
   delete safe._id
+  if (passwordCheck !== undefined) {
+    safe.hasPassword = passwordCheck !== 'GOOGLE_OAUTH_NO_PASSWORD'
+  }
   return safe
 }

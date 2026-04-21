@@ -1,0 +1,20 @@
+{
+  "dashboardSettings": {
+    "title": "උපකරණ පුවරු සැකසුම්",
+    "subtitle": "ඔබගේ පරිපාලක අත්දැකීම සඳහා මනාප. ගමන බෙදාගැනීමේ වැඩබිම් හැඩගැන්වීම් වලට ගැලපේ.",
+    "appearance": "පෙනුම",
+    "colorTheme": "වර්ණ තේමාව",
+    "dark": "අඳුරු",
+    "darkDesc": "මෙහෙයුම් සඳහා පෙරනිමිය",
+    "light": "ආලෝකය",
+    "lightDesc": "දීප්තිමත් පැනල",
+    "systemLanguage": "පද්ධති භාෂාව",
+    "alertPreferences": "ඇඟවීම් මනාප",
+    "emailAlerts": "විද්‍යුත් තැපැල් පද්ධති ඇඟවීම්",
+    "emailAlertsDesc": "සේවාදායක ගැටළු, SOS, සහ තීරණාත්මක සිදුවීම්.",
+    "smsEscalation": "SMS හරහා දැනුම්දීම්",
+    "smsEscalationDesc": "SMS හරහා තීරණාත්මක ගමන් ඇඟවීම්.",
+    "saveSettings": "සැකසුම් සුරකින්න",
+    "saving": "සුරකිමින්…"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "dashboardSettings": {
+    "title": "Dashboard Settings",
+    "subtitle": "Preferences for your admin experience. Matches Ride Sharing Workspace styling.",
+    "appearance": "Appearance",
+    "colorTheme": "Color theme",
+    "dark": "Dark",
+    "darkDesc": "Default for operations",
+    "light": "Light",
+    "lightDesc": "Brighter panels",
+    "systemLanguage": "System language",
+    "alertPreferences": "Alert preferences",
+    "emailAlerts": "Email system alerts",
+    "emailAlertsDesc": "Server issues, SOS, and critical events.",
+    "smsEscalation": "SMS escalation",
+    "smsEscalationDesc": "Critical ride-sharing alerts via SMS.",
+    "saveSettings": "Save settings",
+    "saving": "Saving…"
+  }
+}

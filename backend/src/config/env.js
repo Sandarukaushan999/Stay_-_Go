@@ -20,6 +20,9 @@ export const env = {
   MONGO_FALLBACK_URI: process.env.MONGO_FALLBACK_URI ?? null,
   JWT_SECRET: required('JWT_SECRET'),
   JWT_TTL: process.env.JWT_TTL ?? '7d',
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ?? '',
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ?? '',
+  GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL ?? 'http://localhost:5000/auth/google/callback',
   // Default: allow public signup in non-production unless explicitly disabled.
   PUBLIC_REGISTER:
     process.env.PUBLIC_REGISTER === 'true'

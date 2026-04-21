@@ -3,406 +3,679 @@ import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../app/store/authStore';
 import { createApiClient } from '../lib/axios';
 import toast from 'react-hot-toast';
-import { User, Phone, MapPin, Loader2, Shield, Calendar, LogOut, ShieldCheck, ShieldAlert } from 'lucide-react';
+import {
+  User, Phone, MapPin, Loader2, Shield, ShieldCheck, ShieldAlert, Calendar,
+  LogOut, Mail, CheckCircle2, XCircle, Lock,
+  Eye, EyeOff
+} from 'lucide-react';
+import GoogleAuthConnect from '../Components/admin_and_user_management/users/GoogleAuthConnect';
+import ProfileImageCropper from '../Components/admin_and_user_management/users/ProfileImageCropper';
 
 const api = createApiClient({ getToken: () => useAuthStore.getState().token });
 
+/* ── Role helpers ── */
+const ROLE_LABELS = {
+  student: 'Student',
+  rider: 'Rider',
+  technician: 'Technician',
+  admin: 'Admin',
+  super_admin: 'Super Admin',
+};
+
+const ROLE_COLORS = {
+  student: 'bg-[#E2FF99] text-[#3a4a00]',
+  rider:   'bg-blue-100 text-blue-700',
+  technician: 'bg-orange-100 text-orange-700',
+  admin:   'bg-[#876DFF]/15 text-[#5b4ccc]',
+  super_admin: 'bg-[#876DFF]/25 text-[#5b4ccc]',
+};
+
+function getInitials(name = '') {
+  return name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase() || 'U';
+}
+
+function resolveImageSrc(profileImage, googlePicture) {
+  // Prefer uploaded profileImage; fall back to Google picture
+  const src = profileImage || googlePicture || null;
+  if (!src) return null;
+  if (src.startsWith('http')) return src;
+  const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api$/, '');
+  return `${base}/${src.replace(/^\//, '')}`;
+}
+
+/* ── Shared label ── */
+function FieldLabel({ children }) {
+  return (
+    <label className="block text-[11px] font-semibold uppercase tracking-[0.15em] text-[#101312]/55 mb-1.5">
+      {children}
+    </label>
+  );
+}
+
+/* ── Styled input ── */
+function StyledInput({ icon: Icon, iconColor = 'text-[#101312]/35', rightElement, ...props }) {
+  return (
+    <div className="relative group">
+      {Icon && (
+        <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+          <Icon className={`h-4 w-4 transition-colors group-focus-within:text-[#BAF91A] ${iconColor}`} />
+        </span>
+      )}
+      <input
+        {...props}
+        className={[
+          'w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2.5 text-sm text-[#101312]',
+          'outline-none transition-all duration-150',
+          'focus:border-[#BAF91A] focus:ring-2 focus:ring-[#BAF91A]/30',
+          'placeholder:text-[#101312]/30',
+          Icon ? 'pl-10' : '',
+          rightElement ? 'pr-11' : '',
+          props.className || '',
+        ].join(' ')}
+      />
+      {rightElement && (
+        <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center">
+          {rightElement}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ── Styled select ── */
+function StyledSelect({ children, ...props }) {
+  return (
+    <select
+      {...props}
+      className="w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2.5 text-sm text-[#101312] outline-none transition-all duration-150 appearance-none focus:border-[#BAF91A] focus:ring-2 focus:ring-[#BAF91A]/30"
+    >
+      {children}
+    </select>
+  );
+}
+
+/* ── Styled textarea ── */
+function StyledTextarea({ icon: Icon, ...props }) {
+  return (
+    <div className="relative group">
+      {Icon && (
+        <span className="absolute top-3 left-3.5 pointer-events-none">
+          <Icon className="h-4 w-4 text-[#101312]/35" />
+        </span>
+      )}
+      <textarea
+        {...props}
+        className={[
+          'w-full rounded-xl border border-[#101312]/15 bg-white px-3 py-2.5 text-sm text-[#101312] resize-none',
+          'outline-none transition-all duration-150',
+          'focus:border-[#BAF91A] focus:ring-2 focus:ring-[#BAF91A]/30',
+          'placeholder:text-[#101312]/30',
+          Icon ? 'pl-10' : '',
+        ].join(' ')}
+      />
+    </div>
+  );
+}
+
+/* ── White card ── */
+function Card({ children, className = '' }) {
+  return (
+    <div
+      className={[
+        'rounded-[20px] border border-[#101312]/10 bg-white',
+        'shadow-[0_8px_32px_rgba(16,19,18,0.07)]',
+        className,
+      ].join(' ')}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ── Section heading ── */
+function SectionHead({ label, title, icon: Icon, iconBg = 'bg-[#BAF91A]', iconColor = 'text-[#101312]' }) {
+  return (
+    <div className="mb-5 pb-4 border-b border-[#101312]/8">
+      {label && (
+        <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#876DFF] mb-0.5">{label}</p>
+      )}
+      <div className="flex items-center gap-2.5">
+        {Icon && (
+          <span className={`inline-flex h-8 w-8 items-center justify-center rounded-xl ${iconBg} ${iconColor}`}>
+            <Icon className="h-4 w-4" />
+          </span>
+        )}
+        <h3 className="text-base font-bold text-[#101312]">{title}</h3>
+      </div>
+    </div>
+  );
+}
+
+/* ════════════════════════════════════════════════════════════
+   Main page
+   ════════════════════════════════════════════════════════════ */
 export default function UserProfilePage() {
-    const { user, hydrateMe, logout } = useAuthStore();
-    const navigate = useNavigate();
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+  const { user, hydrateMe, logout } = useAuthStore();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Password Update States
+  const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passwordErrors, setPasswordErrors] = useState({});
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+  const [newPasswordTouched, setNewPasswordTouched] = useState(false);
+  
+  // Real-time password validation logic
+  const pass = passwordState.newPassword;
+  const passwordReqs = [
+    { label: 'At least 8 characters long', met: pass.length >= 8 },
+    { label: 'One uppercase letter', met: /[A-Z]/.test(pass) },
+    { label: 'One lowercase letter', met: /[a-z]/.test(pass) },
+    { label: 'One number', met: /\d/.test(pass) },
+    { label: 'One special character', met: /[^A-Za-z0-9]/.test(pass) },
+  ];
+  
+  const metCount = passwordReqs.filter(r => r.met).length;
+  let strengthLevel = 0; // 0 = empty, 1 = weak, 2 = good, 3 = very strong
+  if (pass.length > 0) {
+    if (metCount <= 2) strengthLevel = 1;
+    else if (metCount <= 4) strengthLevel = 2;
+    else if (metCount === 5) strengthLevel = 3;
+  }
+  const isNewPasswordValid = strengthLevel >= 2;
+  const isConfirmValid = pass === passwordState.confirmPassword && passwordState.confirmPassword.length > 0;
+  
+  const canSubmitPassword = isNewPasswordValid && isConfirmValid && (user?.hasPassword === false || passwordState.currentPassword.length > 0);
+
+  const [form, setForm] = useState({
+    fullName: '',
+    phone: '',
+    emergencyContact: '',
+    studentId: '',
+    gender: '',
+    address: '',
+  });
+
+  useEffect(() => { fetchProfile(); }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const { data } = await api.get('/users/profile/me');
+      if (data.success && data.user) {
+        setForm({
+          fullName: data.user.fullName || '',
+          phone: data.user.phone || '',
+          emergencyContact: data.user.emergencyContact || '',
+          studentId: data.user.studentId || '',
+          gender: data.user.gender || '',
+          address: data.user.address || '',
+        });
+      }
+    } catch {
+      toast.error('Failed to load profile data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.fullName.trim()) return toast.error('Full Name is required');
+    setSaving(true);
+    try {
+      const { data } = await api.put('/users/profile/me', form);
+      if (data.success) {
+        toast.success('Profile updated successfully!');
+        await hydrateMe();
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
     
-    // 2FA States
-    const [is2FAEnabled, setIs2FAEnabled] = useState(false);
-    const [twoFALoading, setTwoFALoading] = useState(false);
-    const [showOtpInput, setShowOtpInput] = useState(false);
-    const [otp, setOtp] = useState('');
-    const [disableMode, setDisableMode] = useState(false);
-    const [password, setPassword] = useState('');
-
-    const [form, setForm] = useState({
-        fullName: '',
-        phone: '',
-        emergencyContact: '',
-        studentId: '',
-        gender: '',
-        address: ''
-    });
-
-    useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    useEffect(() => {
-        if (user) {
-            setIs2FAEnabled(Boolean(user.is2FAEnabled));
-        }
-    }, [user]);
-
-    const fetchProfile = async () => {
-        try {
-            const { data } = await api.get('/users/profile/me');
-            if (data.success && data.user) {
-                setForm({
-                    fullName: data.user.fullName || '',
-                    phone: data.user.phone || '',
-                    emergencyContact: data.user.emergencyContact || '',
-                    studentId: data.user.studentId || '',
-                    gender: data.user.gender || '',
-                    address: data.user.address || ''
-                });
-            }
-        } catch (error) {
-            toast.error('Failed to load profile data');
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setForm((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        if (!form.fullName.trim()) {
-            return toast.error('Full Name is required');
-        }
-
-        setSaving(true);
-        try {
-            const { data } = await api.put('/users/profile/me', form);
-            if (data.success) {
-                toast.success('Profile updated successfully!');
-                await hydrateMe();
-            }
-        } catch (error) {
-            const msg = error.response?.data?.message || 'Failed to update profile';
-            toast.error(msg);
-        } finally {
-            setSaving(false);
-        }
-    };
-
-    // 2FA Endpoints Logic
-    const handleEnable2FA = async () => {
-        setTwoFALoading(true);
-        try {
-            const res = await api.post('/2fa/enable');
-            toast.success(res.data.message || 'OTP sent to your email');
-            setShowOtpInput(true);
-            setDisableMode(false);
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Failed to initiate 2FA');
-        } finally {
-            setTwoFALoading(false);
-        }
-    };
-
-    const handleVerifyOTP = async () => {
-        if (!otp) return toast.error('Please enter the OTP');
-        setTwoFALoading(true);
-        try {
-            const res = await api.post('/2fa/verify-enable', { otp });
-            toast.success(res.data.message || '2FA enabled successfully');
-            setShowOtpInput(false);
-            setOtp('');
-            setIs2FAEnabled(true);
-            hydrateMe();
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Invalid OTP');
-        } finally {
-            setTwoFALoading(false);
-        }
-    };
-
-    const handleDisable2FA = async () => {
-        if (!disableMode) {
-            setDisableMode(true);
-            return;
-        }
-
-        if (!password) return toast.error('Password is required to disable 2FA');
-        setTwoFALoading(true);
-        try {
-            const res = await api.post('/2fa/disable', { password });
-            toast.success(res.data.message || '2FA disabled successfully');
-            setDisableMode(false);
-            setPassword('');
-            setIs2FAEnabled(false);
-            hydrateMe();
-        } catch (error) {
-            toast.error(error.response?.data?.message || 'Invalid password');
-        } finally {
-            setTwoFALoading(false);
-        }
-    };
-
-    if (loading) {
-        return (
-            <div className="flex h-64 items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-            </div>
-        );
+    const newErrors = {};
+    if (user?.hasPassword !== false && !passwordState.currentPassword) {
+      newErrors.currentPassword = 'Current password is required';
+    }
+    if (!isNewPasswordValid) {
+      newErrors.newPassword = 'New password does not meet all requirements';
+    }
+    if (!isConfirmValid) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
+    setPasswordErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
+    
+    setIsChangingPassword(true);
+    try {
+      const payload = {
+        newPassword: passwordState.newPassword,
+        ...(user?.hasPassword !== false && { currentPassword: passwordState.currentPassword })
+      };
+      const res = await api.put('/users/profile/password', payload);
+      toast.success(res.data.message || 'Password updated successfully');
+      setPasswordState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      setPasswordErrors({});
+      await hydrateMe(); // refresh user info to flip hasPassword flag
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update password');
+      if (err.response?.data?.message?.toLowerCase().includes('current password')) {
+        setPasswordErrors({ currentPassword: err.response.data.message });
+      }
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  /* ── Loading ── */
+  if (loading) {
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Account Settings</h1>
-                <p className="text-slate-400">Manage your global profile and contact preferences.</p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Sidebar Info */}
-                <div className="lg:col-span-1 space-y-6">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center shadow-sm">
-                        <div className="w-24 h-24 rounded-full bg-emerald-500/10 text-emerald-500 mx-auto flex items-center justify-center text-4xl font-bold mb-4">
-                            {user?.fullName?.charAt(0) || 'U'}
-                        </div>
-                        <h2 className="text-xl font-bold text-white mb-1">{user?.fullName}</h2>
-                        <div className="text-slate-400 text-sm mb-4">{user?.email}</div>
-                        
-                        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 text-xs font-semibold text-slate-300 uppercase tracking-wider">
-                            <Shield className="w-3.5 h-3.5" />
-                            {user?.role}
-                        </div>
-                    </div>
-
-                    <button 
-                        onClick={() => {
-                            logout();
-                            navigate('/auth/login');
-                        }}
-                        className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-rose-500/20 text-rose-400 hover:bg-rose-500/10 font-medium transition-colors"
-                    >
-                        <LogOut className="w-5 h-5" />
-                        Sign Out
-                    </button>
-                </div>
-
-                {/* Form Area */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-white mb-6 border-b border-slate-800 pb-4">Personal Information</h3>
-                        
-                        <form onSubmit={handleSubmit} className="space-y-5">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Full Name</label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <User className="h-5 w-5 text-slate-500" />
-                                    </div>
-                                    <input 
-                                        type="text" 
-                                        name="fullName"
-                                        value={form.fullName}
-                                        onChange={handleChange}
-                                        className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Phone Number</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Phone className="h-5 w-5 text-slate-500" />
-                                        </div>
-                                        <input 
-                                            type="text" 
-                                            name="phone"
-                                            value={form.phone}
-                                            onChange={handleChange}
-                                            placeholder="+94 77 123 4567"
-                                            className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Emergency Contact</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Phone className="h-5 w-5 text-rose-500/70" />
-                                        </div>
-                                        <input 
-                                            type="text" 
-                                            name="emergencyContact"
-                                            value={form.emergencyContact}
-                                            onChange={handleChange}
-                                            placeholder="Parent/Guardian Number"
-                                            className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Gender</label>
-                                    <select
-                                        name="gender"
-                                        value={form.gender}
-                                        onChange={handleChange}
-                                        className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block p-3 outline-none transition-all appearance-none"
-                                    >
-                                        <option value="">Prefer not to say</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1.5">Student ID (Optional)</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Calendar className="h-5 w-5 text-slate-500" />
-                                        </div>
-                                        <input 
-                                            type="text" 
-                                            name="studentId"
-                                            value={form.studentId}
-                                            onChange={handleChange}
-                                            className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 outline-none transition-all"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1.5">Home Address</label>
-                                <div className="relative">
-                                    <div className="absolute top-3 left-3 pointer-events-none">
-                                        <MapPin className="h-5 w-5 text-slate-500" />
-                                    </div>
-                                    <textarea 
-                                        name="address"
-                                        value={form.address}
-                                        onChange={handleChange}
-                                        rows={3}
-                                        className="w-full bg-slate-950 border border-slate-800 text-white rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 block pl-10 p-3 outline-none transition-all"
-                                        placeholder="Full residential address"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="pt-4 flex justify-end">
-                                <button 
-                                    type="submit" 
-                                    disabled={saving}
-                                    className="bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-emerald-500/20 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {saving ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-
-                    {/* Security & 2FA Container */}
-                    <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-sm">
-                        <h3 className="text-lg font-bold text-white mb-2 border-b border-slate-800 pb-4 flex items-center gap-2">
-                            <Shield className="w-5 h-5 text-violet-500" />
-                            Security Settings
-                        </h3>
-                        <p className="text-slate-400 text-sm mb-6 mt-4">Manage Two-Factor Authentication to keep your account secure.</p>
-                        
-                        <div className="bg-slate-950 border border-slate-800 rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-full ${is2FAEnabled ? 'bg-emerald-500/10 text-emerald-500' : 'bg-slate-800 text-slate-500'}`}>
-                                    {is2FAEnabled ? <ShieldCheck className="w-6 h-6" /> : <ShieldAlert className="w-6 h-6" />}
-                                </div>
-                                <div>
-                                    <h4 className="font-bold text-white text-lg">Two-Factor Authentication</h4>
-                                    <p className={`font-semibold text-sm ${is2FAEnabled ? 'text-emerald-500' : 'text-slate-500'}`}>
-                                        Status: {is2FAEnabled ? 'Enabled' : 'Disabled'}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div>
-                                {!is2FAEnabled ? (
-                                    <button
-                                        type="button"
-                                        onClick={handleEnable2FA}
-                                        disabled={twoFALoading || showOtpInput}
-                                        className="bg-violet-600 hover:bg-violet-500 text-white px-5 py-2.5 rounded-xl font-semibold transition-colors shadow-sm disabled:opacity-50 inline-flex"
-                                    >
-                                        Enable 2FA
-                                    </button>
-                                ) : (
-                                    <button
-                                        type="button"
-                                        onClick={() => setDisableMode(true)}
-                                        disabled={twoFALoading || disableMode}
-                                        className="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 px-5 py-2.5 rounded-xl font-semibold transition-colors disabled:opacity-50"
-                                    >
-                                        Disable 2FA
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Inline OTP Input Modal/Section for Enabling */}
-                        {showOtpInput && !is2FAEnabled && (
-                            <div className="mt-4 bg-violet-500/10 border border-violet-500/20 p-5 rounded-2xl flex flex-col gap-3">
-                                <h4 className="font-bold text-violet-400 text-sm">Verify your 2FA OTP</h4>
-                                <p className="text-xs text-violet-300/70">We've sent a 6-digit verification code to your email. Enter it below to confirm activation.</p>
-                                <div className="flex max-w-sm gap-2">
-                                    <input
-                                        type="text"
-                                        value={otp}
-                                        onChange={(e) => setOtp(e.target.value)}
-                                        placeholder="123456"
-                                        maxLength={6}
-                                        className="flex-1 bg-slate-950 border border-violet-500/30 text-white font-mono tracking-widest text-center focus:ring-violet-500 rounded-xl px-4 py-2"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleVerifyOTP}
-                                        disabled={twoFALoading}
-                                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl font-semibold shadow-sm disabled:opacity-50"
-                                    >
-                                        Verify
-                                    </button>
-                                </div>
-                                <button type="button" onClick={() => setShowOtpInput(false)} className="text-left text-xs font-semibold text-violet-400 hover:text-violet-300">Cancel Setup</button>
-                            </div>
-                        )}
-
-                        {/* Inline Section for Disabling */}
-                        {disableMode && is2FAEnabled && (
-                            <div className="mt-4 bg-slate-950 border border-slate-800 p-5 rounded-2xl flex flex-col gap-3">
-                                <h4 className="font-bold text-slate-200 text-sm">Disable Two-Factor Authentication</h4>
-                                <p className="text-xs text-slate-500">Please confirm your current password to disable 2FA security.</p>
-                                <div className="flex max-w-sm gap-2">
-                                    <input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Your Password"
-                                        className="flex-1 bg-slate-900 border border-slate-700 text-white focus:ring-rose-500 rounded-xl px-4 py-2"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={handleDisable2FA}
-                                        disabled={twoFALoading}
-                                        className="bg-rose-600 hover:bg-rose-500 text-white px-4 py-2 rounded-xl font-semibold shadow-sm disabled:opacity-50"
-                                    >
-                                        Confirm
-                                    </button>
-                                </div>
-                                <button type="button" onClick={() => { setDisableMode(false); setPassword(''); }} className="text-left text-xs font-semibold text-slate-500 hover:text-slate-400">Cancel</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: 'linear-gradient(135deg, #E2FF99 0%, #f4ffd6 60%, #FFFFFF 100%)' }}
+      >
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-12 w-12 rounded-full bg-[#BAF91A] flex items-center justify-center shadow-[0_0_24px_rgba(186,249,26,0.4)]">
+            <Loader2 className="w-6 h-6 animate-spin text-[#101312]" />
+          </div>
+          <p className="text-sm font-semibold text-[#101312]/65">Loading profile…</p>
         </div>
+      </div>
     );
+  }
+
+  const initials = getInitials(user?.fullName);
+  // Use uploaded profileImage first, then fall back to Google picture URL
+  const imgSrc = resolveImageSrc(user?.profileImage, user?.googlePicture);
+  const roleLabel = ROLE_LABELS[user?.role] || user?.role || 'User';
+  const roleBadgeCls = ROLE_COLORS[user?.role] || 'bg-[#101312]/8 text-[#101312]';
+  const showSecuritySettings = user?.role !== 'technician';
+
+  /* ════════════════════════════════════════════
+     RENDER
+     ════════════════════════════════════════════ */
+  return (
+    <div
+      className="min-h-screen"
+      style={{
+        background: 'linear-gradient(135deg, #E2FF99 0%, #f4ffd6 55%, #FFFFFF 100%)',
+        fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif',
+      }}
+    >
+      <div className="mx-auto max-w-5xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">
+
+        {/* ── Page header ── */}
+        <div className="mb-8">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#876DFF] mb-1">
+            Stay &amp; Go · Account
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-[#101312] sm:text-4xl">
+            Profile Settings
+          </h1>
+          <p className="mt-1.5 text-sm text-[#101312]/65">
+            Manage your personal information and security preferences.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[268px_1fr]">
+
+          {/* ══════════════════════════════
+              LEFT — Profile card
+              ══════════════════════════════ */}
+          <aside className="space-y-4">
+
+            {/* 1. Identity Card */}
+            <div className="rounded-[24px] border border-[#d6e9aa] bg-gradient-to-br from-[#E2FF99] via-[#f4ffd6] to-[#FFFFFF] shadow-[0_16px_40px_rgba(16,19,18,0.08)] p-6 pb-7 text-center">
+              {/* Avatar / Cropper */}
+              <ProfileImageCropper 
+                imgSrc={imgSrc} 
+                initials={initials} 
+                onUploadSuccess={fetchProfile} 
+              />
+
+              {/* Name */}
+              <h2 className="text-xl font-bold text-[#101312] leading-tight">{user?.fullName}</h2>
+
+              {/* Email */}
+              <div className="mt-1.5 flex items-center justify-center gap-1.5 text-sm text-[#101312]/60">
+                <Mail className="h-3.5 w-3.5" />
+                <span className="truncate">{user?.email}</span>
+              </div>
+
+              {/* Role badge */}
+              <div
+                className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-wider ${roleBadgeCls}`}
+              >
+                <Shield className="w-3.5 h-3.5" />
+                {roleLabel}
+              </div>
+            </div>
+
+            {/* 2. Security Status Card */}
+            {showSecuritySettings && (
+              <div className="rounded-[24px] border border-[#101312]/10 bg-white shadow-[0_16px_40px_rgba(16,19,18,0.04)] p-5">
+                <div className="mb-4 pb-3 border-b border-[#101312]/8 flex items-center justify-between">
+                  <h3 className="text-[13px] font-bold tracking-wide text-[#101312] uppercase flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#4a7c00]" /> Security Status
+                  </h3>
+                </div>
+                <div className="space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#101312]/50">Email Address</span>
+                    {user?.isVerified ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#4a7c00] bg-[#BAF91A]/30 px-2.5 py-0.5 rounded-full border border-[#BAF91A]/60">
+                        <CheckCircle2 className="w-3 h-3" /> Verified
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
+                        <ShieldAlert className="w-3 h-3" /> Unverified
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-[#101312]/50">Password Setup</span>
+                    {user?.hasPassword !== false ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#4a7c00] bg-[#BAF91A]/30 px-2.5 py-0.5 rounded-full border border-[#BAF91A]/60">
+                        <CheckCircle2 className="w-3 h-3" /> Configured
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                        <XCircle className="w-3 h-3" /> Missing
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Connected Accounts Card (Slim Sidebar Version) */}
+            {showSecuritySettings && <GoogleAuthConnect />}
+
+            {/* Sign Out button */}
+            <button
+              id="profile-sign-out-btn"
+              onClick={() => { logout(); navigate('/auth/login'); }}
+              className="w-full flex items-center justify-center gap-2 rounded-xl border border-[#101312]/15 bg-white px-4 py-3 text-sm font-semibold text-[#101312]/70 transition-all hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50/60 shadow-sm"
+            >
+              <LogOut className="w-4 h-4" />
+              Sign Out
+            </button>
+          </aside>
+
+          {/* ══════════════════════════════
+              RIGHT — Forms
+              ══════════════════════════════ */}
+          <div className="space-y-6">
+
+            {/* ── Personal Information ── */}
+            <Card className="p-6">
+              <SectionHead
+                label="Stay & Go · Profile"
+                title="Personal Information"
+                icon={User}
+                iconBg="bg-[#BAF91A]"
+                iconColor="text-[#101312]"
+              />
+
+              <form onSubmit={handleSubmit} className="space-y-5">
+
+                {/* Full Name */}
+                <div>
+                  <FieldLabel>Full Name <span className="text-[#BAF91A] font-bold not-italic">*</span></FieldLabel>
+                  <StyledInput
+                    icon={User}
+                    type="text"
+                    name="fullName"
+                    value={form.fullName}
+                    onChange={handleChange}
+                    placeholder="Your full name"
+                  />
+                </div>
+
+                {/* Phone + Emergency */}
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel>Phone Number</FieldLabel>
+                    <StyledInput
+                      icon={Phone}
+                      type="text"
+                      name="phone"
+                      value={form.phone}
+                      onChange={handleChange}
+                      placeholder="+94 77 123 4567"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>Emergency Contact</FieldLabel>
+                    <StyledInput
+                      icon={Phone}
+                      iconColor="text-rose-400/70"
+                      type="text"
+                      name="emergencyContact"
+                      value={form.emergencyContact}
+                      onChange={handleChange}
+                      placeholder="Parent / Guardian"
+                    />
+                  </div>
+                </div>
+
+                {/* Gender + Student ID */}
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel>Gender</FieldLabel>
+                    <StyledSelect name="gender" value={form.gender} onChange={handleChange}>
+                      <option value="">Prefer not to say</option>
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </StyledSelect>
+                  </div>
+                  <div>
+                    <FieldLabel>Student ID</FieldLabel>
+                    <StyledInput
+                      icon={Calendar}
+                      type="text"
+                      name="studentId"
+                      value={form.studentId}
+                      onChange={handleChange}
+                      placeholder="e.g. IT21234567"
+                    />
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div>
+                  <FieldLabel>Home Address</FieldLabel>
+                  <StyledTextarea
+                    icon={MapPin}
+                    name="address"
+                    value={form.address}
+                    onChange={handleChange}
+                    rows={3}
+                    placeholder="Full residential address"
+                  />
+                </div>
+
+                {/* Save */}
+                <div className="pt-2 flex justify-end">
+                  <button
+                    id="profile-save-btn"
+                    type="submit"
+                    disabled={saving}
+                    className="inline-flex items-center gap-2 rounded-xl bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] px-7 py-2.5 text-sm font-bold shadow-[0_4px_16px_rgba(186,249,26,0.4)] transition-all hover:shadow-[0_6px_22px_rgba(186,249,26,0.55)] active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {saving ? 'Saving…' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
+            </Card>
+
+
+            {/* ── Password Update ── */}
+            {showSecuritySettings && (
+              <Card className="p-6">
+                <SectionHead
+                  label="Stay & Go · Access"
+                  title="Password Management"
+                  icon={Lock}
+                  iconBg="bg-blue-100"
+                  iconColor="text-blue-700"
+                />
+
+                <p className="text-sm text-[#101312]/60 mb-5">
+                  Set a password to gain email login access, or update your existing password.
+                </p>
+
+                <form onSubmit={handlePasswordChange} className="space-y-5">
+                  {user?.hasPassword !== false && (
+                    <div>
+                      <FieldLabel>Current Password <span className="text-[#BAF91A] font-bold not-italic">*</span></FieldLabel>
+                      <StyledInput
+                        icon={Lock}
+                        type={showPassword.current ? "text" : "password"}
+                        value={passwordState.currentPassword}
+                        onChange={(e) => {
+                          setPasswordState(prev => ({...prev, currentPassword: e.target.value}));
+                          if (passwordErrors.currentPassword) setPasswordErrors(prev => ({...prev, currentPassword: ''}));
+                        }}
+                        placeholder="Enter current password"
+                        className={passwordErrors.currentPassword ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-400/30 text-rose-600' : ''}
+                        rightElement={
+                          <button type="button" onClick={() => setShowPassword(prev => ({...prev, current: !prev.current}))} className="text-[#101312]/40 hover:text-[#101312]">
+                            {showPassword.current ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        }
+                      />
+                      {passwordErrors.currentPassword && (
+                        <p className="mt-1.5 text-xs font-semibold text-rose-500 flex items-center gap-1.5">
+                          <XCircle className="w-3.5 h-3.5" /> {passwordErrors.currentPassword}
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="bg-[#fafdf4] border border-[#101312]/10 rounded-[16px] p-5">
+                    <div className="mb-4">
+                      <FieldLabel>New Password <span className="text-[#BAF91A] font-bold not-italic">*</span></FieldLabel>
+                      <StyledInput
+                        icon={Lock}
+                        type={showPassword.new ? "text" : "password"}
+                        value={passwordState.newPassword}
+                        onChange={(e) => {
+                          setPasswordState(prev => ({...prev, newPassword: e.target.value}));
+                          setNewPasswordTouched(true);
+                          if (passwordErrors.newPassword) setPasswordErrors(prev => ({...prev, newPassword: ''}));
+                        }}
+                        placeholder="Enter new password"
+                        className={
+                          (newPasswordTouched && !isNewPasswordValid) || passwordErrors.newPassword 
+                          ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-400/30 text-rose-600' 
+                          : (newPasswordTouched && isNewPasswordValid ? 'border-green-400 focus:border-green-500 focus:ring-green-400/30' : '')
+                        }
+                        rightElement={
+                          <button type="button" onClick={() => setShowPassword(prev => ({...prev, new: !prev.new}))} className="text-[#101312]/40 hover:text-[#101312]">
+                            {showPassword.new ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        }
+                      />
+                    </div>
+
+                    {newPasswordTouched && (
+                      <div className="mb-4 space-y-2">
+                        <div className="flex gap-1.5 h-1.5 w-full">
+                          {[1, 2, 3].map((bar) => (
+                            <div 
+                              key={bar} 
+                              className={`flex-1 rounded-full transition-all duration-300 ${
+                                strengthLevel >= bar 
+                                ? (strengthLevel === 1 ? 'bg-rose-500' : strengthLevel === 2 ? 'bg-orange-400' : 'bg-[#BAF91A] shadow-[0_0_8px_rgba(186,249,26,0.6)]')
+                                : 'bg-[#101312]/10'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className="text-xs font-bold uppercase tracking-wider mt-1 text-right" style={{
+                          color: strengthLevel === 1 ? '#EF4444' : strengthLevel === 2 ? '#F97316' : strengthLevel === 3 ? '#4a7c00' : 'transparent'
+                        }}>
+                          {strengthLevel === 1 ? 'Weak' : strengthLevel === 2 ? 'Good' : 'Very Strong'}
+                        </p>
+                        {strengthLevel < 2 && (
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                            {passwordReqs.map((req, i) => (
+                              <div key={i} className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${req.met ? 'text-green-600' : 'text-[#101312]/45'}`}>
+                                {req.met ? <Check className="w-3.5 h-3.5" /> : <div className="w-3.5 h-3.5 rounded-full border border-current opacity-40 ml-0.5 mr-0.5 flex-shrink-0" />} 
+                                {req.label}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    <div>
+                      <FieldLabel>Confirm Password <span className="text-[#BAF91A] font-bold not-italic">*</span></FieldLabel>
+                      <StyledInput
+                        icon={Lock}
+                        type={showPassword.confirm ? "text" : "password"}
+                        value={passwordState.confirmPassword}
+                        onChange={(e) => {
+                          setPasswordState(prev => ({...prev, confirmPassword: e.target.value}));
+                          if (passwordErrors.confirmPassword) setPasswordErrors(prev => ({...prev, confirmPassword: ''}));
+                        }}
+                        placeholder="Re-enter new password"
+                        className={
+                          (passwordState.confirmPassword.length > 0 && !isConfirmValid) || passwordErrors.confirmPassword 
+                          ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-400/30 text-rose-600' 
+                          : (isConfirmValid ? 'border-green-400 focus:border-green-500 focus:ring-green-400/30' : '')
+                        }
+                        rightElement={
+                          <button type="button" onClick={() => setShowPassword(prev => ({...prev, confirm: !prev.confirm}))} className="text-[#101312]/40 hover:text-[#101312]">
+                            {showPassword.confirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        }
+                      />
+                      {((passwordState.confirmPassword.length > 0 && !isConfirmValid) || passwordErrors.confirmPassword) && (
+                        <p className="mt-1.5 text-xs font-semibold text-rose-500 flex items-center gap-1.5">
+                          <XCircle className="w-3.5 h-3.5" /> Passwords do not match
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={isChangingPassword || !canSubmitPassword}
+                      className="rounded-xl bg-[#876DFF] hover:bg-[#7460e0] text-white px-6 py-2.5 min-w-[140px] text-sm font-semibold shadow-[0_4px_14px_rgba(135,109,255,0.35)] transition-all active:scale-[0.97] disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed flex justify-center items-center gap-2"
+                    >
+                      {isChangingPassword && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {isChangingPassword ? 'Saving...' : 'Save Password'}
+                    </button>
+                  </div>
+                </form>
+              </Card>
+            )}
+
+            {/* Main column no longer renders GoogleAuthConnect here, moved to Sidebar! */}
+
+          </div>{/* end right col */}
+        </div>
+      </div>
+    </div>
+  );
 }
