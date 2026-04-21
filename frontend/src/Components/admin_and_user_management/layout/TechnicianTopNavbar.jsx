@@ -1,16 +1,16 @@
 import { useState } from 'react'
 import { useAuthStore } from '../../../app/store/authStore'
+import UserAvatarChip from './UserAvatarChip'
 
 export default function TechnicianTopNavbar() {
-  const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const [q, setQ] = useState('')
 
   return (
-    <header className="h-14 border-b border-slate-800 bg-slate-950 px-4 flex items-center justify-between gap-4">
+    <header className="h-14 border-b px-4 flex items-center justify-between gap-4 transition-colors duration-300" style={{ background: 'var(--admin-surface-2)', borderColor: 'var(--admin-border)' }}>
       <div className="min-w-[180px]">
-        <div className="text-sm font-semibold text-slate-100">Stay & Go Technician</div>
-        <div className="text-[11px] text-slate-500">Service and Support</div>
+        <div className="text-sm font-semibold transition-colors duration-300" style={{ color: 'var(--admin-text)' }}>Stay &amp; Go Technician</div>
+        <div className="text-[11px] transition-colors duration-300" style={{ color: 'var(--admin-text-muted)' }}>Service and Support</div>
       </div>
 
       <div className="flex-1 max-w-xl">
@@ -18,21 +18,25 @@ export default function TechnicianTopNavbar() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search assigned jobs or room details..."
-          className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-violet-500 text-slate-200"
+          className="w-full rounded-xl border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-sky-500 transition-colors duration-300"
+          style={{ background: 'var(--admin-input-bg)', borderColor: 'var(--admin-border)', color: 'var(--admin-text)' }}
         />
       </div>
 
       <div className="flex items-center gap-3">
-        <button className="rounded-xl border border-slate-800 px-3 py-1.5 text-sm hover:bg-slate-900" type="button">
+        <button className="rounded-xl border px-3 py-1.5 text-sm transition-colors duration-300 hover:bg-[var(--admin-surface-hover)]" style={{ borderColor: 'var(--admin-border)', color: 'var(--admin-text-muted)' }} type="button">
           Alerts
         </button>
-        <button className="rounded-xl border border-slate-800 px-3 py-1.5 text-sm hover:bg-slate-900" type="button">
+        <button className="rounded-xl border px-3 py-1.5 text-sm transition-colors duration-300 hover:bg-[var(--admin-surface-hover)]" style={{ borderColor: 'var(--admin-border)', color: 'var(--admin-text-muted)' }} type="button">
           Tasks
         </button>
-        <div className="text-sm font-semibold text-slate-300">{user?.fullName}</div>
+
+        {/* Avatar + name + "Technician" role badge — auto detects theme, click goes to /profile */}
+        <UserAvatarChip theme="auto" />
+
         <button
           onClick={logout}
-          className="rounded-xl border border-slate-800 px-3 py-1.5 text-sm hover:bg-slate-900 text-rose-400 border-rose-900/30"
+          className="rounded-xl border border-rose-500/30 px-3 py-1.5 text-sm hover:bg-rose-500/10 text-rose-500 transition-colors duration-300"
           type="button"
         >
           Logout

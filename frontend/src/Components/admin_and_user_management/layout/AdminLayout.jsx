@@ -1,11 +1,22 @@
+import { useEffect } from 'react'
 import AdminSidebar from './AdminSidebar'
 import AdminTopNavbar from './AdminTopNavbar'
+
+// Apply saved theme immediately (before first render)
+const saved = localStorage.getItem('sg-admin-theme') || 'light'
+document.documentElement.setAttribute('data-theme', saved)
+if (saved === 'dark') document.documentElement.classList.add('dark')
+else document.documentElement.classList.remove('dark')
 
 export default function AdminLayout({ children }) {
   return (
     <div
-      className="min-h-screen flex bg-gradient-to-b from-[#E2FF99] via-[#f4ffd7] to-[#FFFFFF] text-[#101312]"
-      style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}
+      className="min-h-screen flex transition-colors duration-300"
+      style={{
+        background: 'var(--admin-bg)',
+        color: 'var(--admin-text)',
+        fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif',
+      }}
     >
       <AdminSidebar />
       <div className="flex-1 flex flex-col">

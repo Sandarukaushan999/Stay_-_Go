@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
-const base =
-  'block rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition hover:border-[#101312]/20 hover:bg-[#E2FF99] hover:text-[#101312]'
+const baseLink =
+  'block rounded-xl border border-transparent px-3 py-2 text-sm font-medium transition-all duration-200'
 
 function Item({ to, children, end }) {
   return (
@@ -9,8 +9,10 @@ function Item({ to, children, end }) {
       to={to}
       end={end}
       className={({ isActive }) =>
-        `${base} ${
-          isActive ? 'border-[#101312]/20 bg-white text-[#101312] shadow-[0_2px_10px_rgba(16,19,18,0.06)]' : 'text-[#101312]/78'
+        `${baseLink} ${
+          isActive
+            ? 'border-[#BAF91A]/40 bg-[#BAF91A]/15 text-[#BAF91A] shadow-[0_2px_10px_rgba(186,249,26,0.12)]'
+            : 'text-[var(--admin-text)] opacity-70 hover:opacity-100 hover:bg-[#BAF91A]/10 hover:text-[#BAF91A]'
         }`
       }
     >
@@ -21,10 +23,27 @@ function Item({ to, children, end }) {
 
 export default function AdminSidebar() {
   return (
-    <aside className="hidden h-screen w-72 shrink-0 border-r border-[#101312]/15 bg-white/90 p-4 backdrop-blur lg:block">
-      <div className="mb-4 rounded-2xl border border-[#101312]/12 bg-gradient-to-br from-[#E2FF99] to-white p-3">
-        <div className="text-lg font-semibold text-[#101312]">STAY &amp; GO</div>
-        <div className="text-xs text-[#101312]/70">Admin Control Center</div>
+    <aside
+      className="hidden h-screen w-72 shrink-0 border-r p-4 backdrop-blur lg:block transition-colors duration-300"
+      style={{
+        background: 'var(--admin-surface)',
+        borderColor: 'var(--admin-border)',
+      }}
+    >
+      {/* Logo */}
+      <div
+        className="mb-4 rounded-2xl border p-3 transition-colors duration-300"
+        style={{
+          background: 'linear-gradient(135deg, rgba(186,249,26,0.15), rgba(186,249,26,0.05))',
+          borderColor: 'var(--admin-border)',
+        }}
+      >
+        <div className="text-lg font-semibold" style={{ color: 'var(--admin-text)' }}>
+          STAY &amp; GO
+        </div>
+        <div className="text-xs" style={{ color: 'var(--admin-text-muted)' }}>
+          Admin Control Center
+        </div>
       </div>
 
       <div className="h-[calc(100vh-112px)] space-y-1 overflow-y-auto pr-1">
@@ -69,7 +88,8 @@ export default function AdminSidebar() {
 function Section({ title, className = '' }) {
   return (
     <div
-      className={`px-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#876DFF] ${className}`.trim()}
+      className={`px-2 pt-4 text-[11px] font-semibold uppercase tracking-[0.16em] ${className}`.trim()}
+      style={{ color: '#876DFF' }}
     >
       {title}
     </div>

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 
@@ -48,6 +48,7 @@ export default function AuthPage({
   afterAuthRedirect,
 }) {
   const content = authContent[mode]
+
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
   const setToken = useAuthStore((s) => s.setToken)
@@ -71,9 +72,160 @@ export default function AuthPage({
   const [error, setError] = useState(null)
   const [fieldErrors, setFieldErrors] = useState({})
 
+  // ── Google Sign-In state ─────────────────────────────────────────────────
+  const [googleLoading, setGoogleLoading] = useState(false)
+  const [googleError, setGoogleError] = useState(null)
+  // link_required modal state
+  const [linkModal, setLinkModal] = useState(null)   // null | { email, idToken }
+  const [linkLoading, setLinkLoading] = useState(false)
+  const googleBtnRef = useRef(null)
+
+  // Resolve role and navigate after Google login
+  const navigateAfterAuth = useCallback((authedUser) => {
+    const role = authedUser?.role
+    if (role === 'admin' || role === 'super_admin') navigate('/admin', { replace: true })
+    else if (role === 'student') navigate('/student/dashboard', { replace: true })
+    else if (role === 'rider') navigate('/rides/workspace', { replace: true })
+    else if (role === 'technician') navigate('/technician/dashboard', { replace: true })
+    else navigate('/profile', { replace: true })
+  }, [navigate])
+
+  // Called by Google Identity Services with credential (id_token)
+  const handleGoogleCredential = useCallback(async (response) => {
+    const idToken = response.credential
+    if (!idToken) return
+    setGoogleLoading(true)
+    setGoogleError(null)
+    try {
+      const base = getApiBaseURL().replace(/\/api$/, '')
+      const { data } = await axios.post(`${base}/auth/google/signin`, { idToken })
+
+      if (data.action === 'logged_in') {
+        setToken(data.token)
+        const authedUser = await hydrateMe({ force: true })
+        navigateAfterAuth(authedUser || data.user)
+
+      } else if (data.action === 'link_required') {
+        // Show confirmation modal — keep idToken in memory for confirm-link call
+        setLinkModal({ email: data.email, idToken })
+
+      } else if (data.action === 'onboard') {
+        // Redirect to register with Google data pre-filled via sessionStorage
+        try {
+          sessionStorage.setItem('google_onboard', JSON.stringify(data.googleData))
+        } catch { /* ignore */ }
+        onNavigateToAuth('register')
+      }
+    } catch (err) {
+      const msg = err?.response?.data?.message || 'Google sign-in failed. Please try again.'
+      setGoogleError(msg)
+    } finally {
+      setGoogleLoading(false)
+    }
+  }, [setToken, hydrateMe, navigateAfterAuth, onNavigateToAuth])
+
+  // Confirm linking: user accepted → POST /auth/google/confirm-link
+  const handleConfirmLink = async () => {
+    if (!linkModal?.idToken) return
+    setLinkLoading(true)
+    try {
+      const base = getApiBaseURL().replace(/\/api$/, '')
+      const { data } = await axios.post(`${base}/auth/google/confirm-link`, { idToken: linkModal.idToken })
+      setLinkModal(null)
+      setToken(data.token)
+      const authedUser = await hydrateMe({ force: true })
+      navigateAfterAuth(authedUser || data.user)
+    } catch (err) {
+      setGoogleError(err?.response?.data?.message || 'Could not link account. Please try again.')
+      setLinkModal(null)
+    } finally {
+      setLinkLoading(false)
+    }
+  }
+
+  // Load Google Identity Services script + render button
+  useEffect(() => {
+    if (mode !== 'login') return
+    const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+    if (!GOOGLE_CLIENT_ID) return   // skip if not configured
+
+    const doInit = () => {
+      if (!window.google?.accounts?.id || !googleBtnRef.current) return
+
+      // initialize() must only be called ONCE per page load
+      if (!window.__gsiInitialized) {
+        window.google.accounts.id.initialize({
+          client_id: GOOGLE_CLIENT_ID,
+          callback: handleGoogleCredential,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        })
+        window.__gsiInitialized = true
+      }
+
+      // renderButton is safe to call again when the ref mounts
+      window.google.accounts.id.renderButton(googleBtnRef.current, {
+        type: 'standard',
+        shape: 'rectangular',
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+        logo_alignment: 'left',
+        width: 400,           // ← must be a number, NOT '100%'
+      })
+    }
+
+    if (window.google) {
+      doInit()
+    } else if (!document.getElementById('gsi-script')) {
+      // Only inject the script once
+      const script = document.createElement('script')
+      script.id = 'gsi-script'
+      script.src = 'https://accounts.google.com/gsi/client'
+      script.async = true
+      script.defer = true
+      script.onload = doInit
+      document.head.appendChild(script)
+    } else {
+      // Script tag exists but hasn't loaded yet — wait
+      document.getElementById('gsi-script').addEventListener('load', doInit, { once: true })
+    }
+
+    return () => {
+      try { window.google?.accounts?.id?.cancel() } catch { /* ignore */ }
+    }
+  }, [mode, handleGoogleCredential])
+
+  // Ensure AuthPage is strictly light mode (revert global dark mode if it bled over)
+  useEffect(() => {
+    const isDark = document.documentElement.classList.contains('dark')
+    if (isDark) {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.setAttribute('data-theme', 'light')
+    }
+  }, [])
+
   useEffect(() => {
     setFieldErrors({})
     setError(null)
+    setGoogleError(null)
+  }, [mode])
+
+  // ── Google onboard pre-fill (register mode) ─────────────────────────────
+  const [googlePrefill, setGooglePrefill] = useState(null) // { email, name, picture } | null
+
+  useEffect(() => {
+    if (mode !== 'register') return
+    try {
+      const raw = sessionStorage.getItem('google_onboard')
+      if (raw) {
+        const data = JSON.parse(raw)
+        sessionStorage.removeItem('google_onboard')
+        if (data.name)  setFullName(data.name)
+        if (data.email) setEmail(data.email)
+        setGooglePrefill(data)
+      }
+    } catch { /* ignore */ }
   }, [mode])
 
   const actionItems = useMemo(
@@ -296,6 +448,27 @@ export default function AuthPage({
             </div>
 
             <form className="mt-6 grid gap-3" onSubmit={onSubmit}>
+              {/* Google pre-fill banner (register mode) */}
+              {mode === 'register' && googlePrefill && (
+                <div className="flex items-start gap-3 rounded-2xl border border-[#d6e9aa] bg-[#f4ffd6] px-4 py-3">
+                  {googlePrefill.picture && (
+                    <img
+                      src={googlePrefill.picture}
+                      alt="Google"
+                      className="h-9 w-9 rounded-full border-2 border-[#BAF91A] object-cover flex-shrink-0 mt-0.5"
+                    />
+                  )}
+                  <div>
+                    <p className="text-xs font-bold text-[#3a5200] leading-tight">
+                      Details pre-filled from your Google account
+                    </p>
+                    <p className="text-[11px] text-[#3a5200]/70 mt-0.5">
+                      Review and complete the remaining fields to finish registration.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {mode === 'register' ? (
                 <label className="grid gap-1 text-sm">
                   <span className="text-[#101312]/80">Full name</span>
@@ -610,10 +783,88 @@ export default function AuthPage({
               </div>
             </form>
 
+            {/* ── Google Sign-In (login mode only) ── */}
+            {mode === 'login' && import.meta.env.VITE_GOOGLE_CLIENT_ID && (
+              <div className="mt-5">
+                {/* Divider */}
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex-1 h-px bg-[#101312]/10" />
+                  <span className="text-xs font-semibold text-[#101312]/40 uppercase tracking-wider">or continue with</span>
+                  <div className="flex-1 h-px bg-[#101312]/10" />
+                </div>
+
+                {/* GSI rendered button */}
+                <div
+                  ref={googleBtnRef}
+                  id="google-signin-btn"
+                  className={`w-full transition-opacity ${googleLoading ? 'opacity-50 pointer-events-none' : ''}`}
+                />
+
+                {/* Google loading / error feedback */}
+                {googleLoading && (
+                  <p className="mt-2 text-xs text-center text-[#101312]/55 font-medium animate-pulse">
+                    Verifying with Google…
+                  </p>
+                )}
+                {googleError && (
+                  <div className="mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {googleError}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Link-Required Confirmation Modal ── */}
+            {linkModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+                <div className="w-full max-w-sm rounded-3xl bg-white shadow-[0_24px_60px_rgba(16,19,18,0.18)] p-7">
+                  {/* Google logo */}
+                  <div className="flex justify-center mb-4">
+                    <div className="h-12 w-12 rounded-full border border-[#101312]/10 bg-white shadow-sm flex items-center justify-center">
+                      <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <h3 className="text-base font-bold text-[#101312] text-center mb-1">Link Google Account?</h3>
+                  <p className="text-xs text-[#101312]/60 text-center leading-relaxed mb-4">
+                    A Stay &amp; Go account already exists for
+                    <br />
+                    <span className="font-semibold text-[#101312]/80">{linkModal.email}</span>
+                    <br />
+                    Link your Google account to sign in with Google in the future?
+                  </p>
+
+                  <div className="flex flex-col gap-2">
+                    <button
+                      id="google-confirm-link-btn"
+                      onClick={handleConfirmLink}
+                      disabled={linkLoading}
+                      className="w-full rounded-xl bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] py-2.5 text-sm font-bold shadow-[0_4px_16px_rgba(186,249,26,0.4)] transition-all disabled:opacity-60"
+                    >
+                      {linkLoading ? 'Linking…' : 'Yes, Link & Sign In'}
+                    </button>
+                    <button
+                      id="google-cancel-link-btn"
+                      onClick={() => setLinkModal(null)}
+                      disabled={linkLoading}
+                      className="w-full rounded-xl border border-[#101312]/15 bg-white text-[#101312]/65 py-2.5 text-sm font-semibold hover:bg-[#f4ffd6] transition-all disabled:opacity-60"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="mt-6 flex items-center justify-between gap-3 text-sm text-[#101312]/70">
               <p>{content.secondaryText}</p>
               <button
-                className="rounded-xl border border-[#101312]/20 bg-white px-3 py-2 text-sm font-semibold text-[#101312] transition hover:bg-[#E2FF99]"
+                className="rounded-xl border border-[#101312]/15 bg-white px-4 py-2 font-semibold text-[#101312] transition hover:bg-[#f4ffd8]"
                 type="button"
                 onClick={() => onNavigateToAuth(content.secondaryAction)}
               >
@@ -624,7 +875,7 @@ export default function AuthPage({
         </div>
       </main>
 
-      <Footer onNavigateToPage={onNavigateToPage} />
+      <Footer />
     </div>
   )
 }

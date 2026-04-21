@@ -3,6 +3,7 @@ import { ProtectedRoute } from './ProtectedRoute'
 import { RoleRoute } from './RoleRoute'
 
 import AuthPage from '../../pages/AuthPage'
+import GoogleAuthSuccess from '../../pages/GoogleAuthSuccess'
 import UnauthorizedPage from '../../pages/UnauthorizedPage'
 import NotFoundPage from '../../pages/NotFoundPage'
 import HomePage from '../../pages/HomePage'
@@ -24,6 +25,8 @@ import RiderDashboard from '../../Components/admin_and_user_management/dashboard
 import TechnicianDashboard from '../../Components/admin_and_user_management/dashboard/TechnicianDashboard'
 import TechnicianJobs from '../../Components/admin_and_user_management/technician/TechnicianJobs'
 import TechnicianLayout from '../../Components/admin_and_user_management/layout/TechnicianLayout'
+import TechnicianSecurity from '../../Components/admin_and_user_management/technician/TechnicianSecurity'
+import TechnicianAppearance from '../../Components/admin_and_user_management/technician/TechnicianAppearance'
 import RoommateDashboard from '../../Components/admin_and_user_management/roommate/RoommateDashboard'
 import MatchProfiles from '../../Components/admin_and_user_management/roommate/MatchProfiles'
 import RoommateReports from '../../Components/admin_and_user_management/roommate/RoommateReports'
@@ -84,6 +87,7 @@ export default function AppRouter() {
           />
         }
       />
+      <Route path="/auth/google/success" element={<GoogleAuthSuccess />} />
       <Route path="/unauthorized" element={<UnauthorizedPage />} />
       <Route path="/rides" element={<RideShowcasePage />} />
 
@@ -138,6 +142,9 @@ export default function AppRouter() {
           <Route path="/technician/performance" element={<TechnicianDashboard />} />
           <Route path="/technician/tasks/*" element={<TechnicianJobs />} />
           <Route path="/technician/maintenance" element={<TechnicianLayout><MaintenanceDashboard /></TechnicianLayout>} />
+          <Route path="/technician/profile" element={<TechnicianLayout><UserProfilePage /></TechnicianLayout>} />
+          <Route path="/technician/security" element={<TechnicianSecurity />} />
+          <Route path="/technician/appearance" element={<TechnicianAppearance />} />
         </Route>
 
         <Route element={<RoleRoute allow={['student', 'rider', 'technician', 'admin', 'super_admin']} />}>

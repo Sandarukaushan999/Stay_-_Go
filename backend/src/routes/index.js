@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { authRouter } from '../modules/auth/auth.routes.js'
+import { googleAuthRouter } from '../modules/google_auth/googleAuth.routes.js'
 import { adminRouter } from '../modules/admin/admin.routes.js'
 import { rideSharingRouter } from '../modules/ride_sharing/routes/rideSharing.routes.js'
 import { maintenanceRouter } from '../modules/maintenance/routes/maintenance.routes.js'
@@ -20,6 +21,7 @@ apiRouter.get('/health', (req, res) => {
 })
 
 apiRouter.use('/auth', authRouter)
+apiRouter.use('/auth', googleAuthRouter)
 apiRouter.use('/2fa', twoFactorRouter)
 apiRouter.use('/admin', adminRouter)
 apiRouter.use('/users', userRouter)

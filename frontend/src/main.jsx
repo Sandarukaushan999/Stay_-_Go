@@ -16,10 +16,14 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 })
 
+import { TranslationProvider } from './app/i18n/TranslationContext'
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <TranslationProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </TranslationProvider>
   </StrictMode>,
 )
