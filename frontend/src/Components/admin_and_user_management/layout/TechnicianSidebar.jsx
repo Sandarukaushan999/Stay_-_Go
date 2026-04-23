@@ -38,7 +38,7 @@ export default function TechnicianSidebar() {
         
         <Section title="Overview" />
         <Item to="/technician/dashboard" end>Dashboard Home</Item>
-        <Item to="/technician/performance">Performance Summary</Item>
+        {/* <Item to="/technician/performance">Performance Summary</Item>
 
         <Section title="Job Management" />
         <Item to="/technician/jobs">All Jobs</Item>
@@ -49,21 +49,21 @@ export default function TechnicianSidebar() {
         <Section title="Service Workspace" />
         <Item to="/technician/tasks/active">Active Tasks</Item>
         <Item to="/technician/tasks/tracking">Live Job Tracking</Item>
-        <Item to="/technician/tasks/requests">Job Requests</Item>
+        <Item to="/technician/tasks/requests">Job Requests</Item> */}
 
         <Section title="Hostel Maintenance" />
         <Item to="/technician/maintenance">Maintenance Tickets</Item>
 
-        <Section title="Availability" />
+        {/* <Section title="Availability" />
         <Item to="/technician/availability">Set Availability</Item>
-        <Item to="/technician/schedule">Working Hours</Item>
+        <Item to="/technician/schedule">Working Hours</Item> */}
 
         <Section title="Profile & Settings" />
         <Item to="/technician/profile">My Profile</Item>
-        <Item to="/technician/verification">Documents & Verification</Item>
+        {/* <Item to="/technician/verification">Documents & Verification</Item>
         <Item to="/technician/notifications">Notifications</Item>
         <Item to="/technician/security">Security Settings</Item>
-        <Item to="/technician/appearance">Appearance Settings</Item>
+        <Item to="/technician/appearance">Appearance Settings</Item> */}
 
       </div>
     </aside>
