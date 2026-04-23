@@ -7,33 +7,54 @@ const DevIdentityContext = createContext(null);
 
 export function DevIdentityProvider({ children }) {
     const { user } = useAuthStore();
-    
-    // We get role and id from the main auth user
+
     const studentId = user?._id || user?.id || '';
     const role = user?.role || 'student';
-    
+    const displayName = user?.fullName || user?.email || 'User';
+
     const [profile, setProfile] = useState(null);
     const [roomPref, setRoomPref] = useState(null);
-    const [loading, setLoading] = useState(true); // start true — data not yet fetched
+    const [loading, setLoading] = useState(true);
 
     const refreshProfile = useCallback(async () => {
-        if (!studentId) { setProfile(null); setRoomPref(null); setLoading(false); return; }
+        if (!studentId) {
+            setProfile(null);
+            setRoomPref(null);
+            setLoading(false);
+            return;
+        }
+
+        if (role === 'admin' || role === 'super_admin') {
+            setProfile(null);
+            setRoomPref(null);
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await getMyProfile();
             setProfile(res.data.data);
-        } catch { setProfile(null); }
+        } catch {
+            setProfile(null);
+        }
+
         try {
             const res = await getMyPreference();
             setRoomPref(res.data.data);
-        } catch { setRoomPref(null); }
-        setLoading(false);
-    }, [studentId]);
+        } catch {
+            setRoomPref(null);
+        }
 
-    useEffect(() => { refreshProfile(); }, [refreshProfile]);
+        setLoading(false);
+    }, [studentId, role]);
+
+    useEffect(() => {
+        refreshProfile();
+    }, [refreshProfile]);
 
     const switchIdentity = () => {
-        // Disabled since we use real auth now
+        // Disabled intentionally: roommate module now uses the main authenticated account.
     };
 
     const isProfileComplete = profile?.profileCompleted === true;
@@ -41,12 +62,23 @@ export function DevIdentityProvider({ children }) {
     const isLocked = profile?.finalLockCompleted === true;
     const isAdmin = role === 'admin' || role === 'super_admin';
 
-    // Alias the role and ID for backwards compatibility
     return (
         <DevIdentityContext.Provider value={{
-            studentId, role, profile, roomPref, loading,
-            isProfileComplete, isRoomPrefComplete, isLocked, isAdmin,
-            switchIdentity, refreshProfile, setProfile, setRoomPref,
+            user,
+            displayName,
+            studentId,
+            role,
+            profile,
+            roomPref,
+            loading,
+            isProfileComplete,
+            isRoomPrefComplete,
+            isLocked,
+            isAdmin,
+            switchIdentity,
+            refreshProfile,
+            setProfile,
+            setRoomPref,
         }}>
             {children}
         </DevIdentityContext.Provider>

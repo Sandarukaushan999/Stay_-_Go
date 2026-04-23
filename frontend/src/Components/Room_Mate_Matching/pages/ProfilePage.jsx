@@ -261,8 +261,7 @@ export default function ProfilePage() {
                     </div>
                 </div>
 
-                {/* 2FA Security Settings Section */}
-                <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
+                {/* <div className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
                     <h3 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-violet-500" />
                         Security Settings
@@ -305,7 +304,6 @@ export default function ProfilePage() {
                         </div>
                     </div>
 
-                    {/* Inline OTP Input Modal/Section for Enabling */}
                     {showOtpInput && !is2FAEnabled && (
                         <div className="mt-4 bg-violet-50 border border-violet-100 p-5 rounded-2xl flex flex-col gap-3">
                             <h4 className="font-bold text-violet-900 text-sm">Verify your 2FA OTP</h4>
@@ -332,7 +330,6 @@ export default function ProfilePage() {
                         </div>
                     )}
 
-                    {/* Inline Section for Disabling */}
                     {disableMode && is2FAEnabled && (
                         <div className="mt-4 bg-slate-100 border border-slate-200 p-5 rounded-2xl flex flex-col gap-3">
                             <h4 className="font-bold text-slate-900 text-sm">Disable Two-Factor Authentication</h4>
@@ -357,7 +354,7 @@ export default function ProfilePage() {
                             <button type="button" onClick={() => { setDisableMode(false); setPassword(''); }} className="text-left text-xs font-semibold text-slate-500 hover:text-slate-700">Cancel</button>
                         </div>
                     )}
-                </div>
+                </div> */}
 
                 <div className="flex flex-col-reverse md:flex-row justify-end gap-3 pb-10">
                     <button 

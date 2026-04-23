@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useIdentity } from '../contexts/DevIdentityContext';
 import { getSuggestions, sendRequest } from '../api/matchingApi';
-import { AlertCircle, CheckCircle2, UserPlus, Clock, Search, MapPin, Moon, Sun, Filter, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, UserPlus, Clock, Search, MapPin, Moon, Sun, Filter, Sparkles, Users } from 'lucide-react';
 
 export default function MatchSuggestionsPage() {
     const { isProfileComplete, isRoomPrefComplete, isLocked, loading: identityLoading } = useIdentity();

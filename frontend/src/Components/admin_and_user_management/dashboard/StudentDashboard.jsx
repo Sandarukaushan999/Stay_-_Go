@@ -4,6 +4,7 @@ import { useAuthStore } from '../../../app/store/authStore'
 import { api } from '../../../lib/apiClient'
 import MainLayout from '../../shared/layout/MainLayout'
 import { User, Bell, Car, Home, ArrowRight, Leaf } from 'lucide-react'
+import StudentFAQChatbot from '../../shared/ui/StudentFAQChatbot'
 
 import rightHeroImage from '../../ride_and_sharing_system/assets/chuttersnap-gts_Eh4g1lk-unsplash.jpg'
 import missionImage from '../../ride_and_sharing_system/assets/make the campus fairer.png'
@@ -32,6 +33,7 @@ export default function StudentDashboard() {
     'rounded-lg border border-[#101312]/20 bg-white px-3 py-2 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]'
 
   return (
+    <>
     <MainLayout>
       <div
         className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 md:py-10 lg:px-8"
@@ -181,6 +183,8 @@ export default function StudentDashboard() {
         </section>
       </div>
     </MainLayout>
+    <StudentFAQChatbot />
+    </>
   )
 }
 

@@ -38,13 +38,21 @@ async function verifyGoogleIdToken(idToken) {
 // ─────────────────────────────────────────────────────────────────────────────
 async function attachLiveUser(req, _res, next) {
   try {
+    // Read from Authorization header first, then fall back to query param
+    // (browser redirects cannot set headers, so profile-page linking sends token as ?token=...)
     const header = req.headers.authorization
-    if (header?.startsWith('Bearer ')) {
+    const queryToken = req.query.token
+    const raw = header?.startsWith('Bearer ') ? header.slice('Bearer '.length) : queryToken
+
+    if (raw) {
       const { verifyAccessToken } = await import('../../common/utils/jwt.js')
-      const decoded = verifyAccessToken(header.slice('Bearer '.length))
+      const decoded = verifyAccessToken(raw)
       if (decoded?.sub) {
         const user = await User.findById(decoded.sub)
-        if (user && !user.isBlocked) req.liveUser = user
+        if (user && !user.isBlocked) {
+          req.liveUser = user
+          req.liveToken = raw   // keep token so we can encode it into OAuth state
+        }
       }
     }
   } catch {
@@ -220,8 +228,12 @@ googleAuthRouter.get(
   '/google',
   attachLiveUser,
   (req, res, next) => {
-    // Store the liveUser id in state so callback can reattach
-    const state = req.liveUser ? Buffer.from(req.liveUser._id.toString()).toString('base64') : ''
+    // Encode userId into state using base64url (URL-safe: no +/=/chars that break query strings)
+    let state = ''
+    if (req.liveUser) {
+      const payload = JSON.stringify({ uid: req.liveUser._id.toString() })
+      state = Buffer.from(payload).toString('base64url')
+    }
     passport.authenticate('google', {
       scope: ['profile', 'email'],
       session: false,
@@ -237,13 +249,21 @@ googleAuthRouter.get(
 googleAuthRouter.get(
   '/google/callback',
   async (req, _res, next) => {
-    // If there is a state param containing a userId, rehydrate liveUser
+    // Decode state to rehydrate liveUser — uses base64url to survive URL transport
     try {
       const state = req.query.state
       if (state) {
-        const userId = Buffer.from(state, 'base64').toString('utf8')
-        if (userId) {
-          const user = await User.findById(userId)
+        let uid = ''
+        try {
+          // base64url format: JSON { uid }
+          const parsed = JSON.parse(Buffer.from(state, 'base64url').toString('utf8'))
+          uid = parsed.uid || ''
+        } catch {
+          // Fallback: plain base64 (legacy)
+          try { uid = Buffer.from(state, 'base64').toString('utf8') } catch { /* ignore */ }
+        }
+        if (uid && uid.match(/^[a-f\d]{24}$/i)) {   // basic ObjectId sanity check
+          const user = await User.findById(uid)
           if (user && !user.isBlocked) req.liveUser = user
         }
       }

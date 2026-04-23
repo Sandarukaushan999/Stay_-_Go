@@ -1,69 +1,78 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaBell } from 'react-icons/fa';
 import { useIdentity } from '../../contexts/DevIdentityContext';
-import { getMyNotifications, markAllAsRead } from '../../api/notificationApi';
+import { getMyNotifications } from '../../api/notificationApi';
 import './Topbar.css';
 
+function formatRole(role) {
+    if (!role) return 'Student';
+    if (role === 'super_admin') return 'Super Admin';
+    if (role === 'admin') return 'Admin';
+    return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
 export default function Topbar() {
-    const { studentId, role, switchIdentity } = useIdentity();
+    const { studentId, role, isAdmin, displayName } = useIdentity();
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showIdInput, setShowIdInput] = useState(false);
-    const [idInput, setIdInput] = useState(studentId || '');
-    const [roleInput, setRoleInput] = useState(role || 'student');
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!studentId) return;
-        getMyNotifications(1, 1)
-            .then((res) => setUnreadCount(res.data.data?.unreadCount || 0))
-            .catch(() => { });
-        const interval = setInterval(() => {
-            getMyNotifications(1, 1)
-                .then((res) => setUnreadCount(res.data.data?.unreadCount || 0))
-                .catch(() => { });
-        }, 15000);
-        return () => clearInterval(interval);
-    }, [studentId]);
-
-    const handleSwitch = () => {
-        if (idInput.trim()) {
-            switchIdentity(idInput.trim(), roleInput);
-            setShowIdInput(false);
-            navigate('/roommate/dashboard');
+        if (!studentId || isAdmin) {
+            setUnreadCount(0);
+            return;
         }
-    };
+
+        let active = true;
+        const loadUnread = () =>
+            getMyNotifications(1, 1)
+                .then((res) => {
+                    if (!active) return;
+                    setUnreadCount(res.data.data?.unreadCount || 0);
+                })
+                .catch(() => {
+                    if (!active) return;
+                    setUnreadCount(0);
+                });
+
+        loadUnread();
+        const interval = setInterval(loadUnread, 15000);
+
+        return () => {
+            active = false;
+            clearInterval(interval);
+        };
+    }, [studentId, isAdmin]);
 
     return (
         <header className="topbar">
-            <div className="topbar-title">Stay & Go — Hostel Roommate Matching</div>
-            <div className="topbar-actions">
-                <button className="topbar-bell" onClick={() => navigate('/roommate/notifications')} title="Notifications">
-                    <FaBell />
-                    {unreadCount > 0 && <span className="topbar-badge">{unreadCount}</span>}
-                </button>
-                <div className="topbar-identity">
-                    <span className="topbar-role-badge">{role}</span>
-                    <button className="topbar-switch-btn" onClick={() => setShowIdInput(!showIdInput)}>
-                        Switch Identity
-                    </button>
+            <div className="topbar-copy">
+                <div className="topbar-title">Stay &amp; Go — Roommate Workspace</div>
+                <div className="topbar-subtitle">
+                    {isAdmin
+                        ? 'Admin workspace for room assignment, issue review, and roommate operations.'
+                        : 'Complete your profile, find compatible roommates, and manage your hostel pairing.'}
                 </div>
             </div>
-            {showIdInput && (
-                <div className="topbar-id-panel">
-                    <input
-                        value={idInput}
-                        onChange={(e) => setIdInput(e.target.value)}
-                        placeholder="Student ID"
-                        className="topbar-id-input"
-                    />
-                    <select value={roleInput} onChange={(e) => setRoleInput(e.target.value)} className="topbar-id-input">
-                        <option value="student">Student</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                    <button onClick={handleSwitch} className="btn btn-primary btn-sm">Apply</button>
+
+            <div className="topbar-actions">
+                {!isAdmin && (
+                    <button
+                        className="topbar-bell"
+                        onClick={() => navigate('/roommate/notifications')}
+                        title="Notifications"
+                        type="button"
+                    >
+                        <FaBell />
+                        {unreadCount > 0 && <span className="topbar-badge">{unreadCount}</span>}
+                    </button>
+                )}
+
+                <div className="topbar-identity">
+                    <span className="topbar-user-name">{displayName}</span>
+                    <span className="topbar-role-badge">{formatRole(role)}</span>
                 </div>
-            )}
+            </div>
         </header>
     );
 }

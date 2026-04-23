@@ -4,14 +4,18 @@ import { Sparkles, ArrowRight, UserPlus, Home, Users } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function SetupPage() {
-    const { isProfileComplete, isRoomPrefComplete, isLocked, loading } = useIdentity();
+    const { isProfileComplete, isRoomPrefComplete, loading, isAdmin } = useIdentity();
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!loading && isProfileComplete && isRoomPrefComplete) {
-            navigate('/roommate/dashboard');
+        if (!loading && isAdmin) {
+            navigate('/roommate/admin/issues', { replace: true });
+            return;
         }
-    }, [isProfileComplete, isRoomPrefComplete, loading, navigate]);
+        if (!loading && isProfileComplete && isRoomPrefComplete) {
+            navigate('/roommate/dashboard', { replace: true });
+        }
+    }, [isAdmin, isProfileComplete, isRoomPrefComplete, loading, navigate]);
 
     return (
         <div className="max-w-4xl mx-auto p-6 md:p-10 flex items-center justify-center min-h-[80vh] animate-in fade-in zoom-in duration-500">

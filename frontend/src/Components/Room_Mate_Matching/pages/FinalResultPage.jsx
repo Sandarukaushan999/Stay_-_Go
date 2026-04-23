@@ -60,6 +60,9 @@ export default function FinalResultPage() {
 
     const isStudentA = pair.studentA?._id === profile?._id;
     const roommate = isStudentA ? pair.studentB : pair.studentA;
+    const whatsappNumber = roommate?.whatsApp || roommate?.userId?.phone || '';
+    const normalizedWhatsapp = String(whatsappNumber).replace(/[^\d]/g, '');
+    const whatsappHref = normalizedWhatsapp ? `https://wa.me/${normalizedWhatsapp}` : '';
 
     return (
         <div className="max-w-5xl mx-auto p-6 md:p-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -152,11 +155,22 @@ export default function FinalResultPage() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">WhatsApp / Phone</p>
-                                    <p className="text-slate-900 font-medium truncate">{roommate?.userId?.phone || 'Not available'}</p>
+                                    <p className="text-slate-900 font-medium truncate">{whatsappNumber || 'Not available'}</p>
+                                    {whatsappHref && (
+                                        <a
+                                            href={whatsappHref}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="mt-2 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                                        >
+                                            <MessageSquare className="w-4 h-4" />
+                                            Open WhatsApp
+                                        </a>
+                                    )}
                                 </div>
-                                {roommate?.userId?.phone && (
+                                {whatsappHref && (
                                     <a
-                                        href={`https://wa.me/${roommate.userId.phone.replace(/[^0-9]/g, '')}`}
+                                        href={whatsappHref}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="p-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg transition"

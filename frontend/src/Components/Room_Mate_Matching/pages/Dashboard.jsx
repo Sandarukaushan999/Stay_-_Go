@@ -5,10 +5,16 @@ import { getMyPair, getReceivedRequests } from '../api/matchingApi';
 import { CheckCircle, Clock, Lock, Users, ChevronRight, User, AlertTriangle } from 'lucide-react';
 
 export default function Dashboard() {
-    const { profile, isProfileComplete, isRoomPrefComplete, isLocked, loading } = useIdentity();
+    const { profile, isProfileComplete, isRoomPrefComplete, isLocked, loading, isAdmin } = useIdentity();
     const [pair, setPair] = useState(null);
     const [pendingCount, setPendingCount] = useState(0);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!loading && isAdmin) {
+            navigate('/roommate/admin/issues', { replace: true });
+        }
+    }, [loading, isAdmin, navigate]);
 
     useEffect(() => {
         if (isLocked) {
@@ -23,6 +29,8 @@ export default function Dashboard() {
                 .catch(() => { });
         }
     }, [isLocked, isRoomPrefComplete]);
+
+    if (isAdmin) return null;
 
     if (loading) return (
         <div className="flex h-64 items-center justify-center">
