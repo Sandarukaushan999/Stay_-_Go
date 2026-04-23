@@ -149,20 +149,45 @@ function TicketDetail({ ticket, userRole, technicians = [], onBack, onAssign, on
           {/* Attachments */}
           {ticket.attachments && ticket.attachments.length > 0 && (
             <div className="rounded-2xl border border-[#101312]/10 bg-white p-5 shadow-[0_2px_8px_rgba(16,19,18,0.04)]">
-              <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">Attachments</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wide text-[#101312]/75">
+                Attachments ({ticket.attachments.length})
+              </h2>
               <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {ticket.attachments.map((attachment, index) => (
-                  <a
-                    key={index}
-                    href={attachment.url || attachment}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 rounded-xl border border-[#101312]/10 px-3 py-2.5 text-xs text-[#101312]/75 transition hover:border-[#876DFF]/40 hover:text-[#876DFF]"
-                  >
-                    <span aria-hidden="true">📎</span>
-                    <span className="truncate">{attachment.name || `Attachment ${index + 1}`}</span>
-                  </a>
-                ))}
+                {ticket.attachments.map((attachment, index) => {
+                  // Build the full URL — attachments are stored as "/uploads/maintenance/filename.png"
+                  // and must be served from the backend (port 5000), not the frontend (port 5173)
+                  const backendUrl = import.meta.env.VITE_SOCKET_URL || 'http://localhost:5000'
+                  const rawPath = attachment.url || attachment
+                  const fullUrl = rawPath.startsWith('http') ? rawPath : `${backendUrl}${rawPath}`
+
+                  return (
+                    <a
+                      key={index}
+                      href={fullUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="group overflow-hidden rounded-xl border border-[#101312]/10 transition hover:border-[#876DFF]/40"
+                    >
+                      <img
+                        src={fullUrl}
+                        alt={`Attachment ${index + 1}`}
+                        className="h-32 w-full object-cover transition group-hover:opacity-90"
+                        onError={(e) => {
+                          // If image fails to load, show a fallback link style
+                          e.currentTarget.style.display = 'none'
+                          e.currentTarget.nextSibling.style.display = 'flex'
+                        }}
+                      />
+                      <span
+                        style={{ display: 'none' }}
+                        className="flex items-center gap-2 px-3 py-2.5 text-xs text-[#101312]/75"
+                      >
+                        <span aria-hidden="true">📎</span>
+                        <span className="truncate">Attachment {index + 1}</span>
+                      </span>
+                    </a>
+                  )
+                })}
               </div>
             </div>
           )}

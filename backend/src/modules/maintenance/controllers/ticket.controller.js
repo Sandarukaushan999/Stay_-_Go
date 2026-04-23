@@ -11,8 +11,8 @@ import * as ticketService from '../services/ticket.service.js'
 export const createTicket = asyncHandler(async (req, res) => {
   const { title, category, priority, hostelBlock, roomNumber, description } = req.body
 
-  // Get file paths if any attachments were uploaded via multer
-  const attachments = req.files ? req.files.map((file) => file.path) : []
+  // Build a clean URL path (not a filesystem path) so the frontend can fetch the file from the backend
+  const attachments = req.files ? req.files.map((file) => `/uploads/maintenance/${file.filename}`) : []
 
   const ticket = await ticketService.createTicket({
     userId: req.user.id,
