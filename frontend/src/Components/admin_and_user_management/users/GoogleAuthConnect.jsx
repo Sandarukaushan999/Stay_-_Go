@@ -19,12 +19,14 @@ export default function GoogleAuthConnect() {
 
   /** Initiate Passport OAuth redirect — used when user is already logged in and wants to link */
   const handleConnect = () => {
-    const token     = useAuthStore.getState().token;
+    const token      = useAuthStore.getState().token;
     const backendUrl = getApiBaseURL().replace(/\/api$/, '');
-    // Pass JWT as Authorization header via a tiny redirect trick:
-    // We send the token as a header in the initial GET by using a form POST approach.
-    // Since OAuth requires a GET redirect, we store the token and backend reads it from state.
-    window.location.href = `${backendUrl}/auth/google`;
+    // Browser redirects cannot set headers, so pass the JWT as a query param.
+    // The backend reads it in attachLiveUser and encodes it into the OAuth state.
+    const url = token
+      ? `${backendUrl}/auth/google?token=${encodeURIComponent(token)}`
+      : `${backendUrl}/auth/google`;
+    window.location.href = url;
   };
 
   const handleDisconnect = async () => {
