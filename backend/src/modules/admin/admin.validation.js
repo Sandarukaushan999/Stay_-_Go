@@ -21,7 +21,7 @@ export const createUserSchema = z.object({
   hasVehicle: z.boolean().optional(),
   vehicleType: z.enum(['bike', 'car', 'van']).optional(),
   vehicleNumber: z.string().optional(),
-  seatCount: z.number().optional(),
+  seatCount: z.coerce.number().optional(),
 
   residenceLocation: z
     .object({ lat: z.number(), lng: z.number() })

@@ -6,10 +6,12 @@ import toast from 'react-hot-toast';
 import {
   User, Phone, MapPin, Loader2, Shield, ShieldCheck, ShieldAlert, Calendar,
   LogOut, Mail, CheckCircle2, XCircle, Lock, Check,
-  Eye, EyeOff
+  Eye, EyeOff, Globe, Palette
 } from 'lucide-react';
 import GoogleAuthConnect from '../Components/admin_and_user_management/users/GoogleAuthConnect';
 import ProfileImageCropper from '../Components/admin_and_user_management/users/ProfileImageCropper';
+import { useTheme } from '../app/hooks/useTheme';
+import { useTranslation } from '../app/i18n/TranslationContext';
 
 const api = createApiClient({ getToken: () => useAuthStore.getState().token });
 
@@ -157,8 +159,11 @@ function SectionHead({ label, title, icon: Icon, iconBg = 'bg-[#BAF91A]', iconCo
 export default function UserProfilePage() {
   const { user, hydrateMe, logout } = useAuthStore();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+  const { t, changeLanguage } = useTranslation();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState({ language: 'English' });
 
   // Password Update States
   const [passwordState, setPasswordState] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -212,6 +217,11 @@ export default function UserProfilePage() {
           gender: data.user.gender || '',
           address: data.user.address || '',
         });
+        if (data.user.systemSettings) {
+          const s = data.user.systemSettings;
+          setSettings({ language: s.language || 'English' });
+          if (s.theme && s.theme !== theme) toggleTheme(s.theme);
+        }
       }
     } catch {
       toast.error('Failed to load profile data');
@@ -230,8 +240,13 @@ export default function UserProfilePage() {
     if (!form.fullName.trim()) return toast.error('Full Name is required');
     setSaving(true);
     try {
-      const { data } = await api.put('/users/profile/me', form);
+      const payload = {
+        ...form,
+        systemSettings: { ...settings, theme }
+      };
+      const { data } = await api.put('/users/profile/me', payload);
       if (data.success) {
+        changeLanguage(settings.language);
         toast.success('Profile updated successfully!');
         await hydrateMe();
       }
@@ -303,7 +318,7 @@ export default function UserProfilePage() {
   const imgSrc = resolveImageSrc(user?.profileImage, user?.googlePicture);
   const roleLabel = ROLE_LABELS[user?.role] || user?.role || 'User';
   const roleBadgeCls = ROLE_COLORS[user?.role] || 'bg-[#101312]/8 text-[#101312]';
-  const showSecuritySettings = user?.role !== 'technician';
+  const showSecuritySettings = true;
 
   /* ════════════════════════════════════════════
      RENDER
@@ -530,6 +545,69 @@ export default function UserProfilePage() {
                     rows={3}
                     placeholder="Full residential address"
                   />
+                </div>
+
+                <div className="border-t border-[#101312]/8 pt-5 mt-5">
+                  <SectionHead
+                    title="Appearance & Settings"
+                    icon={Palette}
+                    iconBg="bg-orange-100"
+                    iconColor="text-orange-700"
+                  />
+                  
+                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                    <div>
+                      <FieldLabel>Color Theme</FieldLabel>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleTheme('dark')}
+                          className={`flex-1 cursor-pointer rounded-xl border p-3 text-left transition-all duration-200 ${
+                            theme === 'dark'
+                              ? 'border-[#BAF91A] bg-[#101312] shadow-[0_0_0_2px_rgba(186,249,26,0.25)]'
+                              : 'border-[#101312]/12 bg-[#101312]'
+                          }`}
+                        >
+                          <div className="font-semibold text-[#E2FF99] text-xs">Dark Mode</div>
+                          {theme === 'dark' && (
+                            <div className="mt-1 inline-flex items-center gap-1 text-[9px] font-bold text-[#BAF91A] uppercase tracking-wider">
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#BAF91A]" /> Active
+                            </div>
+                          )}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => toggleTheme('light')}
+                          className={`flex-1 cursor-pointer rounded-xl border p-3 text-left transition-all duration-200 ${
+                            theme === 'light'
+                              ? 'border-[#BAF91A] bg-white shadow-[0_0_0_2px_rgba(186,249,26,0.25)]'
+                              : 'border-[#101312]/12 bg-white'
+                          }`}
+                        >
+                          <div className="font-semibold text-[#101312] text-xs">Light Mode</div>
+                          {theme === 'light' && (
+                            <div className="mt-1 inline-flex items-center gap-1 text-[9px] font-bold text-[#BAF91A] uppercase tracking-wider">
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#BAF91A]" /> Active
+                            </div>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <FieldLabel>System Language</FieldLabel>
+                      <StyledSelect 
+                        name="language" 
+                        value={settings.language} 
+                        onChange={(e) => setSettings(prev => ({ ...prev, language: e.target.value }))}
+                      >
+                        <option value="English">English</option>
+                        <option value="Sinhala">Sinhala</option>
+                        <option value="Tamil">Tamil</option>
+                      </StyledSelect>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Save */}

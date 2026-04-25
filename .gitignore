@@ -44,3 +44,5 @@ mongo-data/
 # Temp files
 *.local
 *.tmp
+
+e2e/

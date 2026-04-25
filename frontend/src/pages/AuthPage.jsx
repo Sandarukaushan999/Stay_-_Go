@@ -22,9 +22,9 @@ const authContent = {
   },
   register: {
     eyebrow: 'Verified onboarding',
-    title: 'Create your student account (Passenger / Rider-candidate).',
+    title: 'Create your account (Student / Technician / Admin).',
     copy:
-      'All users are students. If you own a vehicle, enable Rider-candidate and fill vehicle details. Admin approval is required before you can provide rides.',
+      'Students get access to rides, roommate matching, and maintenance. Select Admin to register an administrator account.',
     primaryLabel: 'Register',
     secondaryText: 'Already have an account?',
     secondaryAction: 'login',
@@ -551,29 +551,31 @@ export default function AuthPage({
                     </select>
                   </label>
 
-                  <label className="grid gap-1 text-sm">
-                    <span className="text-[#101312]/80">Phone</span>
-                    <input
-                      className={inputClass('phone')}
-                      value={phone}
-                      onChange={(e) => {
-                        setPhone(e.target.value)
-                        clearFieldError('phone')
-                      }}
-                      onBlur={() => blurRegisterField('phone')}
-                      placeholder="0771234567 or +94771234567"
-                      inputMode="tel"
-                      autoComplete="tel"
-                      aria-invalid={Boolean(fieldErrors.phone)}
-                    />
-                    {fieldErrors.phone ? (
-                      <span className="text-sm font-medium text-rose-600">{fieldErrors.phone}</span>
-                    ) : accountType === 'student' ? (
-                      <span className="text-xs text-[#101312]/55">10-digit Sri Lankan mobile (leading 0 or +94).</span>
-                    ) : (
-                      <span className="text-xs text-[#101312]/55">Optional for staff; same format if provided.</span>
-                    )}
-                  </label>
+                  {accountType !== 'admin' && (
+                    <label className="grid gap-1 text-sm">
+                      <span className="text-[#101312]/80">Phone</span>
+                      <input
+                        className={inputClass('phone')}
+                        value={phone}
+                        onChange={(e) => {
+                          setPhone(e.target.value)
+                          clearFieldError('phone')
+                        }}
+                        onBlur={() => blurRegisterField('phone')}
+                        placeholder="0771234567 or +94771234567"
+                        inputMode="tel"
+                        autoComplete="tel"
+                        aria-invalid={Boolean(fieldErrors.phone)}
+                      />
+                      {fieldErrors.phone ? (
+                        <span className="text-sm font-medium text-rose-600">{fieldErrors.phone}</span>
+                      ) : accountType === 'student' ? (
+                        <span className="text-xs text-[#101312]/55">10-digit Sri Lankan mobile (leading 0 or +94).</span>
+                      ) : (
+                        <span className="text-xs text-[#101312]/55">Optional for staff; same format if provided.</span>
+                      )}
+                    </label>
+                  )}
 
                   {accountType === 'student' ? (
                     <>

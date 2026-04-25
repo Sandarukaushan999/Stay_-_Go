@@ -70,7 +70,8 @@ export default function UserList() {
         seatCount: form.hasVehicle ? seatsForVehicle(form.vehicleType) : 0,
         vehicleType: form.hasVehicle ? form.vehicleType : undefined,
         vehicleNumber: form.hasVehicle ? form.vehicleNumber : undefined,
-        vehicleOriginLocation: form.hasVehicle ? form.vehicleOriginLocation : undefined,
+        residenceLocation: form.residenceLocation || undefined,
+        vehicleOriginLocation: (form.hasVehicle && form.vehicleOriginLocation) ? form.vehicleOriginLocation : undefined,
       }
       await api.post('/admin/users', payload)
       setCreating(false)

@@ -10,20 +10,20 @@ import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 
 // ── Config ─────────────────────────────────────────────────────────────────
-const MONGO_URI  = process.env.MONGO_URI
-const ADMIN_EMAIL    = 'admin@staygo.lk'
+const MONGO_URI = process.env.MONGO_URI
+const ADMIN_EMAIL = 'admin@staygo.lk'
 const ADMIN_PASSWORD = 'Admin@StayGo2025'
-const ADMIN_NAME     = 'Stay & Go Admin'
-const ADMIN_ROLE     = 'admin'          // or 'super_admin'
+const ADMIN_NAME = 'Stay & Go Admin'
+const ADMIN_ROLE = 'admin'          // or 'super_admin'
 
 // ── Schema (minimal inline so we don't need the full app) ──────────────────
 const UserSchema = new mongoose.Schema({
-  role:         { type: String, default: 'student' },
-  fullName:     { type: String, required: true },
-  email:        { type: String, required: true, unique: true, lowercase: true },
+  role: { type: String, default: 'student' },
+  fullName: { type: String, required: true },
+  email: { type: String, required: true, unique: true, lowercase: true },
   passwordHash: { type: String, required: true },
-  isVerified:   { type: Boolean, default: false },
-  isBlocked:    { type: Boolean, default: false },
+  isVerified: { type: Boolean, default: false },
+  isBlocked: { type: Boolean, default: false },
 }, { timestamps: true })
 
 const User = mongoose.model('User', UserSchema)
@@ -49,12 +49,12 @@ async function createAdmin() {
   const passwordHash = await bcrypt.hash(ADMIN_PASSWORD, 12)
 
   await User.create({
-    role:         ADMIN_ROLE,
-    fullName:     ADMIN_NAME,
-    email:        ADMIN_EMAIL,
+    role: ADMIN_ROLE,
+    fullName: ADMIN_NAME,
+    email: ADMIN_EMAIL,
     passwordHash,
-    isVerified:   true,
-    isBlocked:    false,
+    isVerified: true,
+    isBlocked: false,
   })
 
   console.log('\n🎉  Admin user created successfully!\n')
