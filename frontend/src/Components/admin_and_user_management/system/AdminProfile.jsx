@@ -10,8 +10,21 @@ import {
 import toast from 'react-hot-toast'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import ProfileImageCropper from '../users/ProfileImageCropper'
 
 dayjs.extend(relativeTime)
+
+function getInitials(name = '') {
+  return name.split(' ').map((w) => w[0]).slice(0, 2).join('').toUpperCase() || 'A'
+}
+
+function resolveImageSrc(profileImage, googlePicture) {
+  const src = profileImage || googlePicture || null
+  if (!src) return null
+  if (src.startsWith('http')) return src
+  const base = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api').replace(/\/api$/, '')
+  return `${base}/${src.replace(/^\//, '')}`
+}
 
 const defaultSettings = {
   emailNotifications: true,
@@ -31,8 +44,6 @@ export default function AdminProfile() {
   const [form, setForm] = useState({ fullName: '', phone: '', emergencyContact: '' })
   const [formErrors, setFormErrors] = useState({})
   const [settings, setSettings] = useState({ ...defaultSettings })
-  const [avatarDataUrl, setAvatarDataUrl] = useState(null)
-  const fileInputRef = useRef(null)
 
   const [passForm, setPassForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
   const [passErrors, setPassErrors] = useState({})
@@ -75,7 +86,6 @@ export default function AdminProfile() {
           phone: u.phone || '',
           emergencyContact: u.emergencyContact || '',
         })
-        setAvatarDataUrl(null)
         if (u.systemSettings && typeof u.systemSettings === 'object') {
           setSettings((prev) => ({ ...prev, ...defaultSettings, ...u.systemSettings }))
         } else {
@@ -101,26 +111,6 @@ export default function AdminProfile() {
   const handlePassChange = (e) => setPassForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
   const handleToggle = (key) => setSettings((prev) => ({ ...prev, [key]: !prev[key] }))
 
-  const onPickAvatar = () => fileInputRef.current?.click()
-  const onAvatarFile = (e) => {
-    const f = e.target.files?.[0]
-    e.target.value = ''
-    if (!f) return
-    if (!f.type.startsWith('image/')) {
-      toast.error('Please choose an image file')
-      return
-    }
-    if (f.size > 1.5 * 1024 * 1024) {
-      toast.error('Image must be under 1.5MB')
-      return
-    }
-    const reader = new FileReader()
-    reader.onload = () => {
-      if (typeof reader.result === 'string') setAvatarDataUrl(reader.result)
-    }
-    reader.readAsDataURL(f)
-  }
-
   const validateForm = () => {
     const errs = {}
     if (!form.fullName.trim()) errs.fullName = 'Full name is required'
@@ -136,7 +126,6 @@ export default function AdminProfile() {
     setSaving(true)
     try {
       const body = { ...form, systemSettings: settings }
-      if (avatarDataUrl) body.profileImage = avatarDataUrl
       await api.put('/admin/profile', body)
       toast.success('Admin profile & preferences saved')
       await hydrateMe()
@@ -196,19 +185,11 @@ export default function AdminProfile() {
     )
   }
 
-  const avatarSrc = avatarDataUrl || displayUser?.profileImage
+
   const created = displayUser?.createdAt
 
   return (
     <AdminLayout>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        className="hidden"
-        onChange={onAvatarFile}
-      />
-
       <div
         className="mx-auto max-w-5xl space-y-6 pb-12"
         style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}
@@ -227,24 +208,12 @@ export default function AdminProfile() {
               <div className="absolute right-0 top-0 h-28 w-28 rounded-bl-[80px] bg-[#E2FF99]/80" />
 
               <div className="relative z-10 mb-8 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-                <div className="group relative">
-                  <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-2 border-[#101312]/12 bg-[#f9fce9]">
-                    {avatarSrc ? (
-                      <img src={avatarSrc} alt="Profile" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-3xl font-bold text-[#101312]/40">
-                        {displayUser?.fullName?.charAt(0) || 'A'}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onPickAvatar}
-                    className="absolute inset-0 flex items-center justify-center rounded-2xl bg-[#101312]/55 text-xs font-semibold uppercase tracking-wider text-white opacity-0 backdrop-blur-sm transition-opacity group-hover:opacity-100"
-                  >
-                    <Upload className="mr-1 h-4 w-4" />
-                    Upload
-                  </button>
+                <div className="w-[180px] shrink-0">
+                  <ProfileImageCropper 
+                    imgSrc={resolveImageSrc(displayUser?.profileImage, displayUser?.googlePicture)} 
+                    initials={getInitials(displayUser?.fullName)} 
+                    onUploadSuccess={fetchProfileData} 
+                  />
                 </div>
                 <div className="flex-1">
                   <h2 className="text-2xl font-semibold text-[#101312]">{displayUser?.fullName}</h2>

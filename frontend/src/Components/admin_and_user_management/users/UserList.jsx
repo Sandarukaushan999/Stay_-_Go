@@ -103,7 +103,7 @@ export default function UserList() {
             <div className="grid gap-3 md:grid-cols-3">
               <Field label="Full name">
                 <input
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.fullName}
                   onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
                   required
@@ -112,7 +112,7 @@ export default function UserList() {
               <Field label="Email">
                 <input
                   type="email"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.email}
                   onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                   required
@@ -121,7 +121,7 @@ export default function UserList() {
               <Field label="Temporary password">
                 <input
                   type="password"
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.password}
                   onChange={(e) => setForm((p) => ({ ...p, password: e.target.value }))}
                   required
@@ -130,21 +130,21 @@ export default function UserList() {
 
               <Field label="Phone">
                 <input
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.phone}
                   onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                 />
               </Field>
               <Field label="Student ID">
                 <input
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.studentId}
                   onChange={(e) => setForm((p) => ({ ...p, studentId: e.target.value }))}
                 />
               </Field>
               <Field label="University / Campus ID">
                 <input
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.campusId}
                   onChange={(e) => setForm((p) => ({ ...p, campusId: e.target.value }))}
                   placeholder="e.g. uoc-main"
@@ -153,7 +153,7 @@ export default function UserList() {
 
               <Field label="Emergency contact">
                 <input
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.emergencyContact}
                   onChange={(e) => setForm((p) => ({ ...p, emergencyContact: e.target.value }))}
                 />
@@ -161,7 +161,7 @@ export default function UserList() {
 
               <Field label="Role (base)">
                 <select
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                   value={form.role}
                   onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
                 >
@@ -207,7 +207,7 @@ export default function UserList() {
                   <div className="mt-3 grid gap-3">
                     <Field label="Vehicle type">
                       <select
-                        className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                         value={form.vehicleType}
                         onChange={(e) => {
                           const vt = e.target.value
@@ -231,7 +231,7 @@ export default function UserList() {
 
                     <Field label="Vehicle number">
                       <input
-                        className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+                        className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
                         value={form.vehicleNumber}
                         onChange={(e) => setForm((p) => ({ ...p, vehicleNumber: e.target.value }))}
                         required
@@ -284,13 +284,13 @@ export default function UserList() {
 
         <div className="mt-6 grid gap-3 md:grid-cols-3">
           <input
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
             placeholder="Search name/email/studentId..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
           <select
-            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-500"
+            className="rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-200 outline-none focus:ring-2 focus:ring-violet-500"
             value={role}
             onChange={(e) => setRole(e.target.value)}
           >

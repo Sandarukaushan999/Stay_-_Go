@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import ReactCrop, { centerCrop, makeAspectCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Camera, Upload, X, Loader2, Trash2, Edit2 } from 'lucide-react';
@@ -208,8 +209,8 @@ export default function ProfileImageCropper({ imgSrc, initials, onUploadSuccess 
       </div>
 
       {/* Cropper Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      {isModalOpen && createPortal(
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
             <div className="p-4 border-b border-[#101312]/10 flex items-center justify-between bg-gray-50 flex-none">
               <h3 className="font-bold text-[#101312]">Crop Profile Picture</h3>
@@ -235,7 +236,7 @@ export default function ProfileImageCropper({ imgSrc, initials, onUploadSuccess 
                     alt="Upload"
                     src={imgSrcUrl}
                     onLoad={onImageLoad}
-                    crossOrigin="anonymous"
+                    crossOrigin={imgSrcUrl && imgSrcUrl.startsWith('data:') ? undefined : 'anonymous'}
                     className="max-h-[50vh] w-auto mx-auto object-contain"
                   />
                 </ReactCrop>
@@ -265,7 +266,8 @@ export default function ProfileImageCropper({ imgSrc, initials, onUploadSuccess 
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

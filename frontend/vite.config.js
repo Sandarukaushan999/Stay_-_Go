@@ -10,6 +10,10 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
+      headers: {
+        'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+        'Cross-Origin-Embedder-Policy': 'unsafe-none',
+      },
       // Optional: set VITE_API_BASE_URL=/api in frontend/.env to route API calls through Vite (same origin).
       proxy: {
         '/api': {
