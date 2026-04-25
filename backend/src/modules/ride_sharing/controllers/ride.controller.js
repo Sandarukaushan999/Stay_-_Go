@@ -15,6 +15,7 @@ export const requestRide = asyncHandler(async (req, res) => {
     femaleOnly: req.body.femaleOnly,
   })
   getIo().to('admin').emit('ride:request', { rideRequest: rr })
+  getIo().emit('ride:new_request', { rideRequest: rr })
   res.status(201).json({ success: true, data: rr })
 })
 

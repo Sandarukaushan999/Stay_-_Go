@@ -63,7 +63,7 @@ rideSharingRouter.get(
 rideSharingRouter.post(
   '/rides/request',
   requireAuth,
-  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN),
+  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN, ROLES.ADMIN),
   validateBody(
     z.object({
       campusId: z.string().optional(),
@@ -79,21 +79,21 @@ rideSharingRouter.post(
 rideSharingRouter.get(
   '/rides/nearby-riders',
   requireAuth,
-  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN),
+  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN, ROLES.ADMIN),
   rideController.nearbyRiders
 )
 
 rideSharingRouter.get(
   '/rides/my-requests',
   requireAuth,
-  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN),
+  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN, ROLES.ADMIN),
   rideController.myRequests
 )
 
 rideSharingRouter.post(
   '/rides/:id/feedback',
   requireAuth,
-  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN),
+  requireRole(ROLES.STUDENT, ROLES.RIDER, ROLES.TECHNICIAN, ROLES.ADMIN),
   validateBody(
     z.object({
       rating: z.number().min(1).max(5),
@@ -107,14 +107,14 @@ rideSharingRouter.post(
 rideSharingRouter.get(
   '/rider/dashboard',
   requireAuth,
-  requireRole(ROLES.RIDER, ROLES.STUDENT),
+  requireRole(ROLES.RIDER, ROLES.STUDENT, ROLES.ADMIN),
   riderController.dashboard
 )
 
 rideSharingRouter.get(
   '/rides/open-requests',
   requireAuth,
-  requireRole(ROLES.RIDER, ROLES.STUDENT),
+  requireRole(ROLES.RIDER, ROLES.STUDENT, ROLES.ADMIN),
   riderController.openRequests
 )
 
@@ -122,21 +122,21 @@ rideSharingRouter.get(
 rideSharingRouter.post(
   '/rides/:id/accept',
   requireAuth,
-  requireRole(ROLES.RIDER),
+  requireRole(ROLES.RIDER, ROLES.ADMIN),
   rideController.acceptRide
 )
 
 rideSharingRouter.post(
   '/rides/:id/start',
   requireAuth,
-  requireRole(ROLES.RIDER),
+  requireRole(ROLES.RIDER, ROLES.ADMIN),
   rideController.startRide
 )
 
 rideSharingRouter.post(
   '/rides/:id/complete',
   requireAuth,
-  requireRole(ROLES.RIDER),
+  requireRole(ROLES.RIDER, ROLES.ADMIN),
   rideController.completeRide
 )
 

@@ -4,6 +4,7 @@ import { useAuthStore } from '../../../app/store/authStore'
 import { rideApi } from '../services/rideApi'
 import MapPicker from '../../shared/maps/MapPicker'
 import { mapsApi } from '../services/mapsApi'
+import { useSocketStore } from '../../../app/store/socketStore'
 
 function DashChip({ children }) {
   return (
@@ -22,6 +23,7 @@ const acceptHint = {
 
 export default function IncomingRideRequests({ onWorkspaceRefresh }) {
   const user = useAuthStore((s) => s.user)
+  const socket = useSocketStore((s) => s.socket)
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(false)
   const [active, setActive] = useState(null)
@@ -92,6 +94,17 @@ export default function IncomingRideRequests({ onWorkspaceRefresh }) {
       window.clearTimeout(timerId)
     }
   }, [load])
+
+  useEffect(() => {
+    if (!socket) return
+    const handleNewRequest = () => {
+      load({ silent: true })
+    }
+    socket.on('ride:new_request', handleNewRequest)
+    return () => {
+      socket.off('ride:new_request', handleNewRequest)
+    }
+  }, [socket, load])
 
   async function accept(id) {
     setError(null)
