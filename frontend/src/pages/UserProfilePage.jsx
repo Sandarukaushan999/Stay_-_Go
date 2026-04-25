@@ -328,7 +328,6 @@ export default function UserProfilePage() {
       className="min-h-screen"
       style={{
         background: 'linear-gradient(135deg, #E2FF99 0%, #f4ffd6 55%, #FFFFFF 100%)',
-        fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif',
       }}
     >
       <div className="mx-auto max-w-5xl px-4 pb-12 pt-8 sm:px-6 lg:px-8">

@@ -15,7 +15,6 @@ export default function AdminLayout({ children }) {
       style={{
         background: 'var(--admin-bg)',
         color: 'var(--admin-text)',
-        fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif',
       }}
     >
       <AdminSidebar />

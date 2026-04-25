@@ -409,7 +409,7 @@ export default function AuthPage({
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]" style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}>
+    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]">
       <Header
         navItems={headerNavItems}
         actionItems={actionItems}

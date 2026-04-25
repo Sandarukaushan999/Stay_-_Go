@@ -98,7 +98,7 @@ export default function RideShowcasePage() {
     'rounded-lg border border-[#101312]/20 bg-white px-3 py-1.5 text-xs font-semibold text-[#101312] transition hover:bg-[#E2FF99]'
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]" style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}>
+    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]">
       <main className="w-full space-y-6 px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">
         <section
           id="ride-home"

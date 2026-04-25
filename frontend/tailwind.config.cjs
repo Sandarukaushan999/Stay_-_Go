@@ -46,6 +46,9 @@ module.exports = {
   darkMode: 'selector',
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Times New Roman"', 'Times', 'serif'],
+      },
       colors: {
         slate: { ...neutralScale },
         gray: { ...neutralScale },

@@ -94,6 +94,7 @@ html, body, #root {
 body {
   background-color: var(--theme-bg);
   color: var(--theme-text);
+  font-family: 'Times New Roman', Times, serif !important;
 }
 
 /* ─── Text selection ─── */

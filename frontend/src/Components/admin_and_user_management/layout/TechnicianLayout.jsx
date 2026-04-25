@@ -15,7 +15,6 @@ export default function TechnicianLayout({ children }) {
       style={{
         background: 'var(--admin-bg)',
         color: 'var(--admin-text)',
-        fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif',
       }}
     >
       <TechnicianSidebar />

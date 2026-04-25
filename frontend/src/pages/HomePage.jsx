@@ -231,7 +231,7 @@ function Home({ headerNavItems, onNavigateToRide, onNavigateToPage, onNavigateTo
   }
 
   return (
-    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]" style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}>
+    <div className="min-h-screen bg-[#FFFFFF] text-[#101312]">
       <Header navItems={headerNavItems} actionItems={actionItems} onBrandClick={() => scrollToSection('home')} />
 
       <main className="w-full px-4 py-8 sm:px-6 sm:py-10 lg:px-8 lg:py-12">

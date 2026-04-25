@@ -797,7 +797,6 @@ export default function RideDashboardPage() {
     <AdminLayout>
       <div
         className="space-y-8"
-        style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}
       >
         <div className="relative overflow-hidden rounded-[28px] border border-[#101312]/10 bg-gradient-to-br from-[#101312] via-[#1a2420] to-[#101312] p-6 text-white shadow-[0_24px_60px_rgba(16,19,18,0.25)] sm:p-8">
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#BAF91A]/15 blur-3xl" />

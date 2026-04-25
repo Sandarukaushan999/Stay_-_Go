@@ -35,10 +35,7 @@ export default function StudentDashboard() {
   return (
     <>
     <MainLayout>
-      <div
-        className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 md:py-10 lg:px-8"
-        style={{ fontFamily: '"Poppins", "Manrope", "Trebuchet MS", sans-serif' }}
-      >
+      <div className="mx-auto max-w-6xl space-y-8 px-4 py-8 sm:px-6 md:py-10 lg:px-8">
         <section className="overflow-hidden rounded-[28px] border border-[#d6e9aa] bg-gradient-to-br from-[#E2FF99] via-[#f4ffd6] to-[#FFFFFF] shadow-[0_16px_40px_rgba(16,19,18,0.08)]">
           <div className="grid gap-6 px-5 py-6 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:py-8">
             <div className="flex flex-col justify-center">
