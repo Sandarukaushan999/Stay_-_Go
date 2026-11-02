@@ -13,18 +13,18 @@
 
 .roommate-module-hint {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--admin-text-muted);
 }
 
 .roommate-module-exit {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #475569;
+  color: var(--admin-text-muted);
   background: none;
   border: none;
   cursor: pointer;
 }
 
 .roommate-module-exit:hover {
-  color: #0f172a;
+  color: var(--admin-text);
 }

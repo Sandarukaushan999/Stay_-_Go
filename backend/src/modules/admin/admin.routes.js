@@ -15,6 +15,7 @@ import * as rideAdminController from './rideAdmin.controller.js'
 import * as safetyController from './safety.controller.js'
 import * as roommateController from './roommateAdmin.controller.js'
 import * as userController from '../users/user.controller.js'
+import * as communicationController from './communication.controller.js'
 
 export const adminRouter = Router()
 
@@ -46,6 +47,14 @@ adminRouter.get('/roommate/dashboard', roommateController.dashboardAnalytics)
 adminRouter.get('/roommate/profiles', roommateController.listMatchProfiles)
 adminRouter.get('/roommate/requests', roommateController.listMatchRequests)
 adminRouter.post('/roommate/unmatch/:matchId', roommateController.unmatchUsers)
+
+// Communication: broadcast notifications, complaint center, verification queue
+adminRouter.post('/notifications/broadcast', communicationController.broadcast)
+adminRouter.get('/notifications/broadcasts', communicationController.listBroadcasts)
+adminRouter.get('/complaints', communicationController.listComplaints)
+adminRouter.patch('/complaints/:source/:id/assign', communicationController.assignComplaint)
+adminRouter.get('/verification-requests', communicationController.listVerificationRequests)
+adminRouter.patch('/verification-requests/technician/:id', communicationController.decideTechnicianVerification)
 
 // Admin profile and logs
 adminRouter.get('/profile', userController.getMyAccountProfile)

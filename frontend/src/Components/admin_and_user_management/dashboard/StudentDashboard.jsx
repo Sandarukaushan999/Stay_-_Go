@@ -27,6 +27,21 @@ export default function StudentDashboard() {
       .finally(() => setLoading(false))
   }, [])
 
+  // Next roommate step, driven by the live status from /users/dashboard-stats
+  const roommate = stats?.roommate
+  const ROOMMATE_CTA = {
+    not_started: { label: 'Set up roommate profile', path: '/roommate/profile', hint: 'Not started' },
+    profile_done: { label: 'Set room preference', path: '/roommate/preferences', hint: 'Profile done — set your room preference' },
+    preference_done: { label: 'Find my roommate', path: '/roommate/matches', hint: 'Ready to match' },
+    matched: { label: 'View my roommate', path: '/roommate/final-result', hint: 'Roommate locked in' },
+  }
+  const roommateCta = ROOMMATE_CTA[roommate?.status] || ROOMMATE_CTA.not_started
+  const roomValue = roommate?.roomNumber
+    ? roommate.block && !String(roommate.roomNumber).toUpperCase().startsWith(String(roommate.block).toUpperCase())
+      ? `${roommate.block}-${roommate.roomNumber}`
+      : String(roommate.roomNumber)
+    : user?.hostelBlock || 'Unassigned'
+
   const primaryBtn =
     'rounded-lg bg-[#BAF91A] px-4 py-2.5 text-sm font-semibold text-[#101312] transition hover:bg-[#a9ea00]'
   const secondaryBtn =
@@ -55,8 +70,8 @@ export default function StudentDashboard() {
                 <button type="button" className={primaryBtn} onClick={() => navigate('/rides/workspace?view=passenger')}>
                   Start a ride request
                 </button>
-                <button type="button" className={secondaryBtn} onClick={() => navigate('/roommate/setup')}>
-                  Set up roommate profile
+                <button type="button" className={secondaryBtn} onClick={() => navigate(roommateCta.path)}>
+                  {roommateCta.label}
                 </button>
                 <button type="button" className={secondaryBtn} onClick={() => navigate('/rides')}>
                   Explore ride platform
@@ -98,8 +113,8 @@ export default function StudentDashboard() {
           />
           <StatCard
             icon={<Home className="h-5 w-5" />}
-            title="Hostel block"
-            value={user?.hostelBlock || 'Unassigned'}
+            title="Hostel room"
+            value={loading ? '…' : roomValue}
             accent="bg-[#f9fce9] text-[#101312]"
           />
         </div>
@@ -123,14 +138,26 @@ export default function StudentDashboard() {
         <div className="grid gap-6 lg:grid-cols-2">
           <article
             className="group flex cursor-pointer flex-col justify-between rounded-[24px] border border-[#101312]/12 bg-white p-7 shadow-[0_8px_28px_rgba(16,19,18,0.07)] transition hover:border-[#876DFF]/35 hover:shadow-[0_14px_40px_rgba(135,109,255,0.12)]"
-            onClick={() => navigate('/roommate/setup')}
+            onClick={() => navigate('/roommate/dashboard')}
             role="presentation"
           >
             <div>
               <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#876DFF]/12 text-[#876DFF]">
                 <Home className="h-6 w-6" strokeWidth={2} />
               </div>
-              <h3 className="text-xl font-semibold text-[#101312]">Roommate matching</h3>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-xl font-semibold text-[#101312]">Roommate matching</h3>
+                {!loading && (
+                  <span className="rounded-full bg-[#876DFF]/12 px-2.5 py-0.5 text-[11px] font-semibold text-[#5b4ccc]">
+                    {roommateCta.hint}
+                  </span>
+                )}
+                {roommate?.pendingRequests > 0 && (
+                  <span className="rounded-full bg-[#BAF91A] px-2.5 py-0.5 text-[11px] font-bold text-[#101312]">
+                    {roommate.pendingRequests} pending request{roommate.pendingRequests > 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
               <p className="mt-2 text-sm leading-relaxed text-[#101312]/70">
                 Lifestyle profile, room preferences, and double opt-in matches — secure your campus accommodation with
                 students like you.

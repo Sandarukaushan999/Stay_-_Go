@@ -104,7 +104,7 @@ export default function MatchRequestsPage() {
                         <Mail className="w-4 h-4" />
                         Received
                         {unreadCount > 0 && (
-                            <span className="ml-1 bg-emerald-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            <span className="ml-1 bg-[#BAF91A] text-[#101312] text-[10px] font-bold px-2 py-0.5 rounded-full">
                                 {unreadCount}
                             </span>
                         )}
@@ -169,7 +169,7 @@ export default function MatchRequestsPage() {
                                                         View Profile
                                                     </button>
                                                     <button 
-                                                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-300 text-white px-4 py-2 rounded-lg font-medium transition-colors text-sm"
+                                                        className="flex-1 md:flex-none flex items-center justify-center gap-1.5 bg-[#BAF91A] hover:bg-[#a9ea00] disabled:bg-emerald-300 text-[#101312] px-4 py-2 rounded-lg font-medium transition-colors text-sm"
                                                         disabled={acting === req._id}
                                                         onClick={() => handleAction('accept', req._id)}
                                                     >

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { useIdentity } from '../contexts/DevIdentityContext';
 import { getSuggestions, sendRequest } from '../api/matchingApi';
-import { AlertCircle, CheckCircle2, UserPlus, Clock, Search, MapPin, Moon, Sun, Filter, Sparkles } from 'lucide-react';
+import { AlertCircle, CheckCircle2, UserPlus, Clock, Search, MapPin, Moon, Sun, Filter, Sparkles, Users } from 'lucide-react';
 
 export default function MatchSuggestionsPage() {
     const { isProfileComplete, isRoomPrefComplete, isLocked, loading: identityLoading } = useIdentity();
@@ -173,7 +173,7 @@ export default function MatchSuggestionsPage() {
                                 <button
                                     onClick={() => handleSend(s.studentId)}
                                     disabled={sending === s.studentId}
-                                    className="w-full bg-slate-900 overflow-hidden hover:bg-emerald-600 disabled:bg-slate-300 text-white font-medium py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group relative"
+                                    className="w-full bg-slate-900 overflow-hidden hover:bg-[#BAF91A] hover:text-[#101312] disabled:bg-slate-300 text-white font-medium py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group relative"
                                 >
                                     {sending === s.studentId ? (
                                         <><Clock className="w-4 h-4 animate-spin" /> Sending...</>

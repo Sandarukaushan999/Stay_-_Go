@@ -8,7 +8,9 @@ import { RoommateNotification } from '../../roommate/models/RoommateNotification
 import { IssueReport } from '../../roommate/models/IssueReport.js'
 import { Trip } from '../ride_sharing/models/Trip.js'
 import { AdminActionLog } from '../admin/models/AdminActionLog.js'
-import { ISSUE_STATUS } from '../../roommate/constants/enums.js'
+import { ISSUE_STATUS, MATCH_REQUEST_STATUS } from '../../roommate/constants/enums.js'
+import { MatchPair } from '../../roommate/models/MatchPair.js'
+import { MatchRequest } from '../../roommate/models/MatchRequest.js'
 
 const ACTIVE_TRIP_STATUSES = ['to_pickup', 'to_university', 'overdue', 'in_progress']
 
@@ -17,10 +19,49 @@ export const getMyDashboardStats = asyncHandler(async (req, res) => {
   const stats = {}
 
   if (user.role === 'student' || user.role === 'rider') {
-    const profile = await StudentProfile.findOne({ userId: user.id }).select('_id').lean()
+    const profile = await StudentProfile.findOne({ userId: user.id })
+      .select('_id profileCompleted roomPreferenceCompleted finalLockCompleted roomId')
+      .populate('roomId', 'roomNumber block floor')
+      .lean()
     stats.unreadNotifications = profile
       ? await RoommateNotification.countDocuments({ studentId: profile._id, isRead: false })
       : 0
+
+    // Roommate-matching summary for the student hub
+    const roommate = {
+      status: 'not_started', // not_started | profile_done | preference_done | matched
+      pendingRequests: 0,
+      roomNumber: null,
+      block: null,
+    }
+    if (profile) {
+      roommate.status = profile.finalLockCompleted
+        ? 'matched'
+        : profile.roomPreferenceCompleted
+          ? 'preference_done'
+          : profile.profileCompleted
+            ? 'profile_done'
+            : 'not_started'
+      roommate.pendingRequests = await MatchRequest.countDocuments({
+        receiverStudentId: profile._id,
+        status: MATCH_REQUEST_STATUS.PENDING,
+      })
+      let room = profile.roomId
+      if (!room && profile.finalLockCompleted) {
+        const pair = await MatchPair.findOne({
+          $or: [{ studentA: profile._id }, { studentB: profile._id }],
+          isLocked: true,
+        })
+          .populate('roomId', 'roomNumber block floor')
+          .lean()
+        room = pair?.roomId
+      }
+      if (room) {
+        roommate.roomNumber = room.roomNumber
+        roommate.block = room.block
+      }
+    }
+    stats.roommate = roommate
 
     stats.activeRidesJoined = await Trip.countDocuments({
       passengerId: user.id,

@@ -1,5 +1,6 @@
 import { asyncHandler } from '../../../common/utils/asyncHandler.js'
 import * as ticketService from '../services/ticket.service.js'
+import { notifyUser } from '../../notifications/notification.service.js'
 
 // ============================================
 // MAINTENANCE TICKET CONTROLLER
@@ -60,6 +61,13 @@ export const assignTicket = asyncHandler(async (req, res) => {
     ticketId: req.params.id,
     technicianId,
     adminId: req.user.id,
+  })
+  await notifyUser(technicianId, {
+    type: 'job',
+    title: 'New ticket assigned',
+    message: `${ticket.ticketId}: ${ticket.title}`,
+    priority: ticket.priority === 'emergency' || ticket.priority === 'high' ? 'urgent' : 'important',
+    link: '/technician/maintenance',
   })
   res.json({ success: true, message: 'Technician assigned successfully!', data: ticket })
 })

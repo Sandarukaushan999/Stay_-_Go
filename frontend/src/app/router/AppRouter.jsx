@@ -24,6 +24,15 @@ import StudentDashboard from '../../Components/admin_and_user_management/dashboa
 import RiderDashboard from '../../Components/admin_and_user_management/dashboard/RiderDashboard'
 import TechnicianDashboard from '../../Components/admin_and_user_management/dashboard/TechnicianDashboard'
 import TechnicianJobs from '../../Components/admin_and_user_management/technician/TechnicianJobs'
+import TechnicianServiceWorkspace from '../../Components/admin_and_user_management/technician/TechnicianServiceWorkspace'
+import TechnicianAvailability from '../../Components/admin_and_user_management/technician/TechnicianAvailability'
+import TechnicianVerification from '../../Components/admin_and_user_management/technician/TechnicianVerification'
+import TechnicianNotifications from '../../Components/admin_and_user_management/technician/TechnicianNotifications'
+import RoleUsersPage from '../../Components/admin_and_user_management/users/RoleUsersPage'
+import VerificationRequests from '../../Components/admin_and_user_management/users/VerificationRequests'
+import AdminNotifications from '../../Components/admin_and_user_management/communication/AdminNotifications'
+import AdminAnnouncements from '../../Components/admin_and_user_management/communication/AdminAnnouncements'
+import ComplaintCenter from '../../Components/admin_and_user_management/communication/ComplaintCenter'
 import TechnicianLayout from '../../Components/admin_and_user_management/layout/TechnicianLayout'
 import TechnicianSecurity from '../../Components/admin_and_user_management/technician/TechnicianSecurity'
 import TechnicianAppearance from '../../Components/admin_and_user_management/technician/TechnicianAppearance'
@@ -108,6 +117,13 @@ export default function AppRouter() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/maintenance" element={<AdminLayout><MaintenanceDashboard /></AdminLayout>} />
           <Route path="/admin/users" element={<UserList />} />
+          <Route path="/admin/students" element={<RoleUsersPage role="student" />} />
+          <Route path="/admin/riders" element={<RoleUsersPage role="rider" />} />
+          <Route path="/admin/technicians" element={<RoleUsersPage role="technician" />} />
+          <Route path="/admin/verification-requests" element={<VerificationRequests />} />
+          <Route path="/admin/notifications" element={<AdminNotifications />} />
+          <Route path="/admin/announcements" element={<AdminAnnouncements />} />
+          <Route path="/admin/complaints" element={<ComplaintCenter />} />
           <Route path="/admin/ride-monitoring" element={<Navigate to="/admin/ride-dashboard" replace />} />
           <Route path="/admin/rider-approvals" element={<RiderApprovalsTable />} />
           <Route path="/admin/live-trips" element={<LiveTripsTable />} />
@@ -140,7 +156,12 @@ export default function AppRouter() {
           <Route path="/technician/dashboard" element={<TechnicianDashboard />} />
           <Route path="/technician/jobs/*" element={<TechnicianJobs />} />
           <Route path="/technician/performance" element={<TechnicianDashboard />} />
-          <Route path="/technician/tasks/*" element={<TechnicianJobs />} />
+          <Route path="/technician/tasks" element={<Navigate to="/technician/tasks/active" replace />} />
+          <Route path="/technician/tasks/*" element={<TechnicianServiceWorkspace />} />
+          <Route path="/technician/availability" element={<TechnicianAvailability />} />
+          <Route path="/technician/schedule" element={<TechnicianAvailability />} />
+          <Route path="/technician/verification" element={<TechnicianVerification />} />
+          <Route path="/technician/notifications" element={<TechnicianNotifications />} />
           <Route path="/technician/maintenance" element={<TechnicianLayout><MaintenanceDashboard /></TechnicianLayout>} />
           <Route path="/technician/profile" element={<TechnicianLayout><UserProfilePage /></TechnicianLayout>} />
           <Route path="/technician/security" element={<TechnicianSecurity />} />

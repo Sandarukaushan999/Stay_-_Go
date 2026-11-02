@@ -5,6 +5,7 @@ import { getSuggestions as gSuggestions, validateCompatibility } from '../servic
 import { createNotification } from '../services/roommateNotificationService.js'
 import { MATCH_REQUEST_STATUS, NOTIFICATION_TYPE } from '../constants/enums.js'
 import { ApiError } from '../../common/utils/ApiError.js'
+import { sameGender } from '../utils/gender.js'
 
 // ── GET /api/roommate/matching/suggestions ──
 export const getSuggestions = async (req, res, next) => {
@@ -131,6 +132,10 @@ export const acceptRequest = async (req, res, next) => {
     const receiver = await StudentProfile.findById(request.receiverStudentId).populate('userId', 'fullName')
     if (sender.finalLockCompleted || receiver.finalLockCompleted) {
       throw new ApiError(400, 'One or both students already have a locked roommate')
+    }
+
+    if (!sameGender(sender.gender, receiver.gender)) {
+      throw new ApiError(400, 'Roommates must be the same gender (male + male or female + female)')
     }
 
     request.status = MATCH_REQUEST_STATUS.ACCEPTED

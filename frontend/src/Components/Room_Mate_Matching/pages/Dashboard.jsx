@@ -37,8 +37,8 @@ export default function Dashboard() {
                 <h3 className="text-lg font-medium text-slate-900 mb-2">No Roommate Profile Found</h3>
                 <p className="text-slate-500 mb-6">You need to set up your roommate profile first.</p>
                 <button 
-                    onClick={() => navigate('/roommate/setup')}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
+                    onClick={() => navigate('/roommate/profile')}
+                    className="bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] px-6 py-2.5 rounded-lg font-medium transition-colors"
                 >
                     Get Started
                 </button>
@@ -140,7 +140,7 @@ export default function Dashboard() {
                         </div>
                         <button 
                             onClick={() => navigate(nextStep.path)}
-                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2 group relative z-10 w-fit"
+                            className="bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] px-6 py-3 rounded-lg font-medium transition-colors shadow-sm flex items-center gap-2 group relative z-10 w-fit"
                         >
                             Continue Setup 
                             <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -160,16 +160,22 @@ export default function Dashboard() {
                             
                             <div className="flex items-center gap-4 mb-6 p-4 bg-slate-50 rounded-xl border border-slate-100">
                                 <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center text-xl font-bold text-slate-500">
-                                    {(pair.studentA._id === profile._id ? pair.studentB.firstName[0] : pair.studentA.firstName[0])}
+                                    {(pair.studentA?._id === profile._id ? pair.studentB : pair.studentA)?.firstName?.[0]}
                                 </div>
                                 <div>
                                     <h4 className="font-bold text-lg text-slate-900">
-                                        {pair.studentA._id === profile._id
-                                            ? `${pair.studentB.firstName} ${pair.studentB.lastName}`
-                                            : `${pair.studentA.firstName} ${pair.studentA.lastName}`}
+                                        {(() => {
+                                            const mate = pair.studentA?._id === profile._id ? pair.studentB : pair.studentA;
+                                            return `${mate?.firstName || ''} ${mate?.lastName || ''}`.trim();
+                                        })()}
                                     </h4>
                                     <p className="text-emerald-600 font-medium text-sm mt-1 bg-emerald-100 px-2 py-0.5 rounded-full inline-block">
                                         {pair.compatibilityScore}% Compatibility Match
+                                    </p>
+                                    <p className="text-slate-500 text-sm mt-2">
+                                        {pair.roomId
+                                            ? `Room ${pair.roomId.roomNumber} · Block ${pair.roomId.block}`
+                                            : 'Room not assigned yet — the hostel admin will assign one'}
                                     </p>
                                 </div>
                             </div>

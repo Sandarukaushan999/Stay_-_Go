@@ -131,7 +131,7 @@ export default function IssuesPage() {
                         </div>
 
                         <div className="flex justify-end pt-4">
-                            <button type="submit" disabled={submitting} className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold transition-colors shadow-sm disabled:opacity-70">
+                            <button type="submit" disabled={submitting} className="bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] px-8 py-3 rounded-xl font-bold transition-colors shadow-sm disabled:opacity-70">
                                 {submitting ? 'Submitting Report...' : 'Submit Report'}
                             </button>
                         </div>

@@ -51,7 +51,7 @@ export default function NotificationsPage() {
                         <Bell className="w-8 h-8 text-emerald-500" />
                         Notifications
                         {unreadCount > 0 && (
-                            <span className="bg-emerald-500 text-white text-sm font-bold px-2.5 py-0.5 rounded-full mt-1">
+                            <span className="bg-[#BAF91A] text-[#101312] text-sm font-bold px-2.5 py-0.5 rounded-full mt-1">
                                 {unreadCount} New
                             </span>
                         )}

@@ -1,6 +1,10 @@
 import { Room } from '../models/Room.js'
 import { StudentProfile } from '../models/StudentProfile.js'
 import { ApiError } from '../../common/utils/ApiError.js'
+import { MatchPair } from '../models/MatchPair.js'
+import { sameGender } from '../utils/gender.js'
+import { createNotification } from '../services/roommateNotificationService.js'
+import { NOTIFICATION_TYPE } from '../constants/enums.js'
 
 // GET /api/roommate/rooms — list rooms (filterable)
 export const getRooms = async (req, res, next) => {
@@ -96,15 +100,48 @@ export const assignStudent = async (req, res, next) => {
     const profile = await StudentProfile.findById(studentId)
     if (!profile) throw new ApiError(404, 'Student profile not found')
 
-    // Update student profile with room
+    // Already in this room — nothing to do (avoids inflating occupancy)
+    if (profile.roomId?.toString() === room._id.toString()) {
+      return res.json({ success: true, message: 'Student is already assigned to this room', data: { room, profile } })
+    }
+
+    if (room.occupancyCount >= room.capacity) throw new ApiError(400, 'Room is already full')
+
+    // Hostel rule: never mix genders in one room
+    const occupants = await StudentProfile.find({ roomId: room._id }).select('gender')
+    if (occupants.some((o) => !sameGender(o.gender, profile.gender))) {
+      throw new ApiError(400, 'Cannot assign: this room is occupied by students of a different gender')
+    }
+
+    // Moving from another room → free the old bed first
+    if (profile.roomId) {
+      const oldRoom = await Room.findById(profile.roomId)
+      if (oldRoom) {
+        oldRoom.occupancyCount = Math.max((oldRoom.occupancyCount || 0) - 1, 0)
+        await oldRoom.save()
+      }
+    }
+
     profile.roomId = room._id
     await profile.save()
 
-    // Bump occupancy count
+    // Keep the locked pair's room in sync (Final Result page reads pair.roomId)
+    await MatchPair.updateMany(
+      { $or: [{ studentA: profile._id }, { studentB: profile._id }], isLocked: true },
+      { roomId: room._id }
+    )
+
+    // availabilityStatus is recomputed by the Room pre-save hook
     room.occupancyCount = Math.min((room.occupancyCount || 0) + 1, room.capacity)
-    if (room.occupancyCount >= room.capacity) room.availabilityStatus = 'FULL'
-    else room.availabilityStatus = 'PARTIALLY_FILLED'
     await room.save()
+
+    await createNotification(
+      profile._id,
+      NOTIFICATION_TYPE.ROOM_CHANGED,
+      'Room assigned',
+      `You have been assigned to room ${room.roomNumber} (Block ${room.block}).`,
+      room._id
+    )
 
     res.json({ success: true, message: 'Student assigned to room', data: { room, profile } })
   } catch (err) {

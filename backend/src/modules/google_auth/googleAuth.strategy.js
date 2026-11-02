@@ -4,6 +4,11 @@ import { env } from '../../config/env.js'
 import { User } from '../users/user.model.js'
 
 export function configureGoogleStrategy() {
+  if (!env.GOOGLE_CLIENT_ID || !env.GOOGLE_CLIENT_SECRET) {
+    console.warn('Google OAuth disabled: GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are not configured')
+    return
+  }
+
   console.log('✅ Google Strategy init with callbackURL:', env.GOOGLE_CALLBACK_URL)
 
   passport.use(

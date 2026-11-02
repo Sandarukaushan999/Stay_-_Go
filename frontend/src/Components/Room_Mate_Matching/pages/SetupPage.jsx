@@ -48,7 +48,7 @@ export default function SetupPage() {
 
                 <button 
                     onClick={() => navigate('/roommate/profile')}
-                    className="bg-slate-900 hover:bg-emerald-600 text-white px-8 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 group mx-auto"
+                    className="bg-slate-900 hover:bg-[#BAF91A] hover:text-[#101312] text-white px-8 py-3.5 rounded-xl font-bold transition-all duration-300 shadow-sm flex items-center gap-2 group mx-auto"
                 >
                     Start Profile Setup
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
