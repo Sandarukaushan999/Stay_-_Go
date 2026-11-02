@@ -5,6 +5,8 @@ import * as userService from '../users/user.service.js'
 import * as tripService from '../ride_sharing/services/trip.service.js'
 import * as sosService from '../ride_sharing/services/sos.service.js'
 import { AdminActionLog } from './models/AdminActionLog.js'
+import { enrichUsers } from './communication.controller.js'
+import { notifyUser } from '../notifications/notification.service.js'
 
 export const dashboard = asyncHandler(async (req, res) => {
   const counts = await userService.dashboardCounts()
@@ -14,6 +16,7 @@ export const dashboard = asyncHandler(async (req, res) => {
 export const listUsers = asyncHandler(async (req, res) => {
   const { q, role, page, limit } = req.query
   const data = await userService.listUsers({ q, role, page, limit })
+  data.items = await enrichUsers(data.items, role)
   res.json({ success: true, ...data })
 })
 
@@ -42,6 +45,14 @@ export const setRole = asyncHandler(async (req, res) => {
 
 export const approveRider = asyncHandler(async (req, res) => {
   const user = await userService.approveRider(req.params.id, req.body.approved)
+  await notifyUser(user.id, {
+    type: 'verification',
+    title: req.body.approved ? 'Rider application approved' : 'Rider application rejected',
+    message: req.body.approved
+      ? 'You can now offer rides on Stay & Go.'
+      : 'Your rider application was not approved. Contact support for details.',
+    link: '/rider/dashboard',
+  })
   res.json({ success: true, user })
 })
 

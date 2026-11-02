@@ -29,7 +29,7 @@ const roomSchema = new mongoose.Schema(
 )
 
 // Auto-compute availability before save
-roomSchema.pre('save', function (next) {
+roomSchema.pre('save', function () {
   if (this.availabilityStatus !== AVAILABILITY_STATUS.MAINTENANCE) {
     if (this.occupancyCount <= 0) {
       this.availabilityStatus = AVAILABILITY_STATUS.AVAILABLE
@@ -39,7 +39,6 @@ roomSchema.pre('save', function (next) {
       this.availabilityStatus = AVAILABILITY_STATUS.FULL
     }
   }
-  next()
 })
 
 export const Room = mongoose.model('Room', roomSchema)

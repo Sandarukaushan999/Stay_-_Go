@@ -9,6 +9,7 @@
     "smoke": "node src/smokeTest.js",
     "start": "node src/server.js",
     "seed:maintenance": "node src/seedMaintenance.js",
+    "seed:roommate": "node src/roommate/seed/seedRoommate.js",
     "kill": "powershell -Command \"$procs = netstat -ano | Select-String ':5000 ' | Select-String 'LISTENING'; $procs | ForEach-Object { $id = ($_.Line -split '\\s+').Trim()[-1]; if ($id -match '^\\d+$') { taskkill /PID $id /F } }; Write-Host 'Port 5000 cleared'\"",
     "fresh": "npm run kill && npm start"
   },

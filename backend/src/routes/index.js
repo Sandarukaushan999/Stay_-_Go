@@ -7,6 +7,7 @@ import { maintenanceRouter } from '../modules/maintenance/routes/maintenance.rou
 import { userRouter } from '../modules/users/user.routes.js'
 import { technicianRouter } from '../modules/technician/technician.routes.js'
 import { twoFactorRouter } from '../modules/two_factor/twoFactor.routes.js'
+import { notificationRouter as appNotificationRouter } from '../modules/notifications/notification.routes.js'
 import { studentRouter } from '../roommate/routes/studentRoutes.js'
 import { preferenceRouter } from '../roommate/routes/roomPreferenceRoutes.js'
 import { matchingRouter } from '../roommate/routes/matchingRoutes.js'
@@ -28,6 +29,7 @@ apiRouter.use('/users', userRouter)
 apiRouter.use('/ride-sharing', rideSharingRouter)
 apiRouter.use('/maintenance', maintenanceRouter)
 apiRouter.use('/technician', technicianRouter)
+apiRouter.use('/notifications', appNotificationRouter)
 
 apiRouter.use('/roommate/students', studentRouter)
 apiRouter.use('/roommate/preferences', preferenceRouter)

@@ -45,6 +45,28 @@ const UserSchema = new mongoose.Schema(
       index: true,
     },
     riderAppliedAt: { type: Date, default: null },
+
+    // ── Technician documents & verification ──
+    technicianVerificationStatus: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'rejected'],
+      default: 'none',
+      index: true,
+    },
+    technicianVerificationNote: { type: String, default: null }, // admin's note on reject/approve
+    technicianSubmittedAt: { type: Date, default: null },
+    verificationDocs: {
+      type: [
+        {
+          docType: { type: String, enum: ['nic', 'certificate', 'license', 'police_report', 'other'], default: 'other' },
+          label: { type: String, default: '' },
+          url: { type: String, required: true },
+          originalName: { type: String, default: '' },
+          uploadedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
     lastLogin: { type: Date, default: null },
 
     systemSettings: {

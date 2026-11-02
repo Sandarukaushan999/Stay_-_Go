@@ -49,7 +49,7 @@ export default function FinalResultPage() {
                     </p>
                     <button 
                         onClick={() => navigate('/roommate/matches')}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
+                        className="bg-[#BAF91A] hover:bg-[#a9ea00] text-[#101312] px-8 py-3 rounded-lg font-medium transition-colors"
                     >
                         Find Matches
                     </button>

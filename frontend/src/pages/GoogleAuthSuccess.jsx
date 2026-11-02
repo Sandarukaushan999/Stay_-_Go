@@ -37,12 +37,23 @@ export default function GoogleAuthSuccess() {
 
     // ── Success path ─────────────────────────────────────────────────────────
     if (token) {
+      const wasLoggedIn = Boolean(useAuthStore.getState().token)
       setToken(token)
       hydrateMe({ force: true }).then((user) => {
         if (user) {
-          toast.success('Google account linked successfully!')
-          // If an existing session was ongoing (profile linking), go back to profile
-          navigate('/profile', { replace: true })
+          // Linking from the profile page → back to profile; fresh Google login → role dashboard
+          if (wasLoggedIn) {
+            toast.success('Google account linked successfully!')
+            navigate('/profile', { replace: true })
+            return
+          }
+          toast.success('Signed in with Google')
+          const role = user.role
+          if (role === 'admin' || role === 'super_admin') navigate('/admin', { replace: true })
+          else if (role === 'student') navigate('/student/dashboard', { replace: true })
+          else if (role === 'rider') navigate('/rides/workspace', { replace: true })
+          else if (role === 'technician') navigate('/technician/dashboard', { replace: true })
+          else navigate('/profile', { replace: true })
         } else {
           toast.error('Session could not be established. Please log in.')
           navigate('/auth/login', { replace: true })

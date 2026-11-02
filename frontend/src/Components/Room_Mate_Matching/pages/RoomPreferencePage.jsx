@@ -150,7 +150,7 @@ export default function RoomPreferencePage() {
                         <button 
                             type="submit" 
                             disabled={loading}
-                            className="bg-slate-900 hover:bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:bg-slate-900"
+                            className="bg-slate-900 hover:bg-[#BAF91A] hover:text-[#101312] text-white px-8 py-3 rounded-xl font-bold transition-colors shadow-sm flex items-center justify-center gap-2 group disabled:opacity-70 disabled:hover:bg-slate-900"
                         >
                             {loading ? 'Saving Preferences...' : isEdit ? 'Update Preferences' : 'Save & Continue'}
                             {!loading && (isEdit ? <Check className="w-5 h-5" /> : <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />)}

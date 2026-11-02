@@ -2,6 +2,7 @@ import { StudentProfile } from '../models/StudentProfile.js'
 import { RoomPreference } from '../models/RoomPreference.js'
 import { calculateRawScore, toVisibleScore } from '../utils/matchScore.js'
 import { ApiError } from '../../common/utils/ApiError.js'
+import { sameGender } from '../utils/gender.js'
 
 export async function getSuggestions(studentId) {
   const student = await StudentProfile.findById(studentId)
@@ -12,7 +13,6 @@ export async function getSuggestions(studentId) {
 
   const candidates = await StudentProfile.find({
     _id: { $ne: studentId },
-    gender: student.gender,
     profileCompleted: true,
     roomPreferenceCompleted: true,
     finalLockCompleted: false,
@@ -33,6 +33,9 @@ export async function getSuggestions(studentId) {
   const suggestions = []
 
   for (const candidate of candidates) {
+    // Hostel rule: only same-gender roommates (male+male / female+female)
+    if (!sameGender(student.gender, candidate.gender)) continue
+
     const cPref = prefMap[candidate._id.toString()]
     if (!cPref) continue
 
@@ -95,7 +98,7 @@ export async function validateCompatibility(senderId, receiverId) {
   const receiverPref = await RoomPreference.findOne({ studentId: receiverId })
   if (!receiverPref) throw new ApiError(400, 'Receiver room preference record is missing')
 
-  if (sender.gender !== receiver.gender) throw new ApiError(400, 'Cannot send request: gender mismatch')
+  if (!sameGender(sender.gender, receiver.gender)) throw new ApiError(400, 'Roommates must be the same gender (male + male or female + female)')
   if (senderPref.acType !== receiverPref.acType) throw new ApiError(400, 'Cannot send request: AC type mismatch')
   if (senderPref.roomPosition !== receiverPref.roomPosition) throw new ApiError(400, 'Cannot send request: room position mismatch')
   if (senderPref.capacity !== receiverPref.capacity) throw new ApiError(400, 'Cannot send request: room capacity mismatch')

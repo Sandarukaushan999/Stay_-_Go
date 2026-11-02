@@ -5,7 +5,12 @@ import { ApiError } from '../../common/utils/ApiError.js'
 export const getMyNotifications = async (req, res, next) => {
   try {
     const profile = await StudentProfile.findOne({ userId: req.user.id })
-    if (!profile) return res.json({ success: true, data: [] })
+    if (!profile) {
+      return res.json({
+        success: true,
+        data: { notifications: [], total: 0, unreadCount: 0, page: 1, pages: 0 },
+      })
+    }
 
     const { page = 1, limit = 50 } = req.query
     const skip = (page - 1) * limit
@@ -15,7 +20,10 @@ export const getMyNotifications = async (req, res, next) => {
       .skip(Number(skip))
       .limit(Number(limit))
 
-    const total = await RoommateNotification.countDocuments({ studentId: profile._id })
+    const [total, unreadCount] = await Promise.all([
+      RoommateNotification.countDocuments({ studentId: profile._id }),
+      RoommateNotification.countDocuments({ studentId: profile._id, isRead: false }),
+    ])
 
     res.json({
       success: true,
@@ -23,6 +31,7 @@ export const getMyNotifications = async (req, res, next) => {
       data: {
         notifications,
         total,
+        unreadCount,
         page: Number(page),
         pages: Math.ceil(total / limit),
       },

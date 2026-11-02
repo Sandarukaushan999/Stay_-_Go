@@ -1,5 +1,6 @@
 import { StudentProfile } from '../models/StudentProfile.js'
 import { ApiError } from '../../common/utils/ApiError.js'
+import { normalizeGender } from '../utils/gender.js'
 
 function isProfileComplete(data) {
   const ObjectOrUndefined = (val) => val !== undefined && val !== null && val !== ''
@@ -25,6 +26,12 @@ export const createProfile = async (req, res, next) => {
     if (!profileData.firstName) profileData.firstName = req.user.fullName?.split(' ')[0] || ''
     if (!profileData.lastName) profileData.lastName = req.user.fullName?.split(' ').slice(1).join(' ') || ''
     if (!profileData.email) profileData.email = req.user.email || ''
+
+    if (profileData.gender !== undefined && profileData.gender !== '') {
+      const g = normalizeGender(profileData.gender)
+      if (g !== 'male' && g !== 'female') throw new ApiError(400, 'Gender must be Male or Female')
+      profileData.gender = g === 'male' ? 'Male' : 'Female'
+    }
 
     profileData.profileCompleted = isProfileComplete(profileData)
 
